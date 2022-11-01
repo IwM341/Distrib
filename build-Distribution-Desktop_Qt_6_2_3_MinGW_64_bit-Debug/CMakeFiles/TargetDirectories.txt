@@ -1,0 +1,3 @@
+D:/Important/articles/PRJ002dM_Distrib/build-Distribution-Desktop_Qt_6_2_3_MinGW_64_bit-Debug/CMakeFiles/Distribution.dir
+D:/Important/articles/PRJ002dM_Distrib/build-Distribution-Desktop_Qt_6_2_3_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
+D:/Important/articles/PRJ002dM_Distrib/build-Distribution-Desktop_Qt_6_2_3_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
