@@ -415,8 +415,12 @@ int main(void){
 
     distrib.plotd(ResDistrib.toFunction().toString(),"with lines title \"final distrib\"");
 
+
+
     distrib.show();
     std::cin.get();
+
+
 
     //PVAR(SmatT);
     //PVAR(EvaporationPreHisto.toString());
