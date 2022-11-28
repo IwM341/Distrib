@@ -49,9 +49,9 @@ cmake_ninja_workdir = D$:/Important/articles/PRJ002dM_Distrib/build-Distribution
 
 build cmake_object_order_depends_target_Distribution: phony || CMakeFiles/Distribution.dir
 
-build CMakeFiles/Distribution.dir/main.cpp.obj: CXX_COMPILER__Distribution_Debug D$:/Important/articles/PRJ002dM_Distrib/Distribution/main.cpp || cmake_object_order_depends_target_Distribution
+build CMakeFiles/Distribution.dir/main_2Comp.cpp.obj: CXX_COMPILER__Distribution_Debug D$:/Important/articles/PRJ002dM_Distrib/Distribution/main_2Comp.cpp || cmake_object_order_depends_target_Distribution
   DEFINES = -DTEST_SF_HISTO
-  DEP_FILE = CMakeFiles\Distribution.dir\main.cpp.obj.d
+  DEP_FILE = CMakeFiles\Distribution.dir\main_2Comp.cpp.obj.d
   FLAGS = -g -std=gnu++17
   INCLUDES = -ID:/Important/articles/PRJ002dM_Distrib/Distribution/../../DMFramework/utils
   OBJECT_DIR = CMakeFiles\Distribution.dir
@@ -65,7 +65,7 @@ build CMakeFiles/Distribution.dir/main.cpp.obj: CXX_COMPILER__Distribution_Debug
 #############################################
 # Link the executable Distribution.exe
 
-build Distribution.exe: CXX_EXECUTABLE_LINKER__Distribution_Debug CMakeFiles/Distribution.dir/main.cpp.obj
+build Distribution.exe: CXX_EXECUTABLE_LINKER__Distribution_Debug CMakeFiles/Distribution.dir/main_2Comp.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\Distribution.dir

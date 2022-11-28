@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #add_definitions(-DTEST_BORDERS)
 add_definitions(-DTEST_SF_HISTO)
 #add_definitions(-DTEST_TRAJECTORY)
+#add_definitions(-DTEST_EQUIALENCE)
 include_directories("..\\..\\DMFramework\\utils" )
 
-add_executable(Distribution main.cpp)
+add_executable(Distribution main_2Comp.cpp)
