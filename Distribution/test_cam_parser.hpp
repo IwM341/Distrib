@@ -1,0 +1,5 @@
+#ifndef TEST_CAM_PARSER_HPP
+#define TEST_CAM_PARSER_HPP
+
+
+#endif//TEST_CAM_PARSER_HPP

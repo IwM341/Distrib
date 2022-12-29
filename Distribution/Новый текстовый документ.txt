@@ -1,0 +1,189 @@
+#include "functions.hpp"
+#include <cmath>
+#include <fstream>
+#include "complex/complex_ex.hpp"
+#include <time.h>
+#include "func/el_histo.hpp"
+
+const double mp = 0.938;
+const double me = 0.51e-3;
+auto PhiFactor55p = [](double mk,double q)->double{
+    return fast_pow(q*q/(mp*mk),2);
+};
+auto PhiFactor55e = [](double mk,double q)->double{
+    return fast_pow(q*q/(me*mk),2);
+};
+auto PhiFactorSS = [](double mk,double q)->double{
+    return 1.0;
+};
+
+template <typename BodyFuncType>
+struct normalised_function{
+    BodyFuncType func;
+    double Norm;
+    normalised_function(BodyFuncType && F,double a,double b,size_t N_int = 1000000):func(std::forward(F)){
+        Norm = integrateAB(F,a,b,N_int);
+    }
+    auto operator()(double x)const{
+        return func(x)/Norm;
+    }
+};
+
+template <typename DensFunc>
+Function::VectorGrid<double> DensityGrid(double a,double b,const DensFunc & rho,size_t N){
+    std::vector<double> grid(N);
+    grid[0] = 0;
+    double h_1 = 1.0/(N-1);
+    for(size_t i=1;i<N;++i){
+        double x0 = a + (b-a)*grid[i-1];
+        double h_near = std::min(h_1/rho(x0),(b-a)/N);
+        double h1 = h_near/20;
+        double sum = 0;
+        double xtmp = x0;
+        while(sum < h_1){
+            sum += rho(xtmp)*h1;
+            xtmp += h1;
+        }
+        grid[i] = (xtmp-a-h1/2)/(b-a);
+    }
+    double t = (b-a)/grid.back();
+    return Function::VectorGrid<double>(a + t*grid);
+}
+
+
+
+int main(void){
+    const auto& BM = BodyModel::fromFile(2.056e-3,"D:/Important/articles/DMFramework/celstial_models/solar_model.dat");
+    double Emin = -BM["phi"][0];
+    double Lmax = maxLnd(BM,0);
+
+    auto G = [](){return rand()/(RAND_MAX+1.0);};
+    auto & phi = BM["phi"];
+
+    Function::UniformGrid<double> R(0,1,phi.size());
+    Function::GridFunction<double,Function::UniformGrid<double>,Function::CubicInterpolator>
+            PhiC(R,phi);
+
+    Function::GridFunction<double,Function::UniformGrid<double>,Function::LinearInterpolator> Therm(R,BM["Temp"]*1e-13);
+    Function::GridFunction<double,Function::UniformGrid<double>,Function::LinearInterpolator> Vesc(R,BM["Vesc"]);
+
+
+
+
+
+    size_t NE = 30+1;
+    size_t NLmax = 30 + 1;
+
+
+    Function::VectorGrid<double> E_grid = DensityGrid(Emin,0,[Emin](double x){
+        double t = (x-Emin)/std::abs(Emin);
+        return 1/std::abs(Emin)*2/sqrt(t+0.01);
+    },NE);
+
+    PVAR(E_grid);
+
+    EL_Histo<double,Function::VectorGrid<double>,Function::UniformGrid<double>> ELH_L(E_grid,Function::FunctorM(BM,maxLnd));
+
+
+
+    double Lmax1 = max(ELH_L.Lmax.values);
+    COMPARE(Lmax,Lmax1);
+    for(size_t i=0;i<ELH_L.values.size();++i){
+        ELH_L.values[i] = Function::Histogramm<double,Function::UniformGrid<double>>(
+                    Function::UniformGrid<double>(0,1,2 + ELH_L.Lmax.values[i]/Lmax1*NLmax));
+    }
+    auto ELH_H = ELH_L;
+    //PVAR(ELH_L.gridStr());
+
+
+    Function::UniformGrid<double> FEgrid(Emin,0,11);
+    size_t NLmaxF = 11;
+    Function::GridFunction<decltype(ELH_L),Function::UniformGrid<double>,
+            Function::LinearInterpolator,Function::UniformGrid<double>,Function::LinearInterpolator>
+            ScatterPreHisto_LH(FEgrid,Vector(FEgrid.size(),[&ELH_L,&FEgrid,&BM,Lmax,NLmaxF](size_t i){
+                                size_t N = 2 + NLmaxF*maxLnd(BM,FEgrid[i])/Lmax;
+                                return Function::GridFunction<decltype(ELH_L),Function::UniformGrid<double>,Function::LinearInterpolator>
+                                (Function::UniformGrid<double>(0,1.0,N),
+                                std::vector<decltype(ELH_L)>(N,ELH_L));
+                            }));
+
+    Function::GridFunction<decltype(ELH_L),Function::UniformGrid<double>,
+            Function::LinearInterpolator,Function::UniformGrid<double>,Function::LinearInterpolator>
+            ScatterPreHisto1_LH(FEgrid,Vector(FEgrid.size(),[&ELH_L,&FEgrid,&BM,Lmax,NLmaxF](size_t i){
+                                double L = maxLnd(BM,FEgrid[i]);
+                                size_t N = 2 + NLmaxF*L/Lmax;
+                                return Function::GridFunction<decltype(ELH_L),Function::UniformGrid<double>,Function::LinearInterpolator>
+                                (Function::UniformGrid<double>(0,L,N),
+                                std::vector<decltype(ELH_L)>(N,ELH_L));
+                            }));
+
+    auto ScatterPreHisto_HL = ScatterPreHisto_LH;
+    auto ScatterPreHisto_Ion_HL = ScatterPreHisto_LH;
+    auto ScatterPreHisto_AntiIon_LH = ScatterPreHisto_LH;
+
+    auto EvaporationPreHisto_L = ScatterPreHisto_LH.Composition([](auto x)->double{return 0.0;});
+            /*Function::GridFunctionCreator2<Function::LinearInterpolator>::Create(E_grid,
+        Vector(E_grid.size(),[&ELH_L](size_t i){
+            size_t N = ELH_L.values[std::min(i,ELH_L.values.size()-1)].Grid.size();
+            return Function::GridFunctionCreator1<Function::LinearInterpolator>::Create(
+                Function::UniformGrid<double>(0,ELH_L.Lmax.values[i],N),std::vector<double>(N,0));
+        }));*/
+    auto EvaporationPreHisto_H = EvaporationPreHisto_L;
+
+
+
+    double mk = 5;
+    double delta_mk = 3e-5;
+
+
+    double f_p_av = 4e-7;
+    double min_atom_r = 0.7;
+    decltype(Therm) F_e_r(R,Vector(R.size(),[&BM,&Therm,f_p_av](size_t i){
+        double rho = BM["RhoND"][i];
+        double s = pow(2*M_PI*Therm[i]/me,1.5)*exp(-Rd/Therm[i]);
+        return f_p_av*rho*Ion_Deg(f_p_av*rho,s);
+    }));
+    decltype(Therm) atom_degree(R,Vector(R.size(),[&BM,&Therm,f_p_av](size_t i){
+        double rho = BM["RhoND"][i];
+        double s = pow(2*M_PI*Therm[i]/me,1.5)*exp(-Rd/Therm[i]);
+        return Atom_ion_Deg(f_p_av*rho,s);
+    }));
+
+    decltype(Therm) ion_degree(R,Vector(R.size(),[&BM,&Therm,f_p_av](size_t i){
+        double rho = BM["RhoND"][i];
+        double s = pow(2*M_PI*Therm[i]/me,1.5)*exp(-Rd/Therm[i]);
+        return Ion_Deg(f_p_av*rho,s);
+    }));
+
+    decltype(Therm) H_N(R,BM["RhoND"]*BM["H1"]);
+    auto Atom_N =  H_N*atom_degree;
+
+
+    bool sem = true;
+    print("end\t","l_nd\t","T_in\t","T_out\t","T_all\t","T_all_th");
+    for(size_t i=0;i<ScatterPreHisto_LH.Grid.size();++i){
+        double e_nd=  ScatterPreHisto_LH.Grid[i];
+        for(size_t j = 0;j<ScatterPreHisto_LH.values[i].Grid.size();++j){
+            double l_nd = ScatterPreHisto_LH.values[i].Grid[j]*ELH_H.Lmax[i];
+
+            auto TI = CalculateTrajectory(PhiC,e_nd,l_nd,100);
+            print(e_nd,"\t",l_nd,"\t",TI.T_in,"\t",TI.T_out,"\t",TI.T_in+TI.T_out,"\t",M_PI/2*pow(-e_nd,-1.5));
+
+            /*
+            if(e_nd>-0.5 and l_nd/ELH_H.Lmax[i] > 0.5){
+                Gnuplot gp;
+                gp.plotd(TI.Trajectory.toString());
+                gp.show();
+                std::cin.get();
+            }
+            */
+            TrajectoryIntegral(G,e_nd,l_nd,TI,
+                               BM.VescMin(),[](double){return 1.0;},Therm,Vesc,ScatterPreHisto_LH.values[i].values[j],EvaporationPreHisto_L.values[i].values[j],
+                               mk,-delta_mk,ELASTIC,PROTON,PhiFactorSS,10000);
+            TrajectoryIntegral(G,e_nd,l_nd,TI,
+                               BM.VescMin(),[](double){return 1.0;},Therm,Vesc,ScatterPreHisto_HL.values[i].values[j],EvaporationPreHisto_H.values[i].values[j],
+                               mk,delta_mk,ELASTIC,PROTON,PhiFactorSS,10000);
+        }
+    }
+    return 0;
+}

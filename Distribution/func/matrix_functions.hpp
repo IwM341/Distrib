@@ -2,6 +2,42 @@
 #define MATRIX_FUNCTIONS_H
 #include "../functions.hpp"
 
+typedef std::vector<double> dvector;
+typedef std::vector<std::vector<double>> dmatrix;
+
+double vnorm_0(const dvector&V){
+
+    double nv = 0;
+    for(size_t i=0;i<V.size();++i){
+        if(nv < std::abs(V[i]))
+            nv = std::abs(V[i]);
+    }
+    return nv;
+}
+
+double vnorm_1(const dvector&V){
+    double nv = 0;
+    for(size_t i=0;i<V.size();++i){
+        nv += std::abs(V[i]);
+    }
+    return nv;
+}
+
+double mnorm_0(const dmatrix&V){
+    double nm = 0;
+    for(size_t i=0;i<V.size();++i){
+        nm = std::max(nm,vnorm_1(V[i]));
+    }
+    return nm;
+}
+
+double mnorm_1(const dmatrix&V){
+    double nm = 0;
+    for(size_t i=0;i<V.size();++i){
+        nm += vnorm_0(V[i]);
+    }
+    return nm;
+}
 
 template <typename T,typename U>
 auto dot(const std::vector<T> & X,const std::vector<U> & Y){
@@ -82,6 +118,8 @@ void MatrixMult(const std::vector<std::vector<T>> &A,const std::vector<std::vect
     }
 }
 
+
+
 template <typename T>
 std::vector<std::vector<T>> MatrixMult(const std::vector<std::vector<T>> &A,const std::vector<std::vector<T>> &B){
     auto BT = MatrixTranspose(B);
@@ -140,6 +178,168 @@ std::vector<std::vector<T>> Rmatrix(std::vector<std::vector<T>> ScatterMatrix,T 
 
 
 
+template <typename T >
+void SaveMatrixString(const T *X,size_t N,size_t M,std::ostream &S){
+    for(size_t i=0;i<N;++i){
+        for(size_t j=0;j<M;++j)
+            S << X[i*M+j] << "\t";
+        S << std::endl;
+    }
+}
+template <typename T >
+void SaveMatrixString(const T *X,size_t N,size_t M,const std::string&fname){
+    std::ofstream _of(fname);
+    SaveMatrixString<T>(X,N,M,_of);
+}
 
+
+template <typename T>
+auto LoadMatrixString(std::istream &S){
+
+    size_t M = 0;
+    size_t N = 1;
+    std::vector<T> retMatrix;
+    std::string first_line;
+    std::getline(S,first_line);
+    std::stringstream Line1(first_line);
+    double x;
+    while (Line1 >> x) {
+        retMatrix.push_back(x);
+        M++;
+    }
+    while(S>>x){
+        retMatrix.push_back(x);
+    }
+    N = retMatrix.size()/M;
+    return _T(retMatrix,N,M);
+}
+template <typename T>
+auto LoadMatrixString(const std::string&fname){
+    std::ifstream S(fname);
+    return LoadMatrixString<T>(S);
+}
+
+
+
+template <typename T>
+void SaveMatrixBinary(const T*X,size_t N,size_t M,std::ostream &S){
+    S.write((char*)&N,sizeof(N));
+    S.write((char*)&M,sizeof(M));
+    S.write((char*)X,N*M*sizeof(double));
+}
+
+template <typename T>
+void SaveMatrixBinary(const T*X,size_t N,size_t M,const std::string&fname){
+    std::ofstream _of(fname,std::ios::binary);
+    SaveMatrixBinary<T>(X,N,M,_of);
+}
+
+template <typename T>
+auto LoadMatrixBinary(std::istream &S){
+    size_t N;
+    size_t M;
+    S.read((char*)&N,sizeof(N));
+    S.read((char*)&M,sizeof(M));
+    std::vector<T> X(N);
+    S.read((char*)X.data(),N*M*sizeof(double));
+    return _T(X,N,M);
+}
+template <typename T>
+auto LoadMatrixBinary(const std::string&fname){
+    std::ifstream _in(fname,std::ios::binary);
+    return LoadMatrixBinary<T>(_in);
+}
+
+bool is_binary(const std::string & fname){
+    std::regex end(".*\\.(.*)");
+    std::smatch sm;
+    regex_match(fname, sm, end);
+    if(sm.size() > 1){
+        std::string fend = sm[1];
+        return fend == "bmat" || fend == "bvec" || fend == "bmatrix" || fend == "bvector";
+    }
+    return 0;
+
+}
+
+template <typename T>
+void saveMatrixSmart(const T*Mat,size_t N,size_t M,const std::string&fname){
+    if(is_binary(fname))
+        SaveMatrixBinary<T>(Mat,N,M,fname);
+    else
+        SaveMatrixString<T>(Mat,N,M,fname);
+}
+template <typename T>
+auto loadMatrixSmart(const std::string&fname){
+    if(is_binary(fname))
+        return LoadMatrixBinary<T>(fname);
+    else
+        return LoadMatrixString<T>(fname);
+}
+
+
+template <typename BodyFuncType>
+struct normalised_function{
+    BodyFuncType func;
+    double Norm;
+    normalised_function(BodyFuncType && F,double a,double b,size_t N_int = 1000000):func(std::forward(F)){
+        Norm = integrateAB(F,a,b,N_int);
+    }
+    auto operator()(double x)const{
+        return func(x)/Norm;
+    }
+};
+
+
+template <typename DensFunc>
+Function::VectorGrid<double> DensityGrid(double a,double b,const DensFunc & rho,size_t N,size_t iter_num = 10){
+    std::vector<double> grid(N);
+    grid[0] = 0;
+
+    std::vector<double> X0tiks = Vector(N,[N](size_t i){return i/(N-1.0);});
+    std::vector<double> X1tiks(N);
+    X1tiks[0] = X0tiks[0] = 0;
+
+    for(size_t iter = 0;iter<iter_num;++iter){
+//        PVAR(X0tiks);
+        for(size_t i=1;i<N;++i){
+            double a_x = X0tiks[i-1];
+            double b_x = X0tiks[i];
+            X1tiks[i] = X1tiks[i-1] + integrateAB([&rho,a,b,a_x,b_x](double t){
+                return 1.0/rho(a + (b-a)*(a_x + t*(b_x-a_x)));
+            },0,1,20);
+        }
+        X1tiks *=(1.0/X1tiks.back());
+        std::swap(X0tiks,X1tiks);
+    }
+    return Function::VectorGrid<double>(a + (b-a)*X0tiks);
+}
+
+
+
+void PrintMatrix(const std::vector<std::vector<double>> &Mat,std::ostream &os = std::cout){
+    for(size_t i=0;i<Mat.size();++i){
+        for(size_t j=0;j<Mat[i].size();++j){
+            os << Mat[i][j] <<"\t";
+        }
+        os<<std::endl;
+    }
+}
+
+
+auto standart_mult = [](const auto &x,const auto &y){return x*y;};
+template <typename T = double,typename MultFunctType = decltype(standart_mult)>
+auto smart_pow(const T &x,size_t N,const MultFunctType &mult = standart_mult){
+    T res = x;
+    T factor = x;
+    N-=1;
+    while(N > 0){
+        if(N%2)
+            res = mult(res,factor);
+        factor = mult(factor,factor);
+        N = N/2;
+    }
+    return res;
+}
 
 #endif

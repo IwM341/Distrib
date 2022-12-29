@@ -41,39 +41,109 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = D$:/Important/articles/PRJ002dM_Distrib/build-Distribution-Desktop_Qt_6_2_3_MinGW_64_bit-Debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target Distribution
+# Object build statements for EXECUTABLE target distrib_vector_grid
 
 
 #############################################
-# Order-only phony target for Distribution
+# Order-only phony target for distrib_vector_grid
 
-build cmake_object_order_depends_target_Distribution: phony || CMakeFiles/Distribution.dir
+build cmake_object_order_depends_target_distrib_vector_grid: phony || CMakeFiles/distrib_vector_grid.dir
 
-build CMakeFiles/Distribution.dir/main_2Comp.cpp.obj: CXX_COMPILER__Distribution_Debug D$:/Important/articles/PRJ002dM_Distrib/Distribution/main_2Comp.cpp || cmake_object_order_depends_target_Distribution
+build CMakeFiles/distrib_vector_grid.dir/distrib_vector_grid.cpp.obj: CXX_COMPILER__distrib_vector_grid_Debug D$:/Important/articles/PRJ002dM_Distrib/Distribution/distrib_vector_grid.cpp || cmake_object_order_depends_target_distrib_vector_grid
   DEFINES = -DTEST_SF_HISTO
-  DEP_FILE = CMakeFiles\Distribution.dir\main_2Comp.cpp.obj.d
+  DEP_FILE = CMakeFiles\distrib_vector_grid.dir\distrib_vector_grid.cpp.obj.d
   FLAGS = -g -std=gnu++17
-  INCLUDES = -ID:/Important/articles/PRJ002dM_Distrib/Distribution/../../DMFramework/utils
-  OBJECT_DIR = CMakeFiles\Distribution.dir
-  OBJECT_FILE_DIR = CMakeFiles\Distribution.dir
+  INCLUDES = -ID:/Important/articles/PRJ002dM_Distrib/Distribution/../../DMFramework/utils -ID:/Important/articles/PRJ002dM_Distrib/Distribution/distrib_vector_grid -ID:/Soft/boost_1_81_0/build/include/boost-1_81 -ID:/Important/articles/PRJ002dM_Distrib/Distribution/matrix_mult -ID:/Soft/LINAL/OpenBLAS-0.3.21-x64/include -ID:/Important/articles/PRJ002dM_Distrib/Distribution/test_cmd_parser
+  OBJECT_DIR = CMakeFiles\distrib_vector_grid.dir
+  OBJECT_FILE_DIR = CMakeFiles\distrib_vector_grid.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target Distribution
+# Link build statements for EXECUTABLE target distrib_vector_grid
 
 
 #############################################
-# Link the executable Distribution.exe
+# Link the executable distrib_vector_grid.exe
 
-build Distribution.exe: CXX_EXECUTABLE_LINKER__Distribution_Debug CMakeFiles/Distribution.dir/main_2Comp.cpp.obj
+build distrib_vector_grid.exe: CXX_EXECUTABLE_LINKER__distrib_vector_grid_Debug CMakeFiles/distrib_vector_grid.dir/distrib_vector_grid.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\Distribution.dir
+  OBJECT_DIR = CMakeFiles\distrib_vector_grid.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = Distribution.exe
-  TARGET_IMPLIB = libDistribution.dll.a
-  TARGET_PDB = Distribution.exe.dbg
+  TARGET_FILE = distrib_vector_grid.exe
+  TARGET_IMPLIB = libdistrib_vector_grid.dll.a
+  TARGET_PDB = distrib_vector_grid.exe.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target matrix_mult
+
+
+#############################################
+# Order-only phony target for matrix_mult
+
+build cmake_object_order_depends_target_matrix_mult: phony || CMakeFiles/matrix_mult.dir
+
+build CMakeFiles/matrix_mult.dir/matrix_modelling.cpp.obj: CXX_COMPILER__matrix_mult_Debug D$:/Important/articles/PRJ002dM_Distrib/Distribution/matrix_modelling.cpp || cmake_object_order_depends_target_matrix_mult
+  DEFINES = -DTEST_SF_HISTO
+  DEP_FILE = CMakeFiles\matrix_mult.dir\matrix_modelling.cpp.obj.d
+  FLAGS = -g -std=gnu++17
+  INCLUDES = -ID:/Important/articles/PRJ002dM_Distrib/Distribution/../../DMFramework/utils -ID:/Important/articles/PRJ002dM_Distrib/Distribution/distrib_vector_grid -ID:/Soft/boost_1_81_0/build/include/boost-1_81 -ID:/Important/articles/PRJ002dM_Distrib/Distribution/matrix_mult -ID:/Soft/LINAL/OpenBLAS-0.3.21-x64/include -ID:/Important/articles/PRJ002dM_Distrib/Distribution/test_cmd_parser
+  OBJECT_DIR = CMakeFiles\matrix_mult.dir
+  OBJECT_FILE_DIR = CMakeFiles\matrix_mult.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target matrix_mult
+
+
+#############################################
+# Link the executable matrix_mult.exe
+
+build matrix_mult.exe: CXX_EXECUTABLE_LINKER__matrix_mult_Debug CMakeFiles/matrix_mult.dir/matrix_modelling.cpp.obj | D$:/Soft/LINAL/OpenBLAS-0.3.21-x64/bin/libopenblas.dll D$:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/libopenblas.lib
+  FLAGS = -g
+  LINK_LIBRARIES = D:/Soft/LINAL/OpenBLAS-0.3.21-x64/bin/libopenblas.dll  D:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/libopenblas.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\matrix_mult.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = matrix_mult.exe
+  TARGET_IMPLIB = libmatrix_mult.dll.a
+  TARGET_PDB = matrix_mult.exe.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target test_cmd_parser
+
+
+#############################################
+# Order-only phony target for test_cmd_parser
+
+build cmake_object_order_depends_target_test_cmd_parser: phony || CMakeFiles/test_cmd_parser.dir
+
+build CMakeFiles/test_cmd_parser.dir/test_cmd_parser.cpp.obj: CXX_COMPILER__test_cmd_parser_Debug D$:/Important/articles/PRJ002dM_Distrib/Distribution/test_cmd_parser.cpp || cmake_object_order_depends_target_test_cmd_parser
+  DEFINES = -DBOOST_ATOMIC_NO_LIB -DBOOST_FILESYSTEM_NO_LIB -DTEST_SF_HISTO
+  DEP_FILE = CMakeFiles\test_cmd_parser.dir\test_cmd_parser.cpp.obj.d
+  FLAGS = -g -std=gnu++17
+  INCLUDES = -ID:/Important/articles/PRJ002dM_Distrib/Distribution/../../DMFramework/utils -ID:/Important/articles/PRJ002dM_Distrib/Distribution/distrib_vector_grid -ID:/Important/articles/PRJ002dM_Distrib/Distribution/matrix_mult -ID:/Soft/LINAL/OpenBLAS-0.3.21-x64/include -ID:/Important/articles/PRJ002dM_Distrib/Distribution/test_cmd_parser -isystem D:/Soft/boost_1_81_0/build/include/boost-1_81
+  OBJECT_DIR = CMakeFiles\test_cmd_parser.dir
+  OBJECT_FILE_DIR = CMakeFiles\test_cmd_parser.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target test_cmd_parser
+
+
+#############################################
+# Link the executable test_cmd_parser.exe
+
+build test_cmd_parser.exe: CXX_EXECUTABLE_LINKER__test_cmd_parser_Debug CMakeFiles/test_cmd_parser.dir/test_cmd_parser.cpp.obj | D$:/Soft/boost_1_81_0/build/lib/libboost_filesystem-mgw8-mt-d-x64-1_81.a D$:/Soft/boost_1_81_0/build/lib/libboost_atomic-mgw8-mt-d-x64-1_81.a
+  FLAGS = -g
+  LINK_LIBRARIES = D:/Soft/boost_1_81_0/build/lib/libboost_filesystem-mgw8-mt-d-x64-1_81.a  -ladvapi32  -lsynchronization  -ladvapi32  -lsynchronization  D:/Soft/boost_1_81_0/build/lib/libboost_atomic-mgw8-mt-d-x64-1_81.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\test_cmd_parser.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = test_cmd_parser.exe
+  TARGET_IMPLIB = libtest_cmd_parser.dll.a
+  TARGET_PDB = test_cmd_parser.exe.dbg
 
 
 #############################################
@@ -102,7 +172,11 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build Distribution: phony Distribution.exe
+build distrib_vector_grid: phony distrib_vector_grid.exe
+
+build matrix_mult: phony matrix_mult.exe
+
+build test_cmd_parser: phony test_cmd_parser.exe
 
 # =============================================================================
 # Folder targets.
@@ -112,7 +186,7 @@ build Distribution: phony Distribution.exe
 #############################################
 # Folder: D:/Important/articles/PRJ002dM_Distrib/build-Distribution-Desktop_Qt_6_2_3_MinGW_64_bit-Debug
 
-build all: phony Distribution.exe
+build all: phony distrib_vector_grid.exe matrix_mult.exe test_cmd_parser.exe
 
 # =============================================================================
 # Built-in targets
@@ -121,14 +195,14 @@ build all: phony Distribution.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | CMakeCache.txt CMakeFiles/3.21.1/CMakeCXXCompiler.cmake CMakeFiles/3.21.1/CMakeRCCompiler.cmake CMakeFiles/3.21.1/CMakeSystem.cmake D$:/Important/articles/PRJ002dM_Distrib/Distribution/CMakeLists.txt D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCXXInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCommonLanguageInclude.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeGenericSystem.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeInitializeConfigs.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeLanguageInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeRCInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInitialize.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/CMakeCommonCompilerMacros.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX-ABI.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-windres.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/WindowsPaths.cmake D$:/Soft/Prog/Tools/QtCreator/share/qtcreator/package-manager/auto-setup.cmake
+build build.ninja: RERUN_CMAKE | CMakeCache.txt CMakeFiles/3.21.1/CMakeCXXCompiler.cmake CMakeFiles/3.21.1/CMakeRCCompiler.cmake CMakeFiles/3.21.1/CMakeSystem.cmake D$:/Important/articles/PRJ002dM_Distrib/Distribution/CMakeLists.txt D$:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/cmake/openblas/OpenBLASConfig.cmake D$:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/cmake/openblas/OpenBLASConfigVersion.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCXXInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCommonLanguageInclude.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeGenericSystem.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeInitializeConfigs.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeLanguageInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeRCInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInitialize.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/CMakeCommonCompilerMacros.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/FindBoost.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/FindPackageHandleStandardArgs.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/FindPackageMessage.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX-ABI.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-windres.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/WindowsPaths.cmake D$:/Soft/Prog/Tools/QtCreator/share/qtcreator/package-manager/auto-setup.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/Boost-1.81.0/BoostConfig.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/Boost-1.81.0/BoostConfigVersion.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/BoostDetectToolset-1.81.0.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/boost_atomic-config-version.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/boost_atomic-config.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/boost_filesystem-config-version.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/boost_filesystem-config.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_headers-1.81.0/boost_headers-config-version.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_headers-1.81.0/boost_headers-config.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build CMakeCache.txt CMakeFiles/3.21.1/CMakeCXXCompiler.cmake CMakeFiles/3.21.1/CMakeRCCompiler.cmake CMakeFiles/3.21.1/CMakeSystem.cmake D$:/Important/articles/PRJ002dM_Distrib/Distribution/CMakeLists.txt D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCXXInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCommonLanguageInclude.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeGenericSystem.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeInitializeConfigs.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeLanguageInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeRCInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInitialize.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/CMakeCommonCompilerMacros.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX-ABI.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-windres.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/WindowsPaths.cmake D$:/Soft/Prog/Tools/QtCreator/share/qtcreator/package-manager/auto-setup.cmake: phony
+build CMakeCache.txt CMakeFiles/3.21.1/CMakeCXXCompiler.cmake CMakeFiles/3.21.1/CMakeRCCompiler.cmake CMakeFiles/3.21.1/CMakeSystem.cmake D$:/Important/articles/PRJ002dM_Distrib/Distribution/CMakeLists.txt D$:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/cmake/openblas/OpenBLASConfig.cmake D$:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/cmake/openblas/OpenBLASConfigVersion.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCXXInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeCommonLanguageInclude.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeGenericSystem.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeInitializeConfigs.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeLanguageInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeRCInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInformation.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/CMakeSystemSpecificInitialize.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/CMakeCommonCompilerMacros.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Compiler/GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/FindBoost.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/FindPackageHandleStandardArgs.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/FindPackageMessage.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX-ABI.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU-CXX.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-GNU.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows-windres.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/Windows.cmake D$:/Soft/Prog/Tools/CMake_64/share/cmake-3.21/Modules/Platform/WindowsPaths.cmake D$:/Soft/Prog/Tools/QtCreator/share/qtcreator/package-manager/auto-setup.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/Boost-1.81.0/BoostConfig.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/Boost-1.81.0/BoostConfigVersion.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/BoostDetectToolset-1.81.0.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/boost_atomic-config-version.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/boost_atomic-config.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/boost_filesystem-config-version.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/boost_filesystem-config.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x32-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x64-1_81-static.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_headers-1.81.0/boost_headers-config-version.cmake D$:/Soft/boost_1_81_0/build/lib/cmake/boost_headers-1.81.0/boost_headers-config.cmake: phony
 
 
 #############################################

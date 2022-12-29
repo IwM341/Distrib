@@ -14,6 +14,22 @@
 # EXTERNAL cache entries
 ########################
 
+//No help, variable specified on the command line.
+BOOST_ROOT:PATH=D:/Soft/boost_1_81_0/build
+
+//No help, variable specified on the command line.
+Boost_COMPILER:STRING=mgw8
+
+//The directory containing a CMake configuration file for Boost.
+Boost_DIR:PATH=D:/Soft/boost_1_81_0/build/lib/cmake/Boost-1.81.0
+
+Boost_FILESYSTEM_LIBRARY_DEBUG:STRING=D:/Soft/boost_1_81_0/build/lib/libboost_filesystem-mgw8-mt-d-x64-1_81.a
+
+Boost_FILESYSTEM_LIBRARY_RELEASE:STRING=D:/Soft/boost_1_81_0/build/lib/libboost_filesystem-mgw8-mt-x64-1_81.a
+
+//Path to a file.
+Boost_INCLUDE_DIR:PATH=D:/Soft/boost_1_81_0/build/include/boost-1_81
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=D:/Soft/Prog/Tools/mingw900_64/bin/addr2line.exe
 
@@ -221,17 +237,38 @@ Distribution_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 Distribution_SOURCE_DIR:STATIC=D:/Important/articles/PRJ002dM_Distrib/Distribution
 
+//No help, variable specified on the command line.
+OpenBLAS_DIR:PATH=D:/Soft/LINAL/OpenBLAS-0.3.21-x64/lib/cmake/openblas
+
 //Skip Qt Creator's package manager auto-setup
 QT_CREATOR_SKIP_PACKAGE_MANAGER_SETUP:BOOL=OFF
 
 //No help, variable specified on the command line.
 QT_QMAKE_EXECUTABLE:STRING=D:/Soft/Prog/6.2.3/mingw_64/bin/qmake.exe
 
+//test parser
+TEST_CMD_PARSER:BOOL=ON
+
+//The directory containing a CMake configuration file for boost_atomic.
+boost_atomic_DIR:PATH=D:/Soft/boost_1_81_0/build/lib/cmake/boost_atomic-1.81.0
+
+//The directory containing a CMake configuration file for boost_filesystem.
+boost_filesystem_DIR:PATH=D:/Soft/boost_1_81_0/build/lib/cmake/boost_filesystem-1.81.0
+
+//The directory containing a CMake configuration file for boost_headers.
+boost_headers_DIR:PATH=D:/Soft/boost_1_81_0/build/lib/cmake/boost_headers-1.81.0
+
 
 ########################
 # INTERNAL cache entries
 ########################
 
+//ADVANCED property for variable: Boost_DIR
+Boost_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_FILESYSTEM_LIBRARY_DEBUG
+Boost_FILESYSTEM_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_FILESYSTEM_LIBRARY_RELEASE
+Boost_FILESYSTEM_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_ADDR2LINE
 CMAKE_ADDR2LINE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
@@ -368,4 +405,12 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_STRIP-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding Boost
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[D:/Soft/boost_1_81_0/build/lib/cmake/Boost-1.81.0/BoostConfig.cmake][cfound components: filesystem ][v1.81.0()]
+//ADVANCED property for variable: boost_atomic_DIR
+boost_atomic_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: boost_filesystem_DIR
+boost_filesystem_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: boost_headers_DIR
+boost_headers_DIR-ADVANCED:INTERNAL=1
 

@@ -13,7 +13,7 @@
 #include "func/table_func.hpp"
 
 #define U0 0.7667e-3
-#define alpha 0.0073
+//#define alpha 0.0073
 
 
 
@@ -223,7 +223,7 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout(double mk,double delta_
     double q = mk*(Nu-Nu1).norm();
 
     // s - appeared in exponent in scalar product of states
-    double s = q/(alpha*me);
+    double s = q/(_alpha*me);
     if(T == PROTON){
         s *= me/mp;
     }
@@ -480,7 +480,7 @@ inline auto NuOutTherm(Generator const & G,const vec3& Vcm,const vec3&Nu,
 
     }*/
 
-    return MC::MCResult<vec3>(vNu1,1.0);
+    return MC::MCResult<vec3>(vNu1,Nu1);
 }
 
 
@@ -558,7 +558,7 @@ inline MC::MCResult<vec3> VoutTherm(double mk,double delta_mk,ScatteringType ST,
     double q = mk*(Nu-Nu1).norm();
 
     // s - appeared in exponent in scalar product of states
-    double s = q/(alpha*me);
+    double s = q/(_alpha*me);
     if(T == PROTON){
         s *= me/mp;
     }
@@ -614,7 +614,7 @@ inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Fact
     factor *= n_r;
     vec3 V1 = Gauss3(G,sqrt(2*Therm/mp));//TODO: add thermal distribution of nuclei velocity
 
-    PVAR(Therm);
+    //PVAR(Therm);
 //    if(V1.norm()>2e-3){
 //        PVAR(V_wimp);
 //        PVAR(V1);
@@ -654,15 +654,22 @@ auto Perps(const vec3 & V){
 
     if(ax >= ay && ax >= az){
         double n1 = sqrt(ay*ay+az*az);
+        if(n1 == 0){
+            return _T(vec3(0,1,0),vec3(0,0,1));
+        }
         v1.y = V.z/n1;
         v1.z = -V.y/n1;
 
         v2 = vec3(-(ay*ay+az*az)/V.x,V.y,V.z);
         v2 /= v2.norm();
+
         return _T(v1,v2);
     }
     else if(ay >= ax && ay >= az){
         double n1 = sqrt(ax*ax+az*az);
+        if(n1 == 0){
+            return _T(vec3(1,0,0),vec3(0,0,1));
+        }
         v1.x = V.z/n1;
         v1.z = -V.x/n1;
 
@@ -672,6 +679,9 @@ auto Perps(const vec3 & V){
     }
     else{
         double n1 = sqrt(ax*ax+ay*ay);
+        if(n1 == 0){
+            return _T(vec3(1,0,0),vec3(0,1,0));
+        }
         v1.x = V.y/n1;
         v1.y = -V.x/n1;
 
@@ -684,19 +694,19 @@ auto Perps(const vec3 & V){
 //generation of therm velocity to cross the treshold
 template <typename ScatterFuncType,typename Generator,typename dF_Factor_Type>
 inline MC::MCResult<vec3> VoutTherm_Opt(double mk,double mp,double delta_mk,dF_Factor_Type dF,
-                              ScatterFuncType const &PhiFactor, const vec3& V_wimp,double Vesc, double n_r,double Therm, Generator  && G){
+                              ScatterFuncType const &PhiFactor, const vec3& V_wimp, double n_r,double Therm, Generator  && G){
 
     double factor = 1.0;
 
     factor *= n_r;
     vec3 V1;
     if(delta_mk >= 0)
-        V1 = Gauss3(G,sqrt(2*Therm/mp));//TODO: add thermal distribution of nuclei velocity
+        V1 = Gauss3(G,sqrt(2*Therm/mp));
     else{
         double dVmin = sqrt(-2*delta_mk*(mp+mk)/(mk*mp));
         double V_w_n = V_wimp.norm();
 
-        double V1min = Vesc - V_w_n;
+        double V1min = (dVmin > V_w_n ? dVmin-V_w_n : 0);
 
         auto V1_mk = Gauss3_min_abs(G,sqrt(2*Therm/mp),V1min);
         double V1_abs = V1_mk.Result;
@@ -706,24 +716,36 @@ inline MC::MCResult<vec3> VoutTherm_Opt(double mk,double mp,double delta_mk,dF_F
         if(cosTheta_max >= 1){
             cosTheta_max = 1;
         }
-        else if(cosTheta_max < -1){
-            cosTheta_max = -1;
+        else if(cosTheta_max <= -1){
+            cosTheta_max = -1.0;
         }
 
         auto cosTheta_mk = RandomCos_c(G,-1.0,cosTheta_max);
         factor *= cosTheta_mk.RemainDensity;
 
-        vec3 V1_proto = vec3::PolarCos(1,cosTheta_mk.Result,RandomPhi)
+        vec3 V1_proto = vec3::PolarCos(1,cosTheta_mk.Result,RandomPhi(G));
         auto v1v2 = Perps(V_wimp);
         V1 = V1_abs*(V_wimp*(V1_proto.z/V_w_n) + std::get<0>(v1v2)*V1_proto.x+std::get<1>(v1v2)*V1_proto.y);
+
+        if(std::isnan(V1.norm()))
+        {
+            PVAR(V_wimp);
+            PVAR(Therm);
+
+            //PVAR(Vesc);
+
+            PVAR(dVmin);
+            PVAR(V_w_n);
+            PVAR(V1_abs);
+            PVAR(cosTheta_max);
+            PVAR(V1_proto);
+            PVAR(std::get<0>(v1v2));
+            PVAR(std::get<1>(v1v2));
+        }
+
     }
 
-    PVAR(Therm);
-//    if(V1.norm()>2e-3){
-//        PVAR(V_wimp);
-//        PVAR(V1);
-//        PVAR(Therm);
-//    }
+
 
     //Vcm - is a vrlocity of momentum center
     vec3 Vcm = (V_wimp*mk + V1*mp)/(mp+mk);
@@ -797,6 +819,8 @@ inline void TrajectoryIntegral(Generator const & G,
         else{
             if(Vout.Result.norm()>vesc){
                 PVAR(Therm);
+                PVAR(vesc);
+                PVAR(Vout.Result);
             }
         }
     }
@@ -834,7 +858,134 @@ inline void TrajectoryIntegral1(Generator const & G,
 
         double dens = Vout.RemainDensity/Nmk;
         if(!Out.putValue(dens,e_nd_1,l_nd_1)){
-            PVAR(dens);
+            //PVAR(dens);
+            EvaporationOut += dens;
+        }
+    }
+}
+
+template <typename HistoType,typename Generator,typename ThermFuncType,typename NFuncType,typename VescFuncType,typename dF_Type,typename ScatterFuncType>
+inline void TrajectoryIntegral1_Opt(Generator const & G,
+                        double e_nd,double l_nd,const TrajectoryInfo & TI,double VescMin,NFuncType const& nR,const ThermFuncType & ThermR,
+                               const VescFuncType & Vesc,
+                        HistoType &Out,double & EvaporationOut,double mk,double mp,double delta_mk,
+                               dF_Type dF,ScatterFuncType const & PhiFactor,size_t Nmk)
+{
+    if(TI.T_in == 0.0){
+        return;
+    }
+
+    for(size_t sch = 0;sch<Nmk;++sch){
+        double factor = TI.T_in/(TI.T_in+TI.T_out);
+        double t = G()*TI.T_in;
+        double r = TI.Trajectory(t);
+        double vesc = Vesc(r);
+        double Therm = ThermR(r);
+        double n_r = nR(r);
+
+        double v2 = e_nd*VescMin*VescMin+vesc*vesc;
+        if(v2 < 0)
+            v2 = 0;
+        double v = sqrt(v2);
+        vec3 Vin = RandomN(G)*v;
+        auto Vout = VoutTherm_Opt(mk,mp,delta_mk,dF,PhiFactor,Vin,n_r,Therm,G);
+
+        double e_nd_1 = (Vout.Result*Vout.Result - vesc*vesc)/(VescMin*VescMin);
+        double l_nd_1  = r*sqrt(Vout.Result.x*Vout.Result.x+Vout.Result.y*Vout.Result.y)/VescMin;
+
+
+        double dens = Vout.RemainDensity/Nmk;
+        if(!Out.putValue(dens,e_nd_1,l_nd_1)){
+            //PVAR(dens);
+            EvaporationOut += dens;
+        }
+    }
+}
+
+
+double Ion_Deg(double f_p,double T_fact){
+    return 2/(1+sqrt(1+4*f_p/T_fact));
+}
+
+double Atom_ion_Deg(double f_p,double T_fact){
+    double sqrt_denom = Ion_Deg(f_p,T_fact);
+    return sqrt_denom*sqrt_denom*(f_p/T_fact);
+}
+
+template <typename ScatterFuncType,typename Generator>
+inline MC::MCResult<vec3> VoutTherm_AntiIonization(double mk,double mp,double delta_mk,Target T,
+                              ScatterFuncType const &PhiFactor, const vec3& V_wimp, double n_r,double f_e,double Therm, Generator  && G){
+
+    double factor = 1.0;
+
+    factor *= n_r;
+    vec3 V1 = Gauss3(G,sqrt(2*Therm/mp));
+
+    //generation of external electron
+    factor *= 2/(_alpha*_alpha);
+    factor *= f_e;
+    double Ve = Gauss2Norm(G,sqrt(2*Therm/_me));
+
+    double dE_ion = Rd + 0.5*_me*Ve*Ve;
+    double phi = Ve/_alpha;
+    //
+
+    //Vcm - is a vrlocity of momentum center
+    vec3 Vcm = (V_wimp*mk + V1*mp)/(mp+mk);
+    //Nu is input velocity of WIMP in cm coordinatesd
+    vec3 Nu = mp/(mp+mk)*(V_wimp-V1);
+
+    //Ecm - is kinetic energy in cm
+    double E_cm = mk*(mp+mk)/mp*Nu.quad()/2;
+
+    // Generating out velocity
+    auto Numk = NuOutTherm(G,Vcm,Nu,mp,mk,-dE_ion-delta_mk);
+    vec3 Nu1 = Numk.Result;
+    factor*=Numk.RemainDensity;
+
+    // q - exchange momentum
+    double q = mk*(Nu-Nu1).norm();
+    double s = q/(_alpha*(T == PROTON ? _mp : _me));
+    factor *= IonFactor(s,phi,dE_Rd);
+
+    return MC::MCResult<vec3>(Nu1+Vcm,factor);
+}
+//f_e_R = (concentration)/(m_e^3) - dimentionnless parametr
+template <typename HistoType,typename Generator,typename ThermFuncType,typename NFuncType,typename f_e_FuncType,typename VescFuncType,typename ScatterFuncType>
+inline void TrajectoryIntegral_AntiIonization(Generator const & G,
+                        double e_nd,double l_nd,const TrajectoryInfo & TI,NFuncType const& n_H_R,f_e_FuncType const& f_e_R,
+                                    const ThermFuncType & ThermR,
+                                    const VescFuncType & Vesc,double VescMin,
+                                    HistoType &Out,double & EvaporationOut,Target T,double mk,double mp,double delta_mk,
+                                    ScatterFuncType const & PhiFactor,size_t Nmk)
+{
+    if(TI.T_in == 0.0){
+        return;
+    }
+
+    for(size_t sch = 0;sch<Nmk;++sch){
+        double factor = TI.T_in/(TI.T_in+TI.T_out);
+        double t = G()*TI.T_in;
+        double r = TI.Trajectory(t);
+        double vesc = Vesc(r);
+        double Therm = ThermR(r);
+        double n_r = n_H_R(r);
+        double f_e_r = f_e_R(r);
+
+        double v2 = e_nd*VescMin*VescMin+vesc*vesc;
+        if(v2 < 0)
+            v2 = 0;
+        double v = sqrt(v2);
+        vec3 Vin = RandomN(G)*v;
+        auto Vout = VoutTherm_AntiIonization(mk,mp,delta_mk,T,PhiFactor,Vin,n_r,f_e_r,Therm,G);
+
+        double e_nd_1 = (Vout.Result*Vout.Result - vesc*vesc)/(VescMin*VescMin);
+        double l_nd_1  = r*sqrt(Vout.Result.x*Vout.Result.x+Vout.Result.y*Vout.Result.y)/VescMin;
+
+
+        double dens = Vout.RemainDensity/Nmk;
+        if(!Out.putValue(dens,e_nd_1,l_nd_1)){
+            //PVAR(dens);
             EvaporationOut += dens;
         }
     }

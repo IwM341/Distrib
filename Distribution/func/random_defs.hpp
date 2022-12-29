@@ -74,5 +74,16 @@ inline MC::MCResult<double> Gauss3_min_abs(Generator && G, double Vdisp, double 
     double v_nd = sqrt(-2*log(a0*(1.0-G())));
     return MC::MCResult<double>(v_nd*Vdisp,sqrt(2.0/M_PI)*v_nd*a0);
 }
+/*
+template <typename OutType,class Generator>
+class SmartGenerator2{
+    Function::Histogramm<OutType,Function::VectorGrid<double>> Vals;
+    Generator && G;
 
+    template <typename...Args>
+    SmartGenerator(const Function::Histogramm<OutType,Args...> &H,Generator &&G){
+
+    }
+}
+*/
 #endif
