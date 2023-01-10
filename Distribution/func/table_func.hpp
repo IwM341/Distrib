@@ -1,6 +1,11 @@
 #ifndef TABLE_FUNC_H
 #define TABLE_FUNC_H
-#include "../functions.hpp"
+#include <utils>
+#include <random>
+#include <cmath>
+#include <tuple>
+#include <type_traits>
+
 
 
 template <typename T,typename...Args>

@@ -2,11 +2,10 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include <boost/filesystem.hpp>
-
+#include <utils>
 
 int main(int argc, char**argv){
     boost::property_tree::ptree par;
-
 
     auto log = parse_command_line(argc,argv,par);
     if(!log.empty()){
@@ -33,6 +32,8 @@ int main(int argc, char**argv){
         std::cout <<p.lexically_normal()<<std::endl;
     std::cout <<std::endl;
 
+    std::cout << boost::filesystem::relative(p4,p1).lexically_normal()<<std::endl;
+
     for(const auto & p : ex_p)
         std::cout <<p.lexically_relative(boost::filesystem::current_path())<<std::endl;
     std::cout <<std::endl;
@@ -43,6 +44,10 @@ int main(int argc, char**argv){
 
     std::cout <<boost::filesystem::absolute(p3,p4).lexically_normal()<<std::endl;
     std::cout <<std::endl;
+
+    PVAR(p1.is_absolute());
+    PVAR(p4.is_absolute());
+    PVAR(p1.lexically_relative(boost::filesystem::current_path()).is_absolute());
 
     return 0;
 }

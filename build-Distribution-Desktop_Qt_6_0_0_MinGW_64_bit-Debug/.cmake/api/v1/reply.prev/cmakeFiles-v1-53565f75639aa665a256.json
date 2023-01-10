@@ -1,0 +1,287 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/QtCreator/share/qtcreator/package-manager/auto-setup.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "D:/tmp/art/Distrib/build-Distribution-Desktop_Qt_6_0_0_MinGW_64_bit-Debug/CMakeFiles/3.23.2/CMakeSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "D:/tmp/art/Distrib/build-Distribution-Desktop_Qt_6_0_0_MinGW_64_bit-Debug/CMakeFiles/3.23.2/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Platform/Windows.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Platform/WindowsPaths.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Compiler/GNU-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Platform/Windows-GNU-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Platform/Windows-GNU.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "D:/tmp/art/Distrib/build-Distribution-Desktop_Qt_6_0_0_MinGW_64_bit-Debug/CMakeFiles/3.23.2/CMakeRCCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeRCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Platform/Windows-windres.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/Platform/Windows-GNU-CXX-ABI.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/FindBoost.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Soft/Qt/Tools/CMake_64/share/cmake-3.23/Modules/FindPackageMessage.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/Boost-1.81.0/BoostConfigVersion.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/Boost-1.81.0/BoostConfig.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_headers-1.81.0/boost_headers-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_headers-1.81.0/boost_headers-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/boost_filesystem-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/boost_filesystem-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/BoostDetectToolset-1.81.0.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x64-1_81-shared.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-d-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-s-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-s-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-sd-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-sd-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x64-1_81-shared.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_filesystem-1.81.0/libboost_filesystem-variant-mgw8-mt-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/boost_atomic-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/boost_atomic-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/BoostDetectToolset-1.81.0.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x64-1_81-shared.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-d-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-s-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-s-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-sd-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-sd-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x32-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x64-1_81-shared.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_atomic-1.81.0/libboost_atomic-variant-mgw8-mt-x64-1_81-static.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_headers-1.81.0/boost_headers-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_headers-1.81.0/boost_headers-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_headers-1.81.0/boost_headers-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/boost_1_81_0/lib/cmake/boost_headers-1.81.0/boost_headers-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/OpenBLAS 0.3.21 version/xianyi-OpenBLAS-b89fb70/build/include/share/cmake/OpenBLAS/OpenBLASConfigVersion.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/OpenBLAS 0.3.21 version/xianyi-OpenBLAS-b89fb70/build/include/share/cmake/OpenBLAS/OpenBLASConfig.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/OpenBLAS 0.3.21 version/xianyi-OpenBLAS-b89fb70/build/include/share/cmake/OpenBLAS/OpenBLASTargets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/soft/OpenBLAS 0.3.21 version/xianyi-OpenBLAS-b89fb70/build/include/share/cmake/OpenBLAS/OpenBLASTargets-noconfig.cmake"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "D:/tmp/art/Distrib/build-Distribution-Desktop_Qt_6_0_0_MinGW_64_bit-Debug",
+		"source" : "D:/tmp/art/Distrib/Distribution"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}

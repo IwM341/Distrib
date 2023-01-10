@@ -9,8 +9,8 @@
 
 #include "func/random_defs.hpp"
 #include "func/traj.hpp"
-#include "func/matrix_functions.hpp"
-#include "func/table_func.hpp"
+
+
 
 #define U0 0.7667e-3
 //#define alpha 0.0073
@@ -360,8 +360,8 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
     factor *= PhiFactor(mk,q);
 
 
-    if( (Nu1+Vcm).norm() > Vesc*(1.+1e-10) && factor != 0){
-        std::cout <<
+    if( (Nu1+Vcm).norm() > Vesc*(1.+1e-8) && factor != 0){
+        std::cout << "V out of bund:\n"+
             SVAR((Nu1+Vcm).norm()) + "\n" +
             SVAR(factor)+ "\n" +
             SVAR(Vesc)+ "\n" +
@@ -418,6 +418,32 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
             print();
         }
         */
+        sum += mk_res.RemainDensity/Nmk;
+    }
+    return sum;
+
+}
+
+template <typename VescFuncType,typename ThermFuncType,typename NFuncType,
+          typename PhiFuncType,typename HType,typename dF_Type,typename Generator>
+auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
+                      NFuncType const &NR,double VescMin,VescFuncType const & VescR,ThermFuncType const & TempR,
+                    PhiFuncType PhiFactor,Generator const&G,
+                    size_t Nmk,
+                    double Vdisp = U0,double mU0 = U0){
+
+    double sum = 0;
+    double sum2 = 0;
+
+    for(size_t i=0;i<Nmk;++i){
+        auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0);
+        auto v_nd = std::get<0>(mk_res.Result)/VescMin;
+        auto r_nd = std::get<1>(mk_res.Result);
+        auto v_esc_nd = std::get<2>(mk_res.Result)/VescMin;
+
+        double E_nd = (v_nd*v_nd - v_esc_nd*v_esc_nd);
+        double L_nd = r_nd*sqrt(v_nd.x*v_nd.x + v_nd.y*v_nd.y);
+        H.putValue(mk_res.RemainDensity/Nmk,E_nd,L_nd);
         sum += mk_res.RemainDensity/Nmk;
     }
     return sum;

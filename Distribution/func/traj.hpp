@@ -1,6 +1,11 @@
 #ifndef TRAJ_H
 #define TRAJ_H
-#include "../functions.hpp"
+#include <utils>
+#include <random>
+#include <cmath>
+#include <tuple>
+#include <type_traits>
+
 
 
 double maxLnd(const BodyModel & BM, double End){
@@ -35,6 +40,41 @@ double maxLnd(const BodyModel & BM, double End){
 
     }
     return std::max(std::max(L0,L1),R[i0+1]*sqrt(End-phi[i0+1]));
+}
+
+template <typename ...Args>
+double maxLndf(const Function::GridFunction<Args...>& phi, double End){
+    if(End >= -0.5){
+        return sqrt(1+End);
+    }
+    //std::vector<double> phi = -BM["phi"];
+
+    //auto & R = BM["Radius"];
+
+    //auto V = R*vmap(sqrt,2*(End-phi));
+
+    size_t i1 = Function::find_more(phi.values,-End);
+    size_t i0 = 0;
+
+    double L0 = 0;
+    double L1 = 0;
+    while(i0 + 2 < i1){
+        size_t i_l = (i0+i1)/2;
+        size_t i_r = i_l + 1;
+        double L_l = phi.Grid[i_l]*sqrt(End+phi.values[i_l]);
+        double L_r = phi.Grid[i_r]*sqrt(End+phi.values[i_r]);
+
+        if(L_l > L_r){
+            i1 = i_r;
+            L1 = L_r;
+        }
+        else{
+            i0 = i_l;
+            L0 = L_l;
+        }
+
+    }
+    return std::max(std::max(L0,L1),phi.Grid[i0+1]*sqrt(End+phi.values[i0+1]));
 }
 
 

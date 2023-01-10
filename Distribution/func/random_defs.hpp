@@ -1,6 +1,8 @@
 #ifndef RANDOM_DEFS_H
 #define RANDOM_DEFS_H
-#include "../functions.hpp"
+#include <cmath>
+#include <utils>
+
 template <class Generator>
 inline double RandomCos(Generator && G){
     return G()*2.0-1;

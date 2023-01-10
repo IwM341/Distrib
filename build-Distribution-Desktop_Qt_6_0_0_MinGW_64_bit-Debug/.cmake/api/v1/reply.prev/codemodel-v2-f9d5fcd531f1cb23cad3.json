@@ -1,0 +1,87 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Distribution",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "distrib_vector_grid::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-distrib_vector_grid-Debug-f066afca1c17efc5dc8f.json",
+					"name" : "distrib_vector_grid",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "matrix_mult::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-matrix_mult-Debug-dccf87983c6a92646059.json",
+					"name" : "matrix_mult",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "test_cmd_parser::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-test_cmd_parser-Debug-d51e78ef81cfa66a61f3.json",
+					"name" : "test_cmd_parser",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "test_cmd_parser1::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-test_cmd_parser1-Debug-560ffe6f8d90b5b599d9.json",
+					"name" : "test_cmd_parser1",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/tmp/art/Distrib/build-Distribution-Desktop_Qt_6_0_0_MinGW_64_bit-Debug",
+		"source" : "D:/tmp/art/Distrib/Distribution"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}
