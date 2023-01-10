@@ -338,7 +338,7 @@ int main(int argc,char **argv){
 
     double f_p_av = 4e-7;
     double min_atom_r = 0.7;
-
+    /*
     decltype(Therm) F_e_r(R,Vector(R.size(),[&BM,&Therm,f_p_av](size_t i){
         double rho = BM["RhoND"][i];
         double s = pow(2*M_PI*Therm[i]/me,1.5)*exp(-Rd/Therm[i]);
@@ -359,7 +359,7 @@ int main(int argc,char **argv){
 
     decltype(Therm) H_N(R,BM["RhoND"]*BM["H1"]);
     auto Atom_N =  H_N*atom_degree;
-
+    */
     size_t Nmk_HL = 10000;
     size_t Nmk_LH = 10000;
 
