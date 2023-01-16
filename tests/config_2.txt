@@ -1,0 +1,16 @@
+{
+	"lh_in" : "lh.bmat",
+	"hl_in" : "hl.bmat",
+
+	"el_in" : "el.bmat",
+	"eh_in" : "eh.bmat",
+
+	"dl_in" : "dl.bmat",
+	"dh_in" : "dh.bmat",
+
+	"dl_out" : "dlf.bmat",
+	"dh_out" : "dhf.bmat",
+
+	"nl_out": "nlf.dat",
+	"nh_out" : "nhf.dat"
+}

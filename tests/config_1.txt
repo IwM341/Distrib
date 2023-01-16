@@ -1,0 +1,19 @@
+{
+	"lh_out" : "lh.bmat",
+	"hl_out" : "hl.bmat",
+	"el_out" : "el.bmat",
+	"eh_out" : "eh.bmat",
+	"dl_out" : "dl.bmat",
+	"dh_out" : "dh.bmat",
+
+	"l_grid" : "l_grid.txt",
+	"h_grid" : "h_grid.txt",
+	"debug" : "true",
+	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
+	"Vesc" : 2.056e-3,
+	"NE":100,
+	"NLmax":100,
+	"Egird":"Uniform",
+	"Lgird":"Uniform"
+	
+}

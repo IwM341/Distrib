@@ -65,7 +65,7 @@ void  printPairVector(size_t NL,size_t NH,const T * L,const T*H){
 #define LOGIF(condition,expression) if(condition) PVAR(expression)
 template <typename T>
 void make_work(const boost::property_tree::ptree& CP){
-    MatrixFormat MF = TEXT;
+    MatrixFormat MF = BINARY;
     if(CP.find("format") != CP.not_found()){
         auto fmt =CP.pget("format");
         if(fmt == "bin" || fmt == "binary" || fmt == "b")
@@ -79,32 +79,36 @@ void make_work(const boost::property_tree::ptree& CP){
     }
     LOGIF(log_std,MF);
 
-    auto Mat0_LH = loadMatrix<T>(config_path_from(CP.pget("lh_in"),CP.pget("config")),MF);
-    auto Mat0_HL = loadMatrix<T>(config_path_from(CP.pget("hl_in"),CP.pget("config")),MF);
+    auto FPath = [&](const std::string & tree_path){
+        return config_path_from(CP.pget(tree_path),CP.pget("config_path")).string();
+    };
+
+    auto Mat0_LH = loadMatrix<T>(FPath("lh_in"),MF);
+    auto Mat0_HL = loadMatrix<T>(FPath("hl_in"),MF);
 
     size_t NH = std::get<1>(Mat0_HL);
     size_t NL = std::get<2>(Mat0_HL);
 
     std::vector<T> Ev_H;
     if(CP.find("eh_in") != CP.not_found()){
-        Ev_H = std::get<0>(loadMatrix<T>(CP.pget("eh_in"),MF));
+        Ev_H = std::get<0>(loadMatrix<T>(FPath("eh_in"),MF));
     }
 
     std::vector<T> Ev_L;
-    if(CP.find("eh_in")  != CP.not_found()){
-        Ev_L = std::get<0>(loadMatrix<T>(CP.pget("el_in"),MF));
+    if(CP.find("el_in")  != CP.not_found()){
+        Ev_L = std::get<0>(loadMatrix<T>(FPath("el_in"),MF));
     }
 
     std::vector<T> EH_Distrib(NH,1.0); //LoadVectorBinary<vtype>("D:/Desktop/del_files/matrix/H_capt.matrix");
     if(CP.find("dh_in") != CP.not_found()){
-        EH_Distrib = std::get<0>(loadMatrix<T>(CP.pget("dh_in"),MF));
+        EH_Distrib = std::get<0>(loadMatrix<T>(FPath("dh_in"),MF));
     }
 
     //std::vector<T> EH_D_out(EH_Distrib.size());
 
     std::vector<T> EL_Distrib(NL,1.0);
     if(CP.find("dl_in") != CP.not_found()){
-        EL_Distrib = std::get<0>(loadMatrix<T>(CP.pget("dl_in"),MF));
+        EL_Distrib = std::get<0>(loadMatrix<T>(FPath("dl_in"),MF));
     }
 
     //std::vector<T> EL_D_out(EL_Distrib.size());
@@ -211,12 +215,13 @@ void make_work(const boost::property_tree::ptree& CP){
         std::swap(A_HH,B_HH);
 
         //printPairMatrix(NL,NH,A_LL.data(),A_HL_T.data(),A_LH_T.data(),A_HH.data());
-        gemv<T>(CblasColMajor,CblasNoTrans,NL,NL,1.0,A_LL.data(),ld_A_LL,EL_Distrib.data(),1,0.0,LD_tmp.data(),1);
-        gemv<T>(CblasColMajor,CblasNoTrans,NL,NH,1.0,A_HL_T.data(),ld_A_HL,EH_Distrib.data(),1,1.0,LD_tmp.data(),1);
+        if(EL_Distrib.size() && EH_Distrib.size() && LD_tmp.size() && LD_tmp.size()){
+            gemv<T>(CblasColMajor,CblasNoTrans,NL,NL,1.0,A_LL.data(),ld_A_LL,EL_Distrib.data(),1,0.0,LD_tmp.data(),1);
+            gemv<T>(CblasColMajor,CblasNoTrans,NL,NH,1.0,A_HL_T.data(),ld_A_HL,EH_Distrib.data(),1,1.0,LD_tmp.data(),1);
 
-        gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,A_LH_T.data(),ld_A_LH,EL_Distrib.data(),1,0.0,HD_tmp.data(),1);
-        gemv<T>(CblasColMajor,CblasNoTrans,NH,NH,1.0,A_HH.data(),ld_A_HH,EH_Distrib.data(),1,1.0,HD_tmp.data(),1);
-
+            gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,A_LH_T.data(),ld_A_LH,EL_Distrib.data(),1,0.0,HD_tmp.data(),1);
+            gemv<T>(CblasColMajor,CblasNoTrans,NH,NH,1.0,A_HH.data(),ld_A_HH,EH_Distrib.data(),1,1.0,HD_tmp.data(),1);
+        }
         LN_t[i] = vector_sum(LD_tmp);
         HN_t[i] = vector_sum(HD_tmp);
     }
@@ -231,15 +236,15 @@ void make_work(const boost::property_tree::ptree& CP){
         printPairVector(NL,NH,LD_tmp.data(),HD_tmp.data());
     }
 
-    saveMatrix(LD_tmp.data(),1,NL,config_path_from(CP.pget("dl_out"),CP.pget("config")),MF);
-    saveMatrix(HD_tmp.data(),1,NH,config_path_from(CP.pget("dh_out"),CP.pget("config")),MF);
+    saveMatrix(LD_tmp.data(),1,NL,FPath("dl_out"),MF);
+    saveMatrix(HD_tmp.data(),1,NH,FPath("dh_out"),MF);
 
     if(CP.find("nl_out") != CP.not_found()){
-        std::ofstream LN_f(CP.pget("nl_out"));
+        std::ofstream LN_f(FPath("nl_out"));
         LN_f <<LN_t.toString();
     }
     if(CP.find("nh_out")  != CP.not_found()){
-        std::ofstream HN_f(CP.pget("nh_out"));
+        std::ofstream HN_f(FPath("nh_out"));
         HN_f <<HN_t.toString();
     }
 }

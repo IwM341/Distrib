@@ -220,7 +220,8 @@ auto LoadMatrixString(std::istream &S){
 }
 template <typename T>
 auto LoadMatrixString(const std::string&fname){
-    std::ifstream S(fname);
+    std::ifstream S;
+    S.open(fname);
     return LoadMatrixString<T>(S);
 }
 
@@ -235,7 +236,8 @@ void SaveMatrixBinary(const T*X,size_t N,size_t M,std::ostream &S){
 
 template <typename T>
 void SaveMatrixBinary(const T*X,size_t N,size_t M,const std::string&fname){
-    std::ofstream _of(fname,std::ios::binary);
+    std::ofstream _of;
+    _of.open(fname,std::ios::binary);
     SaveMatrixBinary<T>(X,N,M,_of);
 }
 
@@ -245,13 +247,14 @@ auto LoadMatrixBinary(std::istream &S){
     size_t M;
     S.read((char*)&N,sizeof(N));
     S.read((char*)&M,sizeof(M));
-    std::vector<T> X(N);
+    std::vector<T> X(N*M);
     S.read((char*)X.data(),N*M*sizeof(double));
     return _T(X,N,M);
 }
 template <typename T>
 auto LoadMatrixBinary(const std::string&fname){
-    std::ifstream _in(fname,std::ios::binary);
+    std::ifstream _in;
+    _in.open(fname,std::ios::binary);
     return LoadMatrixBinary<T>(_in);
 }
 

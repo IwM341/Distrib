@@ -21,23 +21,23 @@ std::string str_toupper(std::string s) {
     return s;
 }
 
-std::string config_path_from(const boost::filesystem::path & filename,
+boost::filesystem::path config_path_from(const boost::filesystem::path & filename,
                             const boost::filesystem::path & config){
     if(filename.lexically_normal().is_absolute()){
-        return filename.lexically_normal().string();
+        return filename.lexically_normal();
     }
     else{
-        return boost::filesystem::absolute(filename.lexically_normal(),config.parent_path()).string();
+        return boost::filesystem::absolute(filename,config).lexically_normal();
     }
 }
 
-std::string config_path_to(const boost::filesystem::path & filename,
+boost::filesystem::path config_path_to(const boost::filesystem::path & filename,
                             const boost::filesystem::path & config){
-    auto sr = boost::filesystem::relative(filename,config.parent_path());
+    auto sr = boost::filesystem::relative(filename,config);
     if(sr.empty())
-        return boost::filesystem::absolute(filename.lexically_normal()).string();
+        return boost::filesystem::absolute(filename.lexically_normal());
     else
-        return sr.lexically_normal().string();
+        return sr.lexically_normal();
 }
 
 
@@ -59,7 +59,7 @@ inline std::string ptree_gets(const boost::property_tree::ptree &tree,const std:
 }
 
 template <typename T>
-std::string ptree_condition(const boost::property_tree::ptree &tree,
+T ptree_condition(const boost::property_tree::ptree &tree,
                             const std::string & element,
                             const T & default_option){
     if(ptree_contain(tree,element))
@@ -70,17 +70,15 @@ std::string ptree_condition(const boost::property_tree::ptree &tree,
 
 std::string add_config_file(boost::property_tree::ptree &tree,const std::string &fname){
     using namespace std::string_literals;
-    if(tree.find("config") == tree.not_found()){
-        try{
-            std::ifstream cnf_file(fname);
-            boost::property_tree::ptree ftree;
-            boost::property_tree::read_json(cnf_file,ftree);
-            merge_ptree(tree,ftree);
-        }catch(std::exception & e){
-            return  "cant parse config file "s + fname+ "\n";
-        }
-        tree.put("config_path",boost::filesystem::path(fname).parent_path());
+    try{
+        std::ifstream cnf_file(fname);
+        boost::property_tree::ptree ftree;
+        boost::property_tree::read_json(cnf_file,ftree);
+        merge_ptree(tree,ftree);
+    }catch(std::exception & e){
+        return  "cant parse config file "s + fname+ "\n";
     }
+    tree.put("config_path",boost::filesystem::path(fname).parent_path().string());
     return "";
 }
 
@@ -156,7 +154,7 @@ std::string parse_command_line_v1(int argc,char ** argv,boost::property_tree::pt
 
     std::stack<std::tuple<param_type,std::string,std::string>> st_params;
 
-    tree.put("config_path","");
+    tree.put("config_path","./");
     std::string parse_log;
 
     for(size_t i=1;i<argc;++i){
@@ -190,7 +188,7 @@ std::string parse_command_line_v1(int argc,char ** argv,boost::property_tree::pt
             }
             auto [type1,key_p1,val_p1] = st_params.top();
             st_params.pop();
-            if(type != PARAM){
+            if(type1 != PARAM){
                 parse_log += "unexpected argument: "s + val + "\n";
                 break;
             }

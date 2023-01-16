@@ -27,6 +27,21 @@ public:
     }
 
     template <typename ofstream_type>
+    void save(ofstream_type && stream,bool isBinary = false){
+        if(isBinary)
+            save_bin(stream);
+        else
+            save_text(stream);
+    }
+    template <typename ifstream_type>
+    static EL_Histo load(ifstream_type &&ifs,bool isBinary = false){
+        if(isBinary)
+            return load_bin(ifs);
+        else
+            return load_text(ifs);
+    }
+
+    template <typename ofstream_type>
     void save_text(ofstream_type && stream){
         for(size_t i=0;i<Lmax.Grid.size();++i){
             stream << Lmax.Grid[i] << "\t";
@@ -136,6 +151,168 @@ public:
 template <typename V,typename GridType,typename...Args>
 auto MergeHisto(const Function::Histogramm<V,GridType,Args...> &H){
     return Function::Histogramm<V,GridType>(H.Grid,vmap([](auto x){return x.summ();},H.values));
+}
+
+inline double e_intersect(double E0,double E1,double L0,double L1,double L){
+    if(L0==L1){
+        return 1.0/0.0;
+    }
+    else{
+        return ((L-L1)*E0-E1*(L-L0))/(L0-L1);
+    }
+}
+inline double e_intersect(double Eav,double Lav,double slope,double L){
+    if(slope == 0){
+        return 1.0/0.0;
+    }
+    else{
+        return Eav+(L-Lav)/slope;
+    }
+}
+
+inline double l_e(double E0,double E1,double L0,double L1,double E){
+    return L0  + (L1-L0)/(E1-E0)*(E-E0);
+}
+inline double l_e(double E0,double L0,double scope,double E){
+    return L0  + scope*(E-E0);
+}
+struct EL_column{
+    double E;
+    double L0;
+    double L1;
+    EL_column(double E,double L0,double L1):E(E),L0(L0),L1(L1){}
+    EL_column():L1(0),L0(-1){}
+    inline bool valid()const{return L0<=L1;}
+    friend std::ostream & operator << (std::ostream & os,const EL_column&R){
+        os << "(" << R.E << " [" << R.L0 << ", " << R.L1  << "])";
+        return os;
+    }
+};
+
+
+struct EL_rect{
+    EL_column C0;
+    EL_column C1;
+    EL_rect(double E0,double E1,double l00,double l01,double l10,double l11):
+        C0(E0,l00,l01),C1(E1,l10,l11){}
+    EL_rect():C0(0,0,0),C1(-1,0,0){}
+    inline double & E0(){return C0.E;}
+    inline const double & E0()const{return C0.E;}
+    inline double & E1(){return C1.E;}
+    inline const double & E1()const{return C1.E;}
+
+    inline double & L00(){return C0.L0;}
+    inline const double & L00()const{return C0.L0;}
+    inline double & L01(){return C0.L1;}
+    inline const double & L01()const{return C0.L1;}
+
+    inline double & L10(){return C1.L0;}
+    inline const double & L10()const{return C1.L0;}
+    inline double & L11(){return C1.L1;}
+    inline const double & L11()const{return C1.L1;}
+
+    bool valid() const {
+        return (E1() >= E0()) and (L01() >= L00()) and (L11()>=L10());
+    }
+    inline std::vector<EL_column> SquareIntersection(double E0,double E1,double L0,double L1)const{
+        double slope0 = (C1.L0-C0.L0)/(C1.E-C0.E);
+        double slope1 = (C1.L1-C0.L1)/(C1.E-C0.E);
+        double Eav = 0.5*(C0.E+C1.E);
+        double L0av = 0.5*(C1.L0+C0.L0);
+        double L1av = 0.5*(C1.L1+C0.L1);
+
+        //std::array<double,6> crit_e;
+        std::vector<EL_column> Out_Columns;
+
+        double oE0 = C0.E;
+        double lmin_0 = std::max(L00(),L0);
+        double lmax_0 = std::min(L01(),L1);
+        if(oE0 > E1){
+            return Out_Columns;
+        }
+        if(oE0 <E0){
+            oE0 = E0;
+            lmin_0 = std::max(l_e(Eav,L0av,slope0,oE0),L0);
+            lmax_0 = std::min(l_e(Eav,L1av,slope1,oE0),L1);
+        }
+        if(lmin_0 <= lmax_0){
+            Out_Columns.push_back(EL_column(oE0,lmin_0,lmax_0));
+        }
+
+        double oE1= C1.E;
+        double lmin_1 = std::max(L10(),L0);
+        double lmax_1 = std::min(L11(),L1);
+
+
+        if(oE1 < oE0){
+            return Out_Columns;
+        }
+        if(oE1 > E1){
+            oE1 = E1;
+            lmin_1 = std::max(l_e(Eav,L0av,slope0,oE1),L0);
+            lmax_1 = std::min(l_e(Eav,L1av,slope1,oE1),L1);
+        }
+        if(lmin_1 <= lmax_1){
+            Out_Columns.push_back(EL_column(oE1,lmin_1,lmax_1));
+        }
+
+
+        double e00 = e_intersect(Eav,L0av,slope0,L0);
+        double lmin00 = L0;
+        double lmax00 = std::min(l_e(Eav,L1av,slope1,e00),L1);
+        if(e00 >= oE0 and e00 <= oE1 and lmax00>=lmin00){
+            Out_Columns.push_back(EL_column(e00,lmin00,lmax00));
+        }
+
+        double e01 = e_intersect(Eav,L0av,slope0,L1);
+        if(e01 >= oE0 and e01 <= oE1){
+            Out_Columns.push_back(EL_column(e01,L1,L1));
+        }
+        //lmax01 = L1
+        //lmax01 = L1
+        double e10 = e_intersect(Eav,L1av,slope1,L0);
+        if(e10 >= oE0 and e10 <= oE1){
+            Out_Columns.push_back(EL_column(e10,L0,L0));
+        }
+        //lmin10 = L0
+        //lmax10 = L0
+        double e11 = e_intersect(Eav,L1av,slope1,L1);
+        double lmax11 = L1;
+        double lmin11 = std::max(l_e(Eav,L0av,slope0,e11),L0);
+        //lmax10 = L1
+        if(e11 >= oE0 and e11 <= oE1 and lmax11>=lmin11){
+            Out_Columns.push_back(EL_column(e11,lmin11,lmax11));
+        }
+
+        std::sort(Out_Columns.begin(),Out_Columns.end(),
+                  [](const EL_column & C1,const EL_column & C2){return C1.E < C2.E;});
+        return Out_Columns;
+
+    }
+    friend std::ostream & operator << (std::ostream & os,const EL_rect&R){
+        os << "[" << R.E0() << ", " << R.E1() << "]" << std::endl;
+        os << "[<" << R.L00() << " | " << R.L01() << ">, <" <<  R.L10() << " | " << R.L11() << ">]";
+        return os;
+    }
+};
+
+template <typename Measure,typename Container>
+inline double EL_CascadeIntegration(const Measure&m,const Container&Arr) noexcept{
+    if(Arr.size() < 2)
+        return 0.0;
+    double sum = 0;
+    for(size_t i=0;i<Arr.size()-1;++i)
+        sum += m(Arr[i],Arr[i+1]);
+    return sum;
+}
+
+
+
+inline double EL_rect_measure(const EL_rect &R) noexcept{
+    return (R.C0.L1+R.C1.L1-R.C0.L0-R.C1.L0)*(R.C1.E-R.C0.E)/2;
+}
+inline double EL_column_measure(const EL_column &C0,const EL_column &C1) noexcept{
+    return (C0.L1+C1.L1-C0.L0-C1.L0)*(C1.E-C0.E)/2;
 }
 
 #endif

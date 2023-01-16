@@ -10,16 +10,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DTEST_SF_HISTO)
 #add_definitions(-DTEST_TRAJECTORY)
 #add_definitions(-DTEST_EQUIALENCE)
-include_directories("..\\..\\DMFramework\\utils" )
+if(NOT DEFINED DM_PATH)
+    set(DM_PATH "..\\..\\DMFramework\\utils")
+endif()
+include_directories(${DM_PATH})
 
 
 
 
 add_executable(distrib_vector_grid distrib_vector_grid_v1.cpp)
 add_executable(matrix_mult matrix_modelling.cpp)
+add_executable(graphics graphs.cpp)
 
+target_compile_definitions(graphics PUBLIC GNUPLOT_PATH="${GNUPLOT_PATH}")
 
 message("required paths:")
+
 message("BOOST_ROOT: " ${BOOST_ROOT})
 message("OpenBLAS_DIR: " ${OpenBLAS_DIR})
 
@@ -30,12 +36,27 @@ message("boost include dir:" ${Boost_INCLUDE_DIR})
 message("boost library dir:" ${Boost_LIBRARY_DIRS})
 message("boost filesystem lib:" ${Boost_FILESYSTEM_LIBRARY})
 
+if(${USE_OPENMP})
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    endif()
+endif()
 if(${Boost_FOUND})
-    include_directories(distrib_vector_grid ${Boost_INCLUDE_DIR})
-    include_directories(matrix_mult ${Boost_INCLUDE_DIR})
 
-    target_link_libraries(distrib_vector_grid PRIVATE ${Boost_FILESYSTEM_LIBRARY})
-    target_link_libraries(matrix_mult PRIVATE ${Boost_FILESYSTEM_LIBRARY})
+#    include_directories(distrib_vector_grid ${Boost_INCLUDE_DIR})
+#    include_directories(matrix_mult ${Boost_INCLUDE_DIR})
+#    include_directories(graphics ${Boost_INCLUDE_DIR})
+
+#    target_link_libraries(distrib_vector_grid PRIVATE ${Boost_FILESYSTEM_LIBRARY})
+#    target_link_libraries(matrix_mult PRIVATE ${Boost_FILESYSTEM_LIBRARY})
+#    target_link_libraries(graphics PRIVATE ${Boost_FILESYSTEM_LIBRARY})
+
+    target_link_libraries(distrib_vector_grid PRIVATE Boost::filesystem)
+    target_link_libraries(matrix_mult PRIVATE Boost::filesystem)
+    target_link_libraries(graphics PRIVATE Boost::filesystem)
 endif()
 
 
@@ -46,7 +67,7 @@ message("OpenBLAS_LIBRARIES: " ${OpenBLAS_LIBRARIES})
 
 
 if(${OpenBLAS_FOUND})
-    include_directories(matrix_mult ${OpenBLAS_INCLUDE_DIRS})
+    #include_directories(matrix_mult ${OpenBLAS_INCLUDE_DIRS})
     target_link_libraries(matrix_mult PRIVATE OpenBLAS::OpenBLAS)
 endif()
 

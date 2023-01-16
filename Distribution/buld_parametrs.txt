@@ -1,0 +1,9 @@
+DM_PATH #to DMFramework\\utils
+BOOST_ROOT #D:/Soft/boost_1_81_0/build
+Boost_COMPILER #if all bad "mgw8"
+Boost_INCLUDE_DIR #hint to findboost D:/Soft/boost_1_81_0/build/include/boost-1_81
+OpenBLAS_DIR #blas dir D:\Soft\LINAL\xianyi-OpenBLAS-b89fb70\install\share\cmake\OpenBLAS
+USE_OPENMP #ON or OF
+
+run 
+[programm] -config [config_filename]

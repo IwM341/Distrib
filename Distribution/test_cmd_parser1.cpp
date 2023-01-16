@@ -27,5 +27,7 @@ int main(int argc, char**argv){
     PVAR(par.get<std::string>("config1"));
     PVAR(par.get<std::string>("config"));
 
+    //boost::filesystem::path();
+
     return 0;
 }
