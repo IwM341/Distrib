@@ -30,10 +30,14 @@ int main(int argc,char**argv){
 
 
     std::stringstream par_list(cmd_params.pgets("list"));
+    bool is_relative = ptree_condition(cmd_params,"relative",false);
     std::string EL;
     while(par_list>>EL){
         if(std::find(EL.begin(),EL.end(),'\"') == EL.end() and !EL.empty()){
-            Funcs.push_back(decltype(Funcs)::value_type(R,BM[EL]*BM["RhoND"]));
+            if(ME.find(EL) == ME.end() and !is_relative)
+                Funcs.push_back(decltype(Funcs)::value_type(R,BM[EL]*BM["RhoND"]));
+            else
+                Funcs.push_back(decltype(Funcs)::value_type(R,BM[EL]));
             names.push_back((EL));
         }
     }
@@ -42,6 +46,8 @@ int main(int argc,char**argv){
     auto gp_path = ptree_condition<std::string>(cmd_params,"gnuplot_path","gnuplot");
 
     Gnuplot gp(gp_path);
+    if(ptree_condition(cmd_params,"logscale",false))
+        gp.command("set logscale");
     for(size_t i=0;i<Funcs.size();++i){
         gp.plotd(Funcs[i].toString(),"with lines title \""s+names[i]+"\"");
     }

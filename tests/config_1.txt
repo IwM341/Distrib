@@ -12,10 +12,13 @@
 	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
 	"mk": 100,
-	"dmk" : 1e-4,
+	"dmk" : 0,
 	"NE":60,
 	"NLmax":60,
 	"Egird":"Uniform",
 	"Lgird":"Uniform",
-	"elements" : ["H1","Fe"]
+	"elements" : ["Fe","H1","He4","N14","O16","Ne"],
+	"Nmk_H" : 100000,
+	"Nmk_L" : 100000,
+	"not_fill" : true
 }

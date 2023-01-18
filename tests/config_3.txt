@@ -1,6 +1,6 @@
 {
-	"dl_final" : "dlf.bmat",
-	"dh_final" : "dhf.bmat",
+	"dl_final" : "dl.bmat",
+	"dh_final" : "dh.bmat",
 	"l_grid" : "l_grid.txt",
 	"h_grid" : "h_grid.txt"
 }

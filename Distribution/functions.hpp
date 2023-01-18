@@ -314,13 +314,13 @@ template <typename dF_Type,typename ScatterFuncType,typename VescRFuncType,typen
 inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,double delta_mk,dF_Type dF,
                               ScatterFuncType const & PhiFactor, VescRFuncType const & VescR,
                              N_FuncType const & nR ,TempRFuncType const & TempR, Generator  && G,
-                               double Vdisp, double mU0){
+                               double Vdisp, double mU0,double pow_r=1){
 
     double factor = 1.0;
 
     //generate radius
-    double r_nd = G();//pow(G(),1.0/3.0);
-    factor *= 3*r_nd*r_nd;
+    double r_nd = pow(G(),pow_r);//pow(G(),1.0/3.0);
+    factor *= 3*pow_r* pow(r_nd,(3*pow_r-1.0)/pow_r);
     //gain escape velocity from redius
     double Vesc = VescR(r_nd);
 
@@ -331,7 +331,8 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
 
 
     double n_nd = nR(r_nd);//TODO n_nd as a function of radius
-    vec3 V1 = Gauss3(G,sqrt(TempR(r_nd)/mp/2));;//TODO: add thermal distribution of nuclei velocity
+    factor *=  n_nd;
+    vec3 V1 = Gauss3(G,sqrt(TempR(r_nd)/mp));//TODO: add thermal distribution of nuclei velocity
 
     //Vcm - is a vrlocity of momentum center
     vec3 Vcm = (V_wimp*mk + V1*mp)/(mp+mk);
@@ -429,14 +430,14 @@ template <typename VescFuncType,typename ThermFuncType,typename NFuncType,
 auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
                       NFuncType const &NR,double VescMin,VescFuncType const & VescR,ThermFuncType const & TempR,
                     PhiFuncType PhiFactor,Generator const&G,
-                    size_t Nmk,
+                    size_t Nmk,double pow_r,
                     double Vdisp = U0,double mU0 = U0){
 
     double sum = 0;
     double sum2 = 0;
     double const_fact_rd = mk/(mk+mp)/Nmk;
     for(size_t i=0;i<Nmk;++i){
-        auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0);
+        auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0,pow_r);
         auto v_nd = std::get<0>(mk_res.Result)/VescMin;
         auto r_nd = std::get<1>(mk_res.Result);
         auto v_esc_nd = std::get<2>(mk_res.Result)/VescMin;

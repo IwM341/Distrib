@@ -13,6 +13,6 @@
 
 	"nl_out": "nlf.dat",
 	"nh_out" : "nhf.dat",
-	"fac2" : "30"
+	"fac2" : "20"
 
 }

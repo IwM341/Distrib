@@ -118,7 +118,7 @@ auto ELH_toFunction_v2(const EL_Histo<Args...> &H,size_t EN,size_t LN,double se,
                                         double dl11 = (H.values[i].Grid[j+1]*lmax1-l)/sl;
                                         EL_rect R(de0,de1,dl00,dl01,dl10,dl11);
                                         summ += mu(R)*
-                                                H.values[i].values[j]/EL_rect_measure(R)/(sl*se);
+                                                H.values[i].values[j];//EL_rect_measure(R)/(sl*se);
                                         if(std::isnan(summ)){
                                             PVAR(e);
                                             PVAR(l);
@@ -127,7 +127,7 @@ auto ELH_toFunction_v2(const EL_Histo<Args...> &H,size_t EN,size_t LN,double se,
                                         }
                                     }
                                 }
-                                return summ;
+                                return summ/*/std::max(l,1e-6f)*/;
                             }
                             );
     return F;
@@ -216,6 +216,15 @@ int main(int argc,char **argv){
     gp_3d4.plotd(HistoToFunc(ELH_L).toString(),"with pm3d title \"L distrid\"");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
     gp_3d4.show();
+
+    auto Histo_E_H = Function::Histogramm<double,Function::VectorGrid<double>>(ELH_H.Grid,
+            Vector((ELH_H.Grid.size()-1),[&](size_t i){return ELH_H.values[i].summ();})
+            );
+
+    Gnuplot gp_e_h(gp_path);
+    gp_e_h.show_cmd = "plot";
+    gp_e_h.plotd(Histo_E_H.toFunction().toString(),"with boxes title \"H E distrib\"");
+    gp_e_h.show();
 
     Gnuplot gp_traj;
     if(ptree_contain(cmd_params,"nl") and ptree_contain(cmd_params,"nh")){

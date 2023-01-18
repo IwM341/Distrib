@@ -100,7 +100,7 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
                                        double Vesc, const VescFuncType & VescR,
                                        const dF_Type&dF,double mk,double dmk,double mp,
                                 ScatterHisto &S_HL,ScatterHisto &S_LH,EvapHisto & E_H,EvapHisto & E_L,
-                                const PhiFactorType & PhiFactor,size_t Nmk_HL=10000,size_t Nmk_LH = 10000){
+                                const PhiFactorType & PhiFactor,size_t Nmk_HL,size_t Nmk_LH){
     auto G = [](){return rand()/(RAND_MAX+1.0);};
     auto G1 = [](){
         double fc = 1.0/(RAND_MAX+1.0);
@@ -421,18 +421,22 @@ int main(int argc,char **argv){
     }
     PVAR(ElementList);
     auto RhoND = BM["RhoND"];
+
+    bool not_fill_ss = ptree_condition(cmd_params,"not_fill",false);
     for(const auto & element : ElementList){
         decltype(Therm) Element_N(R,RhoND*BM[element]);
         std::cout << "calculating for element " << element <<std::endl;
         size_t M = ME.at(element);
         double m_nuc = (M)*_mp;
         dF_Nuc_M dF(M);
-        FillScatterHisoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+        if(!not_fill_ss){
+            FillScatterHisoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
                                    mk,delta_mk,m_nuc,
                                    S_HL,S_LH,EvapHisto_H,EvapHisto_L,PhiFactorSS,Nmk_HL,Nmk_LH);
+        }
         if(count_distrib){
             SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
-                             PhiFactorSS,G1,Nmk_H,U0,U0);
+                             PhiFactorSS,G,Nmk_H,2,U0,U0);
         }
     }
 
@@ -460,10 +464,10 @@ int main(int argc,char **argv){
     }
 
 
-
-    saveMatrix(MatT_HL.data(),N_H,N_L,hl_out_path.string(),MF);
-    saveMatrix(MatT_LH.data(),N_L,N_H,lh_out_path.string(),MF);
-
+    if(!not_fill_ss){
+        saveMatrix(MatT_HL.data(),N_H,N_L,hl_out_path.string(),MF);
+        saveMatrix(MatT_LH.data(),N_L,N_H,lh_out_path.string(),MF);
+    }
     std::vector<double> Ev_H = EvapHisto_H.AllValues();
     std::vector<double> Ev_L = EvapHisto_L.AllValues();
 
