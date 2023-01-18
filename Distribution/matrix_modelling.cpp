@@ -71,12 +71,7 @@ void make_work(const boost::property_tree::ptree& CP){
         if(fmt == "bin" || fmt == "binary" || fmt == "b")
             MF = BINARY;
     }
-    bool log_std = false;
-
-    try {
-        log_std = CP.get<bool>("debug");
-    } catch (std::exception &) {
-    }
+    bool log_std = ptree_condition(CP,"debug",false);
     LOGIF(log_std,MF);
 
     auto FPath = [&](const std::string & tree_path){
@@ -143,6 +138,7 @@ void make_work(const boost::property_tree::ptree& CP){
         tau = CP.get<float>("tau");
     }  catch (std::exception & e) {
         tau = 0.05/std::max(-min(A_HH),-min(A_LL));
+        PVAR(tau);
     }
     LOGIF(log_std,tau);
 
@@ -228,9 +224,16 @@ void make_work(const boost::property_tree::ptree& CP){
     if(log_std){
         printPairVector(NL,NH,LD_tmp.data(),HD_tmp.data());
     }
-
-    LD_tmp *= (1.0/vector_sum(LD_tmp));
-    HD_tmp *= (1.0/vector_sum(HD_tmp));
+    auto LD_summ = vector_sum(LD_tmp);
+    auto HD_summ = vector_sum(LD_tmp);
+    if(LD_summ == 0.0){
+        std::cout << "WARNING, LD summ =0" <<std::endl;
+    }
+    if(HD_summ == 0.0){
+        std::cout << "WARNING, HD summ =0" <<std::endl;
+    }
+    LD_tmp *= (1.0/LD_summ);
+    HD_tmp *= (1.0/HD_summ);
 
     if(log_std){
         printPairVector(NL,NH,LD_tmp.data(),HD_tmp.data());
@@ -252,7 +255,7 @@ void make_work(const boost::property_tree::ptree& CP){
 int main(int argc, char ** argv){
     boost::property_tree::ptree CP;
     auto ret_key = parse_command_line(argc,argv,CP);
-    if(ret_key.size() !=0){
+    if(!ret_key.empty()){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;
     }

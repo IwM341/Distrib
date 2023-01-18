@@ -118,11 +118,12 @@ auto ELH_toFunction_v2(const EL_Histo<Args...> &H,size_t EN,size_t LN,double se,
                                         double dl11 = (H.values[i].Grid[j+1]*lmax1-l)/sl;
                                         EL_rect R(de0,de1,dl00,dl01,dl10,dl11);
                                         summ += mu(R)*
-                                                H.values[i].values[j]/EL_rect_measure(R)*sl*se;
-
-                                        if(mu(R) < 0 ){
-                                            std::cout << R <<std::endl;
-                                            mu(R);
+                                                H.values[i].values[j]/EL_rect_measure(R)/(sl*se);
+                                        if(std::isnan(summ)){
+                                            PVAR(e);
+                                            PVAR(l);
+                                            PVAR(H.Grid[i]);
+                                            PVAR(H.values[i].Grid[j]);
                                         }
                                     }
                                 }
@@ -142,6 +143,10 @@ struct Measure_11{
 int main(int argc,char **argv){
     boost::property_tree::ptree cmd_params;
     auto cmd_parse_log = parse_command_line_v1(argc,argv,cmd_params);
+    if(!cmd_parse_log.empty()){
+        std::cout << cmd_parse_log <<std::endl;
+        return 1;
+    }
     //std::cout << cmd_params.get<std::string>(0) << std::endl;
 
     auto Poll = [&](const std::string & property){
@@ -156,7 +161,7 @@ int main(int argc,char **argv){
         return config_path_from(cmd_params.pgets(tree_path),cmd_params.pgets("config_path")).string();
     };
     auto HistoToFunc = [&](const auto &ELH){
-        return ELH_toFunction_v2(ELH,100,100,0.1,0.1,Measure_11());
+        return ELH_toFunction_v2(ELH,100,100,0.02,0.02,Measure_11());
     };
 
 
@@ -179,18 +184,33 @@ int main(int argc,char **argv){
     ELH_L.loadIter(DL.begin(),DL.end());
     ELH_H.loadIter(DH.begin(),DH.end());
 
-    PVAR(HistoToFunc(ELH_L).toString());
+    //PVAR(HistoToFunc(ELH_L).toString());
+
+    auto gp_path = ptree_condition<std::string>(cmd_params,"gnuplot_path","gnuplot");
+    Gnuplot gp_3d1(gp_path);
+    gp_3d1.command("set pm3d map");
+    gp_3d1.show_cmd = "splot";
+    gp_3d1.plotd(ELH_L.toFunction().toString(),"with pm3d title \"L distrid\"");
+    //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
+    gp_3d1.show();
 
 
+    Gnuplot gp_3d2(gp_path);
+    gp_3d2.command("set pm3d map");
+    gp_3d2.show_cmd = "splot";
+    gp_3d2.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
+    //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
+    gp_3d2.show();
 
-    Gnuplot gp_3d3(GNUPLOT_PATH);
+
+    Gnuplot gp_3d3(gp_path);
     gp_3d3.command("set pm3d map");
     gp_3d3.show_cmd = "splot";
     gp_3d3.plotd(HistoToFunc(ELH_H).toString(),"with pm3d title \"H distrid\"");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
     gp_3d3.show();
 
-    Gnuplot gp_3d4(GNUPLOT_PATH);
+    Gnuplot gp_3d4(gp_path);
     gp_3d4.command("set pm3d map");
     gp_3d4.show_cmd = "splot";
     gp_3d4.plotd(HistoToFunc(ELH_L).toString(),"with pm3d title \"L distrid\"");

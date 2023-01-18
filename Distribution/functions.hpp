@@ -319,8 +319,8 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
     double factor = 1.0;
 
     //generate radius
-    double r_nd = pow(G(),1.0/3.0);
-
+    double r_nd = G();//pow(G(),1.0/3.0);
+    factor *= 3*r_nd*r_nd;
     //gain escape velocity from redius
     double Vesc = VescR(r_nd);
 
@@ -331,7 +331,7 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
 
 
     double n_nd = nR(r_nd);//TODO n_nd as a function of radius
-    vec3 V1 = Gauss3(G,sqrt(TempR(r_nd)*mp/2));;//TODO: add thermal distribution of nuclei velocity
+    vec3 V1 = Gauss3(G,sqrt(TempR(r_nd)/mp/2));;//TODO: add thermal distribution of nuclei velocity
 
     //Vcm - is a vrlocity of momentum center
     vec3 Vcm = (V_wimp*mk + V1*mp)/(mp+mk);
@@ -434,7 +434,7 @@ auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
 
     double sum = 0;
     double sum2 = 0;
-
+    double const_fact_rd = mk/(mk+mp)/Nmk;
     for(size_t i=0;i<Nmk;++i){
         auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0);
         auto v_nd = std::get<0>(mk_res.Result)/VescMin;
@@ -443,8 +443,9 @@ auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
 
         double E_nd = (v_nd*v_nd - v_esc_nd*v_esc_nd);
         double L_nd = r_nd*sqrt(v_nd.x*v_nd.x + v_nd.y*v_nd.y);
-        H.putValue(mk_res.RemainDensity/Nmk,E_nd,L_nd);
-        sum += mk_res.RemainDensity/Nmk;
+        double dens = mk_res.RemainDensity*const_fact_rd;
+        H.putValue(dens,E_nd,L_nd);
+        sum += dens;
     }
     return sum;
 
@@ -862,7 +863,7 @@ inline void TrajectoryIntegral1(Generator const & G,
     if(TI.T_in == 0.0){
         return;
     }
-
+    double const_fact_rd = mk/(mk+mp)/Nmk;
     for(size_t sch = 0;sch<Nmk;++sch){
         double factor = TI.T_in/(TI.T_in+TI.T_out);
         double t = G()*TI.T_in;
@@ -882,7 +883,7 @@ inline void TrajectoryIntegral1(Generator const & G,
         double l_nd_1  = r*sqrt(Vout.Result.x*Vout.Result.x+Vout.Result.y*Vout.Result.y)/VescMin;
 
 
-        double dens = Vout.RemainDensity/Nmk;
+        double dens = Vout.RemainDensity*const_fact_rd;
         if(!Out.putValue(dens,e_nd_1,l_nd_1)){
             //PVAR(dens);
             EvaporationOut += dens;

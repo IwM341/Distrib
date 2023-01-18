@@ -49,12 +49,25 @@ auto Create_EL_grid(const Function::VectorGrid<double>&Egrid,
 
 struct dF_Nuc{
     size_t N,Z;
-    dF_Nuc(size_t Z = 1,size_t  N = 0):Z(Z),N(N){}
+    double const_factor;
+    dF_Nuc(size_t Z = 1,size_t  N = 0,double const_factor = 1):Z(Z),N(N),const_factor(const_factor){}
     MC::MCResult<double> EnergyLoss(double Emax)const{
         return MC::MCResult<double>(0,1);
     }
     double ScatterFactor(double q,double enLoss)const{
-        return 1;
+        return const_factor;
+    }
+};
+
+struct dF_Nuc_M{
+    size_t M;
+    double const_factor;
+    dF_Nuc_M(size_t M=0,double const_factor = 1):M(M),const_factor(const_factor){}
+    inline MC::MCResult<double> EnergyLoss(double Emax)const noexcept{
+        return MC::MCResult<double>(0,1);
+    }
+    inline double ScatterFactor(double q,double enLoss)const noexcept{
+        return M*M;
     }
 };
 
@@ -284,6 +297,10 @@ int main(int argc,char **argv){
     size_t Nmk_L = ptree_condition<int>(cmd_params,"Nmk_L",100000);
 
     //boost::property_tree::write_json(std::cout,cmd_params);
+
+
+
+
     if(ptree_gets(cmd_params,"debug") != ""){
         std::cout << "cmd params: ";
         boost::property_tree::write_json(std::cout,cmd_params);
@@ -309,7 +326,7 @@ int main(int argc,char **argv){
 
 
     std::string bm_filename;
-    double Vesc1= 2.056e-3;
+    double Vesc1;
     try {
         bm_filename = cmd_params.get<std::string>("body");
         Vesc1 = cmd_params.get<double>("Vesc");
@@ -392,20 +409,29 @@ int main(int argc,char **argv){
     double mk = ptree_condition(cmd_params,"mk",5.0);
     double delta_mk = ptree_condition(cmd_params,"dmk",1e-6);
 
+    std::vector<std::string> ElementList;
+    try {
+        auto &Elements =
+                cmd_params.get_child("elements");
+        for(const auto &el : Elements){
+            ElementList.push_back(el.second.data());
+        }
+    }  catch (std::exception &e) {
 
-    std::vector<std::string> ElementList{"H1"};
+    }
+    PVAR(ElementList);
+    auto RhoND = BM["RhoND"];
     for(const auto & element : ElementList){
-        decltype(Therm) Element_N(R,BM["RhoND"]*BM[element]);
+        decltype(Therm) Element_N(R,RhoND*BM[element]);
         std::cout << "calculating for element " << element <<std::endl;
-        size_t Z = QE.at(element);
-        size_t N = ME.at(element)-QE.at(element);
-        double m_nuc = (Z+N)*_mp;
-        dF_Nuc dF(Z,N);
+        size_t M = ME.at(element);
+        double m_nuc = (M)*_mp;
+        dF_Nuc_M dF(M);
         FillScatterHisoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
                                    mk,delta_mk,m_nuc,
                                    S_HL,S_LH,EvapHisto_H,EvapHisto_L,PhiFactorSS,Nmk_HL,Nmk_LH);
         if(count_distrib){
-            SupressFactor_v1(ELH_L,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
+            SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
                              PhiFactorSS,G1,Nmk_H,U0,U0);
         }
     }
@@ -417,6 +443,15 @@ int main(int argc,char **argv){
     std::vector<double> MatT_HL(N_H*N_L);
     std::vector<double> MatT_LH(N_H*N_L);
 
+
+    if(contains_nan(MatT_HL)){
+        std::cout << "MatT_HL contains nan" <<std::endl;
+    }
+    if(contains_nan(MatT_LH)){
+        std::cout << "MatT_LH contains nan" <<std::endl;
+    }
+
+
     for(size_t i=0;i<N_L;++i){
         S_LH[i].saveIter(MatT_LH.data()+i*N_H,MatT_LH.data()+(i+1)*N_H);
     }
@@ -424,11 +459,20 @@ int main(int argc,char **argv){
         S_HL[i].saveIter(MatT_HL.data()+i*N_L,MatT_HL.data()+(i+1)*N_L);
     }
 
+
+
     saveMatrix(MatT_HL.data(),N_H,N_L,hl_out_path.string(),MF);
     saveMatrix(MatT_LH.data(),N_L,N_H,lh_out_path.string(),MF);
 
     std::vector<double> Ev_H = EvapHisto_H.AllValues();
     std::vector<double> Ev_L = EvapHisto_L.AllValues();
+
+    if(contains_nan(Ev_H)){
+        std::cout << "Ev_H contains nan" <<std::endl;
+    }
+    if(contains_nan(Ev_L)){
+        std::cout << "Ev_L contains nan" <<std::endl;
+    }
 
     if(count_evap){
         saveMatrix(Ev_H.data(),N_H,1,el_out_path.string(),MF);
@@ -438,11 +482,19 @@ int main(int argc,char **argv){
     std::vector<double> D_H;// = ELH_H.AllValues();
     std::vector<double> D_L;// = ELH_L.AllValues();
 
+
+
     if(count_distrib){
         D_H = ELH_H.AllValues();
         D_L = ELH_L.AllValues();
         saveMatrix(D_H.data(),1,N_H,dh_out_path.string(),MF);
         saveMatrix(D_L.data(),1,N_L,dl_out_path.string(),MF);
+    }
+    if(contains_nan(D_H)){
+        std::cout << "D_H contains nan" <<std::endl;
+    }
+    if(contains_nan(D_L)){
+        std::cout << "D_L contains nan" <<std::endl;
     }
 
 

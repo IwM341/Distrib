@@ -11,9 +11,11 @@
 	"debug" : "true",
 	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
-	"NE":100,
-	"NLmax":100,
+	"mk": 100,
+	"dmk" : 1e-4,
+	"NE":60,
+	"NLmax":60,
 	"Egird":"Uniform",
-	"Lgird":"Uniform"
-	
+	"Lgird":"Uniform",
+	"elements" : ["H1","Fe"]
 }

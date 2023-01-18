@@ -12,5 +12,7 @@
 	"dh_out" : "dhf.bmat",
 
 	"nl_out": "nlf.dat",
-	"nh_out" : "nhf.dat"
+	"nh_out" : "nhf.dat",
+	"fac2" : "30"
+
 }
