@@ -132,6 +132,137 @@ auto ELH_toFunction_v2(const EL_Histo<Args...> &H,size_t EN,size_t LN,double se,
                             );
     return F;
 }
+template <typename PhiType,typename ...Args>
+auto ELH_toFunction_v3(const EL_Histo<Args...> &H,const PhiType & phi,size_t EN,size_t LN){
+    double Emin = H.Grid._a();
+    double Emax = H.Grid._b();
+    Function::UniformGrid<float> EG(H.Grid._a(),H.Grid._b(),EN);
+    Function::UniformGrid<float> LG(0,H.Lmax.values.back(),LN);
+    Function::GridFunction<double,Function::UniformGrid<float>,Function::LinearInterpolator,
+            Function::UniformGrid<float>,
+            Function::LinearInterpolator> F(EG,LG);
+    F.map([&](float e,float l){
+        return ELH_density(H,phi,e,l);
+    });
+    return F;
+}
+
+template <typename ...Args>
+double EL_density1(const EL_Histo<Args...> &H,double E,double L){
+    if(E < H.Grid._a() or E > H.Grid._b()){
+        return .0;
+    }
+    double Lmax = H.Lmax(E);
+    if(Lmax == .0){
+        return .0;
+    }
+    double l = L/Lmax;
+    if(l>1){
+        return 0;
+    }
+    size_t i = H.Grid.pos(E);
+    size_t j = H.values[i].Grid.pos(l);
+    double E0 = H.Grid[i];
+    double E1 = H.Grid[i+1];
+    double Value = H.values[i].values[j];
+
+    double Lmax0 = H.Lmax[i];
+    double Lmax1 = H.Lmax[i+1];
+    double l0 = H.values[i].Grid[j];
+    double l1 = H.values[i].Grid[j+1];
+
+    double L00 = l0*Lmax0;
+    double L01 = l1*Lmax0;
+    double L10 = l0*Lmax1;
+    double L11 = l1*Lmax1;
+
+    return Value/EL_column_measure({E0,L00,L01},{E1,L10,L11});
+}
+template <typename ...Args>
+double EL_density3(const EL_Histo<Args...> &H,double E,double L){
+    if(E < H.Grid._a() or E > H.Grid._b()){
+        return .0;
+    }
+    double Lmax = H.Lmax(E);
+    if(Lmax == .0){
+        return .0;
+    }
+    double l = L/Lmax;
+    if(l>1){
+        return 0;
+    }
+    size_t i = H.Grid.pos(E);
+    size_t j = H.values[i].Grid.pos(l);
+    double E0 = H.Grid[i];
+    double E1 = H.Grid[i+1];
+    double Value = H.values[i].values[j];
+
+    double l0 = H.values[i].Grid[j];
+    double l1 = H.values[i].Grid[j+1];
+
+       return Value/((l1-l0)*(E1-E0));
+}
+
+template <typename ...Args>
+double EL_density2(const EL_Histo<Args...> &H,double E,double L){
+    if(E < H.Grid._a() or E > H.Grid._b()){
+        return 0;
+    }
+    double Lmax = H.Lmax(E);
+    if(Lmax == .0){
+        return .0;
+    }
+    double l = L/Lmax;
+    if(l>1){
+        return 0;
+    }
+    size_t i = H.Grid.pos(E);
+    size_t j = H.values[i].Grid.pos(l);
+
+    if(E < H.Grid[i] or E > H.Grid[i+1] or
+            l < H.values[i].Grid[j] or l > H.values[i].Grid[j+1]){
+        PVAR(E);
+        PVAR(l);
+        PVAR(i);
+        PVAR(j);
+    }
+    double Value = H.values[i].values[j];
+    /*
+    if(E > -0.2)
+        std::cout << "i = " << i << ", j = " << j <<std::endl;
+    */
+    return Value;
+}
+
+template <typename ...Args>
+auto ELH_toFunction_v4(const EL_Histo<Args...> &H,size_t EN,size_t LN){
+    double Emin = H.Grid._a();
+    double Emax = H.Grid._b();
+    Function::UniformGrid<float> EG(H.Grid._a(),H.Grid._b(),EN);
+    Function::UniformGrid<float> LG(0,H.Lmax.values.back(),LN);
+    Function::GridFunction<double,Function::UniformGrid<float>,Function::LinearInterpolator,
+            Function::UniformGrid<float>,
+            Function::LinearInterpolator> F(EG,LG);
+    F.map([&](float e,float l){
+        return EL_density1(H,e,l);
+    });
+    return F;
+}
+
+template <typename ...Args>
+auto ELH_toFunction_v5(const EL_Histo<Args...> &H,size_t EN,size_t LN){
+    double Emin = H.Grid._a();
+    double Emax = H.Grid._b();
+    Function::UniformGrid<float> EG(H.Grid._a(),H.Grid._b(),EN);
+    Function::UniformGrid<float> LG(0,H.Lmax.values.back(),LN);
+    Function::GridFunction<double,Function::UniformGrid<float>,Function::LinearInterpolator,
+            Function::UniformGrid<float>,
+            Function::LinearInterpolator> F(EG,LG);
+    F.map([&](float e,float l){
+        return EL_density3(H,e,l);
+    });
+    return F;
+}
 
 struct Measure_11{
     inline double operator()(const EL_rect&R)const noexcept{
@@ -160,15 +291,23 @@ int main(int argc,char **argv){
     auto FPath = [&](const std::string & tree_path){
         return config_path_from(cmd_params.pgets(tree_path),cmd_params.pgets("config_path")).string();
     };
-    auto HistoToFunc = [&](const auto &ELH){
-        return ELH_toFunction_v2(ELH,100,100,0.02,0.02,Measure_11());
-    };
 
 
     Poll("l_grid");
     Poll("h_grid");
     Poll("dl_final");
     Poll("dh_final");
+    Poll("body");
+    auto BM = BodyModel::fromFile(1,FPath("body"));
+    const auto & phi = BM["phi"];
+    Function::UniformGrid<double> R(0,1,phi.size());
+    Function::GridFunction<double,Function::UniformGrid<double>,Function::CubicInterpolator>
+            PhiC(R,phi);
+    auto HistoToFunc = [&](const auto &ELH){
+        //return ELH_toFunction_v3(ELH,PhiC,100,100);
+        return ELH_toFunction_v4(ELH,201,201);
+    };
+
 
     auto ELH_L =
             EL_Histo<double,Function::VectorGrid<double>,Function::VectorGrid<double>>::load
@@ -185,35 +324,38 @@ int main(int argc,char **argv){
     ELH_H.loadIter(DH.begin(),DH.end());
 
     //PVAR(HistoToFunc(ELH_L).toString());
-
+    auto DB = ELH_H.toFunction();
     auto gp_path = ptree_condition<std::string>(cmd_params,"gnuplot_path","gnuplot");
+
+
+
     Gnuplot gp_3d1(gp_path);
     gp_3d1.command("set pm3d map");
     gp_3d1.show_cmd = "splot";
-    gp_3d1.plotd(ELH_L.toFunction().toString(),"with pm3d title \"L distrid\"");
+    gp_3d1.plotd(ELH_L.toFunction().toString(),"title \"L distrib\" with pm3d");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
-    gp_3d1.show();
+    //gp_3d1.show();
 
 
     Gnuplot gp_3d2(gp_path);
     gp_3d2.command("set pm3d map");
     gp_3d2.show_cmd = "splot";
-    gp_3d2.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
+    gp_3d2.plotd(ELH_H.toFunction().toString()," title \"H distrib\" with pm3d");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
-    gp_3d2.show();
+    //gp_3d2.show();
 
 
     Gnuplot gp_3d3(gp_path);
     gp_3d3.command("set pm3d map");
     gp_3d3.show_cmd = "splot";
-    gp_3d3.plotd(HistoToFunc(ELH_H).toString(),"with pm3d title \"H distrid\"");
+    gp_3d3.plotd(HistoToFunc(ELH_H).toString()," title \"H distrib dens\" with pm3d ");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
     gp_3d3.show();
 
     Gnuplot gp_3d4(gp_path);
     gp_3d4.command("set pm3d map");
     gp_3d4.show_cmd = "splot";
-    gp_3d4.plotd(HistoToFunc(ELH_L).toString(),"with pm3d title \"L distrid\"");
+    gp_3d4.plotd(HistoToFunc(ELH_L).toString()," title \"L distrib dens\" with pm3d");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
     gp_3d4.show();
 
@@ -232,6 +374,11 @@ int main(int argc,char **argv){
         gp_traj.plotf(cmd_params.pgets("nh"),"with lines title \"nh\"");
         gp_traj.show();
     }
-    wait();
+    pipe_switcher ps;
+    ps.add_pipe(&gp_3d1,&decltype(gp_3d1)::command,"L1");
+    ps.add_pipe(&gp_3d2,&decltype(gp_3d2)::command,"H1");
+    ps.add_pipe(&gp_3d3,&decltype(gp_3d3)::command,"H2");
+    ps.add_pipe(&gp_3d4,&decltype(gp_3d4)::command,"L2");
+    ps.exec();
 	return 0;
 }

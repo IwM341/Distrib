@@ -1,6 +1,8 @@
 #ifndef EL_HISTO_H
 #define EL_HISTO_H
 #include <utils>
+#include <limits>
+
 template <typename T,typename EGridType,typename LGridType>
 class EL_Histo:
         public Function::Histogramm<T,EGridType,LGridType>
@@ -23,6 +25,12 @@ public:
         })),HBase(Hist){}
 
     bool putValue(T V,double e_nd,double l_nd){
+        double Lin = l_nd/Lmax(e_nd);
+        /*
+        if(e_nd <0 and Lin > 1.01){
+            PVAR(e_nd);
+            PVAR(Lin);
+        }*/
         return HBase::putValue(V,e_nd,l_nd/Lmax(e_nd));
     }
 
@@ -313,6 +321,87 @@ inline double EL_rect_measure(const EL_rect &R) noexcept{
 }
 inline double EL_column_measure(const EL_column &C0,const EL_column &C1) noexcept{
     return (C0.L1+C1.L1-C0.L0-C1.L0)*(C1.E-C0.E)/2;
+}
+
+
+inline double EL_reg(double x) noexcept{
+    return sqrt(-x*x*x);
+}
+double EL_bin_volume(double E0,double E1,double L00,double L01,double L10,double L11,
+                  double T00,double T01,double T10,double T11) noexcept{
+    if(std::isinf(T00) or std::isinf(T01)
+            or std::isinf(T10) or std::isinf(T11)
+            or E1 >=0){
+        return std::numeric_limits<double>::infinity();
+    }
+    double F00 = T00*EL_reg(E0);
+    double F01 = T01*EL_reg(E0);
+    double F10 = T10*EL_reg(E1);
+    double F11 = T11*EL_reg(E1);
+    double sE0 = sqrt(-E0);
+    double sE1 = sqrt(-E1);
+
+    double Fa0 = (F00+F10)/2;
+    double Fd0 = (F10-F00);
+    double Fa1 = (F01+F11)/2;
+    double Fd1 = (F11-F01);
+    double La0 = (L00+L10)/2;
+    double Ld0 = (L10-L00);
+    double La1 = (L01+L11)/2;
+    double Ld1 = (L11-L01);
+
+
+    double int_1 = 2*(E1-E0)/(sE0*sE1*(sE0+sE1));
+    //integratin of 1
+    double fac_3 = sE0-sE1;
+    double int_2 = fac_3*fac_3*fac_3/(sE0*sE1*(E1-E0));
+    //integration of x-1/2
+    //where x = (E-E0)/(E1-E0)
+    double int_1_part = ((2*Fa0+Fa1)*La0+La1*(Fa0+2*Fa1))*(La1-La0)/3;
+
+    double int_2_part = ( (La1-La0)*(Fd1*(2*La1+La0)+Fd0*(2*La0+La1)) +
+                          (Fa0-Fa1)*(La1-La0)*(Ld0-Ld1)+(3*(Fa0+Fa1))*(-La0*Ld0+La1*Ld1))/3;
+    return (int_1*int_1_part+int_2_part*int_2);
+}
+
+template <typename Phitype,typename ...Args>
+double ELH_density(const EL_Histo<Args...> &H,const Phitype&phi,double E,double L){
+    if(E < H.Grid._a() or E > H.Grid._b()){
+        return 0;
+    }
+    double Lmax = H.Lmax(E);
+    if(Lmax == .0){
+        return .0;
+    }
+    double l = L/Lmax;
+    if(l>1){
+        return 0;
+    }
+    size_t i = H.Grid.pos(E);
+    size_t j = H.values[i].Grid.pos(l);
+    double E0 = H.Grid[i];
+    double E1 = H.Grid[i+1];
+    double Value = H.values[i].values[j];
+
+    double Lmax0 = H.Lmax[i];
+    double Lmax1 = H.Lmax[i+1];
+    double l0 = H.values[i].Grid[j];
+    double l1 = H.values[i].Grid[j+1];
+
+    double L00 = l0*Lmax0;
+    double L01 = l1*Lmax0;
+    double L10 = l0*Lmax1;
+    double L11 = l1*Lmax1;
+
+    auto TI = CalculateTrajectory(phi,E0,L00,100);
+    double T00 = TI.T_in+TI.T_out;
+    TI = CalculateTrajectory(phi,E0,L01,100);
+    double T01 = TI.T_in+TI.T_out;
+    TI = CalculateTrajectory(phi,E1,L10,100);
+    double T10 = TI.T_in+TI.T_out;
+    TI = CalculateTrajectory(phi,E1,L11,100);
+    double T11 = TI.T_in+TI.T_out;
+    return Value/EL_bin_volume(E0,E1,L00,L01,L10,L11,T00,T01,T10,T11);
 }
 
 #endif

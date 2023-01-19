@@ -34,7 +34,7 @@ int main(int argc,char**argv){
     std::string EL;
     while(par_list>>EL){
         if(std::find(EL.begin(),EL.end(),'\"') == EL.end() and !EL.empty()){
-            if(ME.find(EL) == ME.end() and !is_relative)
+            if(ME.find(EL) != ME.end() and !is_relative)
                 Funcs.push_back(decltype(Funcs)::value_type(R,BM[EL]*BM["RhoND"]));
             else
                 Funcs.push_back(decltype(Funcs)::value_type(R,BM[EL]));
@@ -52,6 +52,8 @@ int main(int argc,char**argv){
         gp.plotd(Funcs[i].toString(),"with lines title \""s+names[i]+"\"");
     }
     gp.show();
-    wait();
+    pipe_switcher ps;
+    ps.add_pipe(&gp,&Gnuplot::command,"gp");
+    ps.exec();
 	return 0;
 }

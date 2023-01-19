@@ -67,7 +67,7 @@ struct dF_Nuc_M{
         return MC::MCResult<double>(0,1);
     }
     inline double ScatterFactor(double q,double enLoss)const noexcept{
-        return M*M;
+        return 1;
     }
 };
 
@@ -369,7 +369,7 @@ int main(int argc,char **argv){
 
     size_t NE = ptree_condition<int>(cmd_params,"NE",30+1);
     size_t NL_max = ptree_condition<int>(cmd_params,"NLmax",30+1);
-    auto E_grid = (ptree_condition<std::string>(cmd_params,"Egird","") == "Uniform"? CreateEGrid_sqrt(NE,Emin) :
+    auto E_grid = (ptree_condition<std::string>(cmd_params,"Egird","") != "Uniform"? CreateEGrid_sqrt(NE,Emin) :
                                           Function::VectorGrid<double>(Emin,0.0,NE));
     auto N_L_func = [&NL_max,Lmax,&BM](double _E){return 2+(NL_max-2)*maxLnd(BM,_E)/Lmax;};
     auto Lgridrho = [](double _E,double _L_nd){return 1.0;};
