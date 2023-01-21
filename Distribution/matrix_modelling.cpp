@@ -75,7 +75,8 @@ void make_work(const boost::property_tree::ptree& CP){
     LOGIF(log_std,MF);
 
     auto FPath = [&](const std::string & tree_path){
-        return config_path_from(CP.pgets(tree_path),CP.pgets("config_path")).string();
+        return config_path_from(CP.pgets(tree_path),CP.pgets
+                                ("config_path")).string();
     };
 
     auto Mat0_LH = loadMatrix<T>(FPath("lh_in"),MF);
@@ -132,7 +133,6 @@ void make_work(const boost::property_tree::ptree& CP){
         if(Ev_H.size())
             A_HH[i*NH+i] -= Ev_H[i];
     }
-
     T tau;
     try {
         tau = CP.get<float>("tau");

@@ -21,7 +21,7 @@ template <class Generator>
 /*MK generator of input velocity*/
 inline MC::MCResult<vec3> Velocity(Generator && G,double VescTmp,
                         double Vdisp = 1.1*U0,double mU0 = U0){
-    auto ksi = sqrt(-2*log(G()));
+    auto ksi = sqrt(-2*log(1-G()));
     auto phi = RandomPhi(G,0,M_PI);
 
 
@@ -37,6 +37,13 @@ inline MC::MCResult<vec3> Velocity(Generator && G,double VescTmp,
     auto sinTheta = (u != 0.0 ? ksi*sinPhi/u : 0);
     auto v = sqrt(u*u+ve*ve);
     auto n = RandomN(G);
+    /*
+    if(std::isinf((n*(v*Vdisp)).norm())){
+        PVAR(ksi);
+        PVAR(u);
+        PVAR(v);
+        PVAR(n);
+    }*/
     return MC::MCResult<vec3>(n*(v*Vdisp),sinTheta*v*sqrt(M_PI/2));
 }
 
@@ -114,9 +121,9 @@ inline MC::MCResult<vec3> NuOut(Generator && G,const vec3& Vcm,const vec3&Nu,
 	
 	double Nu1 = sqrt(Nu1_squared);
 	
-	double cosTh1max = (Vesc*Vesc-Nu1_squared-VcmN*VcmN)/(2*VcmN*Nu1);
-	
-	if(cosTh1max <= -1)
+    double cosTh1max = (Vesc*Vesc-Nu1_squared-VcmN*VcmN)/(2*VcmN*Nu1);
+
+    if(!(cosTh1max > -1))
 		return MC::MCResult<vec3>(vec3(0,0,0),0);
 	else if(cosTh1max >= 1){
 		cosTh1max = 1;
@@ -320,7 +327,7 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
 
     //generate radius
     double r_nd = pow(G(),pow_r);//pow(G(),1.0/3.0);
-    factor *= 3*pow_r* pow(r_nd,(3*pow_r-1.0)/pow_r);
+    factor *= (3*pow_r* pow(r_nd,(3*pow_r-1.0)/pow_r));
     //gain escape velocity from redius
     double Vesc = VescR(r_nd);
 
@@ -358,17 +365,33 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
     factor *= dF.ScatterFactor(q,EnLoss.Result);
 
     //factor from matrix element
-    factor *= PhiFactor(mk,q);
+    factor *= PhiFactor(q);
 
 
+    #ifdef VOUT_DEBUG
     if( (Nu1+Vcm).norm() > Vesc*(1.+1e-8) && factor != 0){
         std::cout << "V out of bund:\n"+
             SVAR((Nu1+Vcm).norm()) + "\n" +
             SVAR(factor)+ "\n" +
             SVAR(Vesc)+ "\n" +
-            SVAR(Nu1+Vcm)+ "\n\n";
+            SVAR(Nu1+Vcm)+ "\n" +
+            SVAR(V1.norm()) + "\n"+
+            SVAR(V_wimp.norm())+ "\n\n";
     }
-
+    /**/
+    if(factor !=0){
+        PVAR(mp);
+        PVAR(mk);
+        PVAR(Vesc);
+        PVAR(V_wimp.norm());
+        PVAR(Vcm.norm());
+        PVAR(Nu.norm());
+        PVAR((Nu1+Vcm).norm());
+        PVAR((((Nu1+Vcm).quad())-Vesc*Vesc)/4.227e-6);
+        std::cin.get();
+    }
+    #endif
+    /**/
 
     return MC::MCResult<std::tuple<vec3,double,double>>(
                                                            std::tuple<vec3,double,double>(Nu1+Vcm,r_nd,Vesc),
@@ -405,7 +428,18 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
 
         double E_nd = (v_nd*v_nd - v_esc_nd*v_esc_nd);
         double L_nd = r_nd*sqrt(v_nd.x*v_nd.x + v_nd.y*v_nd.y);
-        H.putValue(mk_res.RemainDensity/Nmk,E_nd,L_nd);
+        if(H.putValue(mk_res.RemainDensity/Nmk,E_nd,L_nd))
+            sum += mk_res.RemainDensity/Nmk;
+        else{
+           if(mk_res.RemainDensity!=0){
+               PVAR(v_nd.norm());
+               PVAR(r_nd);
+               PVAR(v_esc_nd);
+               PVAR(E_nd);
+               PVAR(L_nd);
+               PVAR(maxLnd(BM,E_nd));
+           }
+        }
         /*
         if(!H.putValue(mk_res.RemainDensity/Nmk,E_nd,L_nd)){
             PVAR(v_nd.norm());
@@ -419,7 +453,7 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
             print();
         }
         */
-        sum += mk_res.RemainDensity/Nmk;
+
     }
     return sum;
 
@@ -445,8 +479,29 @@ auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
         double E_nd = (v_nd*v_nd - v_esc_nd*v_esc_nd);
         double L_nd = r_nd*sqrt(v_nd.x*v_nd.x + v_nd.y*v_nd.y);
         double dens = mk_res.RemainDensity*const_fact_rd;
-        H.putValue(dens,E_nd,L_nd);
-        sum += dens;
+
+
+        //double Ewas = H.values[1].values[0];
+        if(H.putValue(dens,E_nd,L_nd))
+            sum += dens;
+         /*
+        if(Ewas != H.values[1].values[0]){
+            PVAR(dens);
+            PVAR(v_nd);
+            PVAR(r_nd);
+            PVAR(v_esc_nd);
+            PVAR(E_nd);
+            PVAR(L_nd);
+            PVAR(H.values[1].values[1]);
+            print();
+        }*/
+            /*
+        if(std::isnan(E_nd) or std::isnan(L_nd)){
+            PVAR(r_nd);
+            PVAR(v_nd);
+            PVAR(v_esc_nd);
+            PVAR(v_esc_nd);
+        }*/
     }
     return sum;
 
@@ -668,7 +723,7 @@ inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Fact
     // q - exchange momentum
     double q = mk*(Nu-Nu1).norm();
     factor *= dF.ScatterFactor(q,EnLoss.Result);
-
+    factor *=  PhiFactor(q);
     return MC::MCResult<vec3>(Nu1+Vcm,factor);
 }
 
@@ -795,7 +850,7 @@ inline MC::MCResult<vec3> VoutTherm_Opt(double mk,double mp,double delta_mk,dF_F
     // q - exchange momentum
     double q = mk*(Nu-Nu1).norm();
     factor *= dF.ScatterFactor(q,EnLoss.Result);
-
+    factor *= PhiFactor(q);
     return MC::MCResult<vec3>(Nu1+Vcm,factor);
 }
 

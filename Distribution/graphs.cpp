@@ -176,7 +176,7 @@ double EL_density1(const EL_Histo<Args...> &H,double E,double L){
     double L10 = l0*Lmax1;
     double L11 = l1*Lmax1;
 
-    return Value/EL_column_measure({E0,L00,L01},{E1,L10,L11});
+    return Value/(0.5*(E1-E0)*(L01+L11-L00-L10));
 }
 template <typename ...Args>
 double EL_density3(const EL_Histo<Args...> &H,double E,double L){
@@ -328,34 +328,52 @@ int main(int argc,char **argv){
     auto gp_path = ptree_condition<std::string>(cmd_params,"gnuplot_path","gnuplot");
 
 
+    auto ELH_L_normed1 = HistoToFunc(ELH_L);
+    double maxH_L =0;
+    for(size_t i=0;i<ELH_L_normed1.num_of_element();++i){
+        maxH_L =  std::max(ELH_L_normed1[i],maxH_L);
+    }
+    ELH_L_normed1 /= maxH_L;
+
+    double maxH_H =0;
+    auto ELH_H_normed1 = HistoToFunc(ELH_H);
+    for(size_t i=0;i<ELH_H_normed1.num_of_element();++i){
+        maxH_H = std::max(ELH_H_normed1[i],maxH_H);
+    }
+
+    ELH_H_normed1 /= maxH_H;
 
     Gnuplot gp_3d1(gp_path);
     gp_3d1.command("set pm3d map");
+    gp_3d1.command("set palette maxcolors 20");
     gp_3d1.show_cmd = "splot";
-    gp_3d1.plotd(ELH_L.toFunction().toString(),"title \"L distrib\" with pm3d");
+    gp_3d1.plotd((ELH_L).toFunction().toString(),"title \"L distrib\" with image");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
-    //gp_3d1.show();
+    gp_3d1.show();
 
 
     Gnuplot gp_3d2(gp_path);
     gp_3d2.command("set pm3d map");
+    gp_3d2.command("set palette maxcolors 20");
     gp_3d2.show_cmd = "splot";
-    gp_3d2.plotd(ELH_H.toFunction().toString()," title \"H distrib\" with pm3d");
+    gp_3d2.plotd((ELH_H).toFunction().toString()," title \"H distrib\" with image");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
-    //gp_3d2.show();
+    gp_3d2.show();
 
 
     Gnuplot gp_3d3(gp_path);
     gp_3d3.command("set pm3d map");
+    gp_3d3.command("set palette maxcolors 20");
     gp_3d3.show_cmd = "splot";
-    gp_3d3.plotd(HistoToFunc(ELH_H).toString()," title \"H distrib dens\" with pm3d ");
+    gp_3d3.plotd(ELH_H_normed1.toString()," title \"H distrib dens\" with image ");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
     gp_3d3.show();
 
     Gnuplot gp_3d4(gp_path);
     gp_3d4.command("set pm3d map");
+    gp_3d4.command("set palette maxcolors 20");
     gp_3d4.show_cmd = "splot";
-    gp_3d4.plotd(HistoToFunc(ELH_L).toString()," title \"L distrib dens\" with pm3d");
+    gp_3d4.plotd(ELH_L_normed1.toString()," title \"L distrib dens\" with image");
     //gp_3d.plotd(ELH_H.toFunction().toString(),"with pm3d title \"H distrid\"");
     gp_3d4.show();
 
@@ -379,6 +397,7 @@ int main(int argc,char **argv){
     ps.add_pipe(&gp_3d2,&decltype(gp_3d2)::command,"H1");
     ps.add_pipe(&gp_3d3,&decltype(gp_3d3)::command,"H2");
     ps.add_pipe(&gp_3d4,&decltype(gp_3d4)::command,"L2");
+    ps.add_pipe(&gp_e_h,&decltype(gp_e_h)::command,"HE");
     ps.exec();
 	return 0;
 }

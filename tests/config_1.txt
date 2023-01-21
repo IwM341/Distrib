@@ -1,24 +1,37 @@
 {
 	"lh_out" : "lh.bmat",
 	"hl_out" : "hl.bmat",
+
+	"sp_h" : "sph.bmat",
+	"sp_l" : "spl.bmat",
+
 	"el_out" : "el.bmat",
 	"eh_out" : "eh.bmat",
 	"dl_out" : "dl.bmat",
 	"dh_out" : "dh.bmat",
-
 	"l_grid" : "l_grid.txt",
 	"h_grid" : "h_grid.txt",
-	"debug" : "true",
+
+	"debug" : "false",
+
 	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
+
 	"mk": 100,
 	"dmk" : 1e-4,
+
 	"NE":60,
 	"NLmax":60,
 	"Egird":"Uniform",
 	"Lgird":"Uniform",
-	"elements" : ["H1","He4","Fe","N14","O16","Ne"],
-	"Nmk_H" : 1000000,
-	"Nmk_L" : 1000000,
-	"not_fill" : true
+
+	"elements" : ["O16"],
+
+	"Nmk_H" : 10000000,
+	"Nmk_L" : 10000000,
+
+	"not_fill" : true,
+	"fractions": "fractions.txt",
+	"--Vbody" : 1e-3
+
 }

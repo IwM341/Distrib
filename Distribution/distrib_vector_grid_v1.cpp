@@ -21,7 +21,7 @@ int omp_thread_count() {
 }
 
 
-auto PhiFactorSS = [](double mk,double q)->double{
+auto PhiFactorSS = [](double q)->double{
     return 1.0;
 };
 
@@ -59,15 +59,34 @@ struct dF_Nuc{
     }
 };
 
+constexpr double fermi_GeV = 5;
+inline double BesselX(double x) noexcept{
+    if(x<0.01){
+        return 1.0/3-x*x*(1-x*x/28)/10;
+    }else{
+        return (sin(x)-x*cos(x))/(x*x*x);
+    }
+}
 struct dF_Nuc_M{
     size_t M;
     double const_factor;
-    dF_Nuc_M(size_t M=0,double const_factor = 1):M(M),const_factor(const_factor){}
+    double s,R;
+    dF_Nuc_M(size_t M=0,double const_factor = 1):M(M),const_factor(const_factor){
+        s =  fermi_GeV*0.9;
+        double b = (1.23*pow(M,1.0/3)-0.6)*fermi_GeV;
+        double a = 0.52*fermi_GeV;
+        R = sqrt(b*b+7*M_PI*M_PI*a*a/3-5*s*s);
+    }
     inline MC::MCResult<double> EnergyLoss(double Emax)const noexcept{
         return MC::MCResult<double>(0,1);
     }
     inline double ScatterFactor(double q,double enLoss)const noexcept{
-        return 1;
+        double bf = 3*BesselX(q*R)*exp(-q*q*s*s/2);
+        if(q > 0.2){
+            PVAR(q);
+        }
+
+        return const_factor*bf*bf;
     }
 };
 
@@ -190,10 +209,8 @@ int main(int argc,char **argv){
 
     boost::property_tree::ptree cmd_params;
     auto cmd_parse_log = parse_command_line_v1(argc,argv,cmd_params);
-    if(!cmd_parse_log.empty()){
-        std::cout << cmd_parse_log<<std::endl;
-        return 1;
-    }
+
+
 
 
     std::map<std::string,std::string> hl_defaut_params =
@@ -237,6 +254,8 @@ int main(int argc,char **argv){
     }
     boost::filesystem::path programm_path = ptree_gets(cmd_params,"config_path");
 
+
+
     boost::property_tree::ptree out_params;
 
     out_params.put("format", (MF == BINARY) ? "bin" : "text");
@@ -253,6 +272,7 @@ int main(int argc,char **argv){
             config_path_from(cmd_params.pgets("hl_out"),out_path);
     out_params.put("lh_out",config_path_to(lh_out_path,out_path).string());
     out_params.put("hl_out",config_path_to(hl_out_path,out_path).string());
+
 
     boost::filesystem::path eh_out_path = "";
     boost::filesystem::path el_out_path = "";
@@ -339,7 +359,7 @@ int main(int argc,char **argv){
         std::cout << "can't get body model" <<std::endl;
         return 0;
     }
-    auto BM = BodyModel::fromFile(Vesc1,config_path_from(bm_filename,programm_path));
+    auto BM = BodyModel::fromFile(Vesc1,config_path_from(bm_filename,programm_path).string());
 
 
 
@@ -421,8 +441,18 @@ int main(int argc,char **argv){
     }
     PVAR(ElementList);
     auto RhoND = BM["RhoND"];
-
+    Therm*=0;
     bool not_fill_ss = ptree_condition(cmd_params,"not_fill",false);
+
+    boost::property_tree::ptree elements_portions;
+
+    double V_body = ptree_condition(cmd_params,"Vbody",0.73e-3);
+    double V_disp = ptree_condition(cmd_params,"Vdisp",0.52e-3);
+    if(ptree_gets(cmd_params,"debug") != ""){
+        PVAR(V_body);
+        PVAR(V_disp);
+    }
+
     for(const auto & element : ElementList){
         decltype(Therm) Element_N(R,RhoND*BM[element]);
         std::cout << "calculating for element " << element <<std::endl;
@@ -435,9 +465,15 @@ int main(int argc,char **argv){
                                    S_HL,S_LH,EvapHisto_H,EvapHisto_L,PhiFactorSS,Nmk_HL,Nmk_LH);
         }
         if(count_distrib){
-            SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
-                             PhiFactorSS,G,Nmk_H,2,U0,U0);
+            double numEl = SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
+                             PhiFactorSS,G,Nmk_H,1,V_disp,V_body);
+            std::cout << "fraction for " << element << " = " << numEl << std::endl;
+            elements_portions.put(element,numEl);
         }
+    }
+    if(ptree_contain(cmd_params,"fractions")){
+        std::ofstream fraction_file(config_path_from(cmd_params.pgets("fractions"),out_path).string());
+        boost::property_tree::write_json(fraction_file,elements_portions);
     }
 
 
@@ -446,6 +482,8 @@ int main(int argc,char **argv){
 
     std::vector<double> MatT_HL(N_H*N_L);
     std::vector<double> MatT_LH(N_H*N_L);
+    std::vector<double> SP_H(N_H);
+    std::vector<double> SP_L(N_L);
 
 
     if(contains_nan(MatT_HL)){
@@ -458,9 +496,11 @@ int main(int argc,char **argv){
 
     for(size_t i=0;i<N_L;++i){
         S_LH[i].saveIter(MatT_LH.data()+i*N_H,MatT_LH.data()+(i+1)*N_H);
+        SP_L[i] = S_LH[i].summ();
     }
     for(size_t i=0;i<N_H;++i){
         S_HL[i].saveIter(MatT_HL.data()+i*N_L,MatT_HL.data()+(i+1)*N_L);
+        SP_H[i] = S_HL[i].summ();
     }
 
 
@@ -468,6 +508,16 @@ int main(int argc,char **argv){
         saveMatrix(MatT_HL.data(),N_H,N_L,hl_out_path.string(),MF);
         saveMatrix(MatT_LH.data(),N_L,N_H,lh_out_path.string(),MF);
     }
+
+    if(ptree_contain(cmd_params,"sp_h")){
+        saveMatrix(SP_H.data(),N_H,1,
+                   config_path_from(cmd_params.pgets("sp_h"),out_path).string(),MF);
+    }
+    if(ptree_contain(cmd_params,"sp_l")){
+        saveMatrix(SP_L.data(),N_L,1,
+                   config_path_from(cmd_params.pgets("sp_l"),out_path).string(),MF);
+    }
+
     std::vector<double> Ev_H = EvapHisto_H.AllValues();
     std::vector<double> Ev_L = EvapHisto_L.AllValues();
 

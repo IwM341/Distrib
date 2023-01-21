@@ -1,0 +1,90 @@
+cmd params: {
+    "config_path": "..\/tests",
+    "lh_out": "lh.bmat",
+    "hl_out": "hl.bmat",
+    "el_out": "el.bmat",
+    "eh_out": "eh.bmat",
+    "dl_out": "dl.bmat",
+    "dh_out": "dh.bmat",
+    "l_grid": "l_grid.txt",
+    "h_grid": "h_grid.txt",
+    "debug": "false",
+    "body": "D:\/Important\/articles\/DMFramework\/celstial_models\/solar_model.dat",
+    "Vesc": "2.056e-3",
+    "mk": "5",
+    "dmk": "0.0",
+    "NE": "100",
+    "NLmax": "100",
+    "Egird": "Uniform",
+    "Lgird": "Uniform",
+    "elements": [
+        "H1",
+        "He4",
+        "Fe",
+        "N14",
+        "O16"
+    ],
+    "Nmk_H": "10000000",
+    "Nmk_L": "10000000",
+    "not_fill": "true",
+    "logfile": "log.txt"
+}
+
+out params: {
+    "config_path": "..\/tests",
+    "lh_out": "lh.bmat",
+    "hl_out": "hl.bmat",
+    "el_out": "el.bmat",
+    "eh_out": "eh.bmat",
+    "dl_out": "dl.bmat",
+    "dh_out": "dh.bmat",
+    "l_grid": "l_grid.txt",
+    "h_grid": "h_grid.txt",
+    "debug": "false",
+    "body": "D:\/Important\/articles\/DMFramework\/celstial_models\/solar_model.dat",
+    "Vesc": "2.056e-3",
+    "mk": "5",
+    "dmk": "0.0",
+    "NE": "100",
+    "NLmax": "100",
+    "Egird": "Uniform",
+    "Lgird": "Uniform",
+    "elements": [
+        "H1",
+        "He4",
+        "Fe",
+        "N14",
+        "O16"
+    ],
+    "Nmk_H": "10000000",
+    "Nmk_L": "10000000",
+    "not_fill": "true",
+    "logfile": "log.txt"
+}
+
+programm_path = "../tests"
+out_path = "../tests"
+lh_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\lh.bmat"
+hl_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\hl.bmat"
+eh_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\eh.bmat"
+el_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\el.bmat"
+dh_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\dh.bmat"
+dl_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\dl.bmat"
+grid_h_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\h_grid.txt"
+grid_l_out_path = "D:\Important\articles\PRJ002dM_Distrib\tests\l_grid.txt"
+config_out = ""
+openmp verstion, thread num = 8
+body filename: D:/Important/articles/DMFramework/celstial_models/solar_model.dat
+Vesc 0.002056
+gh_out.is_open() = 1
+ElementList = Vector[ H1, He4, Fe, N14, O16]
+calculating for element H1
+fraction for H1 = 0.00112347
+calculating for element He4
+fraction for He4 = 0.00104882
+calculating for element Fe
+fraction for Fe = 1.05378e-06
+calculating for element N14
+fraction for N14 = 4.67159e-06
+calculating for element O16
+fraction for O16 = 1.57469e-05
