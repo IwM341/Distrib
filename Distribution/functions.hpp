@@ -333,7 +333,8 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
 
     //random input velocity
     auto VelocityMk = Velocity(G,Vesc,Vdisp,mU0);
-    auto V_wimp = VelocityMk.Result;
+    auto V_wimp = VelocityMk.Result;//vec3::PolarCos(sqrt(VelocityMk.Result*VelocityMk.Result+Vesc*Vesc),
+                                 //RandomCos(G),RandomPhi(G));
     factor *= VelocityMk.RemainDensity;
 
 
@@ -695,7 +696,7 @@ inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Fact
     double factor = 1.0;
 
     factor *= n_r;
-    vec3 V1 = Gauss3(G,sqrt(2*Therm/mp));//TODO: add thermal distribution of nuclei velocity
+    vec3 V1 = Gauss3(G,sqrt(Therm/mp));//TODO: add thermal distribution of nuclei velocity
 
     //PVAR(Therm);
 //    if(V1.norm()>2e-3){

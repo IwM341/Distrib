@@ -169,7 +169,7 @@ void make_work(const boost::property_tree::ptree& CP){
     }
 
     Function::GridFunction<T,Function::VectorGrid<T>,Function::LinearInterpolator> LN_t(
-                Vector(it_number+1,[](size_t i)->T{return pow(2.0,i);}));
+                Vector(it_number+1,[tau](size_t i)->T{return (i==0 ? 0 :tau*pow(2.0,i));}));
     auto HN_t = LN_t;
     LN_t[0] = vector_sum(EL_Distrib);
     HN_t[0] = vector_sum(EH_Distrib);

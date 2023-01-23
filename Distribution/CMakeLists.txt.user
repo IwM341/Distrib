@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 6.0.2, 2023-01-21T20:59:40. -->
+<!-- Written by QtCreator 6.0.2, 2023-01-23T19:25:11. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -96,7 +96,7 @@
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt6.623.win64_mingw_kit</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
-   <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
+   <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">1</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="QString" key="CMake.Build.Type">Debug</value>
     <value type="QString" key="CMake.Initial.Parameters">-GNinja
@@ -301,7 +301,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">distrib_vector_grid</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.distrib_vector_grid</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">distrib_vector_grid</value>
-    <value type="QString" key="RunConfiguration.Arguments">-config ../tests/config_1.txt</value>
+    <value type="QString" key="RunConfiguration.Arguments">-config ../tests/100_dm/config_1.txt</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
@@ -319,7 +319,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">matrix_mult</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.matrix_mult</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">matrix_mult</value>
-    <value type="QString" key="RunConfiguration.Arguments">-config ../tests/config_2.txt</value>
+    <value type="QString" key="RunConfiguration.Arguments">-config ../tests/100_dm/config_2.txt</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
@@ -337,7 +337,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">graphics</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.graphics</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">graphics</value>
-    <value type="QString" key="RunConfiguration.Arguments">-config ../tests/config_3.txt -gnuplot_path=D:/Soft/gnuplot/gnuplot/bin/gnuplot -body=D:\Important\articles\DMFramework\celstial_models\solar_model.dat</value>
+    <value type="QString" key="RunConfiguration.Arguments">-config ../tests/100_dm/config_3.txt -gnuplot_path=D:/Soft/gnuplot/gnuplot/bin/gnuplot -body=D:\Important\articles\DMFramework\celstial_models\solar_model.dat</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>

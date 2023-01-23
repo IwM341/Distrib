@@ -82,9 +82,6 @@ struct dF_Nuc_M{
     }
     inline double ScatterFactor(double q,double enLoss)const noexcept{
         double bf = 3*BesselX(q*R)*exp(-q*q*s*s/2);
-        if(q > 0.2){
-            PVAR(q);
-        }
 
         return const_factor*bf*bf;
     }
@@ -209,7 +206,10 @@ int main(int argc,char **argv){
 
     boost::property_tree::ptree cmd_params;
     auto cmd_parse_log = parse_command_line_v1(argc,argv,cmd_params);
-
+    if(!cmd_parse_log.empty()){
+        std::cout << cmd_parse_log <<std::endl;
+        return 0;
+    }
 
 
 
@@ -318,10 +318,30 @@ int main(int argc,char **argv){
 
     //boost::property_tree::write_json(std::cout,cmd_params);
 
+    double l_fraction = cmd_params.get("l_fraction",-1);
+    double h_fraction = cmd_params.get("h_fraction",-1);
+    if(h_fraction <0 ){
+        if(l_fraction <0){
+            h_fraction = 0.5;
+            l_fraction = 0.5;
+        }
+        else{
+            l_fraction = std::clamp(l_fraction,0.0,1.0);
+            h_fraction = 1-l_fraction;
+        }
+    }else{
+        if(l_fraction <0){
+            h_fraction = std::clamp(h_fraction,0.0,1.0);
+            l_fraction = 1-h_fraction;
+        }
+        else{
+            l_fraction = l_fraction/(l_fraction+h_fraction);
+            h_fraction = 1-l_fraction;
+        }
+    }
 
 
-
-    if(ptree_gets(cmd_params,"debug") != ""){
+    if(ptree_gets(cmd_params,"debug") == "true"){
         std::cout << "cmd params: ";
         boost::property_tree::write_json(std::cout,cmd_params);
         print();
@@ -339,6 +359,8 @@ int main(int argc,char **argv){
         PVAR(grid_h_out_path);
         PVAR(grid_l_out_path);
         PVAR(config_out);
+        PVAR(l_fraction);
+        PVAR(h_fraction);
         #ifdef _OPENMP
         std::cout << "openmp verstion, thread num = " << omp_thread_count() << std::endl;
         #endif
@@ -440,7 +462,7 @@ int main(int argc,char **argv){
 
     }
     PVAR(ElementList);
-    auto RhoND = BM["RhoND"];
+    auto RhoND = BM["Rho"];
     Therm*=0;
     bool not_fill_ss = ptree_condition(cmd_params,"not_fill",false);
 
@@ -465,10 +487,13 @@ int main(int argc,char **argv){
                                    S_HL,S_LH,EvapHisto_H,EvapHisto_L,PhiFactorSS,Nmk_HL,Nmk_LH);
         }
         if(count_distrib){
-            double numEl = SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
+            double numEl_H = SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
                              PhiFactorSS,G,Nmk_H,1,V_disp,V_body);
-            std::cout << "fraction for " << element << " = " << numEl << std::endl;
-            elements_portions.put(element,numEl);
+            std::cout << "H fraction for " << element << " = " << numEl_H << std::endl;
+            double numEl_L = SupressFactor_v1(ELH_L,m_nuc,mk,delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
+                             PhiFactorSS,G,Nmk_L,1,V_disp,V_body);
+            std::cout << "L fraction for " << element << " = " << numEl_L << std::endl;
+            elements_portions.put(element,numEl_L);
         }
     }
     if(ptree_contain(cmd_params,"fractions")){
@@ -538,9 +563,10 @@ int main(int argc,char **argv){
 
 
 
+
     if(count_distrib){
-        D_H = ELH_H.AllValues();
-        D_L = ELH_L.AllValues();
+        D_H = ELH_H.AllValues()*l_fraction;
+        D_L = ELH_L.AllValues()*h_fraction;
         saveMatrix(D_H.data(),1,N_H,dh_out_path.string(),MF);
         saveMatrix(D_L.data(),1,N_L,dl_out_path.string(),MF);
     }

@@ -12,7 +12,7 @@
 	"l_grid" : "l_grid.txt",
 	"h_grid" : "h_grid.txt",
 
-	"debug" : "false",
+	"debug" : false,
 
 	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
@@ -22,16 +22,16 @@
 
 	"NE":60,
 	"NLmax":60,
-	"Egird":"Uniform",
-	"Lgird":"Uniform",
+	"_Egird":"Uniform",
+	"_Lgird":"Uniform",
 
-	"elements" : ["O16"],
+	"elements" : ["H1","He4","Fe","O16","N14"],
 
 	"Nmk_H" : 10000000,
 	"Nmk_L" : 10000000,
 
 	"not_fill" : true,
 	"fractions": "fractions.txt",
-	"--Vbody" : 1e-3
+	"-Vbody" : 2e-3
 
 }

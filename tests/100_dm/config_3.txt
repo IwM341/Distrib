@@ -1,0 +1,7 @@
+{
+	"dl_final" : "dlf_100_dm.bmat",
+	"dh_final" : "dhf_100_dm.bmat",
+	"l_grid" : "l_grid_100_dm.txt",
+	"h_grid" : "h_grid_100_dm.txt",
+	"tofunc" : "EL"
+}

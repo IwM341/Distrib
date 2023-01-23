@@ -200,7 +200,7 @@ double EL_density3(const EL_Histo<Args...> &H,double E,double L){
     double l0 = H.values[i].Grid[j];
     double l1 = H.values[i].Grid[j+1];
 
-       return Value/((l1-l0)*(E1-E0));
+    return Value/((l1-l0)*(E1-E0));
 }
 
 template <typename ...Args>
@@ -250,7 +250,7 @@ auto ELH_toFunction_v4(const EL_Histo<Args...> &H,size_t EN,size_t LN){
 }
 
 template <typename ...Args>
-auto ELH_toFunction_v5(const EL_Histo<Args...> &H,size_t EN,size_t LN){
+auto ELH_toFunction_v5(size_t type,const EL_Histo<Args...> &H,size_t EN,size_t LN){
     double Emin = H.Grid._a();
     double Emax = H.Grid._b();
     Function::UniformGrid<float> EG(H.Grid._a(),H.Grid._b(),EN);
@@ -258,9 +258,16 @@ auto ELH_toFunction_v5(const EL_Histo<Args...> &H,size_t EN,size_t LN){
     Function::GridFunction<double,Function::UniformGrid<float>,Function::LinearInterpolator,
             Function::UniformGrid<float>,
             Function::LinearInterpolator> F(EG,LG);
-    F.map([&](float e,float l){
-        return EL_density3(H,e,l);
-    });
+    if(type == 1){
+        F.map([&](float e,float l){
+            return EL_density1(H,e,l);
+        });
+    }
+    else{
+        F.map([&](float e,float l){
+            return EL_density2(H,e,l);
+        });
+    }
     return F;
 }
 
@@ -303,9 +310,15 @@ int main(int argc,char **argv){
     Function::UniformGrid<double> R(0,1,phi.size());
     Function::GridFunction<double,Function::UniformGrid<double>,Function::CubicInterpolator>
             PhiC(R,phi);
+    std::string method =  cmd_params.get("tofunc","EL");
     auto HistoToFunc = [&](const auto &ELH){
+        if(method == "rv")
+            return ELH_toFunction_v3(ELH,PhiC,100,100);
+        else if(method == "val")
+            return ELH_toFunction_v5(3,ELH,201,201);
+        else
+            return ELH_toFunction_v5(1,ELH,201,201);
         //return ELH_toFunction_v3(ELH,PhiC,100,100);
-        return ELH_toFunction_v4(ELH,201,201);
     };
 
 
