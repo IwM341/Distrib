@@ -1,3 +1,4 @@
 build*/
 *.bmat
 *.mat
+CMakeLists.txt.user
