@@ -462,7 +462,7 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
 
 template <typename VescFuncType,typename ThermFuncType,typename NFuncType,
           typename PhiFuncType,typename HType,typename dF_Type,typename Generator>
-auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
+auto SupressFactor_v1(HType & H, double mi,double mk,double delta_mk,dF_Type dF,
                       NFuncType const &NR,double VescMin,VescFuncType const & VescR,ThermFuncType const & TempR,
                     PhiFuncType PhiFactor,Generator const&G,
                     size_t Nmk,double pow_r,
@@ -470,9 +470,9 @@ auto SupressFactor_v1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
 
     double sum = 0;
     double sum2 = 0;
-    double const_fact_rd = mk/(mk+mp)/Nmk;
+    double const_fact_rd = mk/(mk+mi)/Nmk;
     for(size_t i=0;i<Nmk;++i){
-        auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0,pow_r);
+        auto mk_res = Vout1(mi,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0,pow_r);
         auto v_nd = std::get<0>(mk_res.Result)/VescMin;
         auto r_nd = std::get<1>(mk_res.Result);
         auto v_esc_nd = std::get<2>(mk_res.Result)/VescMin;
@@ -889,7 +889,9 @@ inline void TrajectoryIntegral(Generator const & G,
         if(v2 < 0)
             v2 = 0;
         double v = sqrt(v2);
-        vec3 Vin = RandomN(G)*v;
+        double v_tau  = l_nd/r;
+        double v_r = (v_tau < v) ? sqrt(v*v-v_tau*v_tau) : 0;
+        vec3 Vin = vec3(v_tau,0,v_r);//RandomN(G)*v;
         auto Vout = VoutTherm(mk,delta_mk,ST,T,PhiFactor,Vin,n_r,Therm,G);
 
         double e_nd_1 = (Vout.Result*Vout.Result - vesc*vesc)/(VescMin*VescMin);

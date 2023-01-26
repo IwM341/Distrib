@@ -83,6 +83,7 @@ struct TrajectoryInfo{
     //x = r, y = v_r, z = v_perp
     Function::GridFunction<double,Function::VectorGrid<double>,Function::LinearInterpolator> Trajectory;
     double T_in,T_out;
+    double E,L;
 };
 
 
@@ -321,6 +322,8 @@ TrajectoryInfo CalculateTrajectory(const Function::GridFunction<GF_ARGS...> & ph
     const double ep = -E_nd;
     const double lp = L_nd;
     TrajectoryInfo TI;
+    TI.E = E_nd;
+    TI.L = L_nd;
 
     double sqrt_e= sqrt(ep);
     double sqrt_1_e_l2 =sqrt(1 - ep - lp*lp);

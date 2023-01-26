@@ -1,4 +1,4 @@
-#include "functions.hpp"
+
 #include <cmath>
 #include <fstream>
 #include "complex/complex_ex.hpp"
@@ -60,6 +60,145 @@ void  printPairVector(size_t NL,size_t NH,const T * L,const T*H){
     print();
 }
 
+template <typename T>
+struct ResultData{
+    Function::GridFunction<T,Function::VectorGrid<T>,Function::LinearInterpolator> n_l;
+    decltype(n_l) n_h;
+    decltype(n_l) N_L,N_H;
+    std::vector<T> d_l,d_h,D_L,D_H;
+};
+
+template <typename T>
+ResultData<T> MatrixMultMethod(size_t NH,size_t NL,std::vector<T> &A_LL,std::vector<T> &A_HL_T,
+                               std::vector<T> &A_LH_T,std::vector<T> &A_HH,
+                               std::vector<T> &D_L_in,std::vector<T> &D_H_in,size_t log2_n,T tau){
+    ResultData<T>  RD;
+    size_t ld_A_HL = NL;
+    size_t ld_A_LH = NH;
+    size_t ld_A_HH = NH;
+    size_t ld_A_LL = NL;
+
+    std::vector<T>B_HL_T(A_HL_T.size());
+    std::vector<T>B_LH_T(A_LH_T.size());
+    std::vector<T>B_LL(A_LL.size());
+    std::vector<T>B_HH(A_HH.size());
+
+    RD.n_l = decltype(RD.n_l)(Vector(log2_n+1,[tau](size_t i)->T{return (i==0 ? 0 :tau*pow(2.0,i));}));
+    RD.N_H = RD.N_L= RD.n_h = RD.n_l;
+
+    RD.n_l[0] = vector_sum(D_L_in);
+    RD.n_h[0] = vector_sum(D_H_in);
+    RD.N_H[0] = 0;
+    RD.N_L[0] = 0;
+
+    RD.d_l = D_L_in;
+    RD.d_h = D_H_in;
+    auto LD_last = D_L_in;
+    auto HD_last = D_H_in;
+
+    RD.D_L = D_L_in*0;
+    RD.D_H = D_H_in*0;
+
+    for(size_t i=1;i<=log2_n;++i){
+        std::cout << i <<std::endl;
+        std::swap(RD.d_l,LD_last);
+        std::swap(RD.d_h,HD_last);
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NL,NL,NL,
+                    1.0,A_LL.data(),ld_A_LL,A_LL.data(),ld_A_LL,0.0,B_LL.data(),ld_A_LL);
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NL,NL,NH,
+                            1.0,A_HL_T.data(),ld_A_HL,A_LH_T.data(),ld_A_LH,1.0,B_LL.data(),ld_A_LL);
+
+
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NL,NH,NL,
+                    1.0,A_LL.data(),ld_A_LL,A_HL_T.data(),ld_A_HL,0.0,B_HL_T.data(),ld_A_HL);
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NL,NH,NH,
+                            1.0,A_HL_T.data(),ld_A_HL,A_HH.data(),ld_A_HH,1.0,B_HL_T.data(),ld_A_HL);
+
+
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NH,NL,NL,
+                    1.0,A_LH_T.data(),ld_A_LH,A_LL.data(),ld_A_LL,0.0,B_LH_T.data(),ld_A_LH);
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NH,NL,NH,
+                            1.0,A_HH.data(),ld_A_HH,A_LH_T.data(),ld_A_LH,1.0,B_LH_T.data(),ld_A_LH);
+
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NH,NH,NL,
+                    1.0,A_LH_T.data(),ld_A_LH,A_HL_T.data(),ld_A_HL,0.0,B_HH.data(),ld_A_HH);
+        gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,NH,NH,NH,
+                            1.0,A_HH.data(),ld_A_HH,A_HH.data(),ld_A_HH,1.0,B_HH.data(),ld_A_HH);
+
+        std::swap(A_LL,B_LL);
+        std::swap(A_HL_T,B_HL_T);
+        std::swap(A_LH_T,B_LH_T);
+        std::swap(A_HH,B_HH);
+
+        //printPairMatrix(NL,NH,A_LL.data(),A_HL_T.data(),A_LH_T.data(),A_HH.data());
+        if(D_L_in.size() && D_H_in.size() && RD.d_l.size() && RD.d_h.size()){
+            gemv<T>(CblasColMajor,CblasNoTrans,NL,NL,1.0,A_LL.data(),ld_A_LL,D_L_in.data(),1,0.0,RD.d_l.data(),1);
+            gemv<T>(CblasColMajor,CblasNoTrans,NL,NH,1.0,A_HL_T.data(),ld_A_HL,D_H_in.data(),1,1.0,RD.d_l.data(),1);
+
+            gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,A_LH_T.data(),ld_A_LH,D_L_in.data(),1,0.0,RD.d_h.data(),1);
+            gemv<T>(CblasColMajor,CblasNoTrans,NH,NH,1.0,A_HH.data(),ld_A_HH,D_H_in.data(),1,1.0,RD.d_h.data(),1);
+        }
+
+        double dt = RD.n_l.Grid[i]-RD.n_l.Grid[i-1];
+        RD.n_l[i] = vector_sum(RD.d_l);
+        RD.n_h[i] = vector_sum(RD.d_h);
+        RD.N_L[i] = RD.N_L[i-1] +0.5*(RD.n_l[i]+RD.n_l[i-1])*dt;
+        RD.N_H[i] = RD.N_H[i-1] +0.5*(RD.n_h[i]+RD.n_h[i-1])*dt;
+        RD.D_L = RD.D_L+ T(0.5*dt)*(RD.d_l+LD_last);
+        RD.D_H = RD.D_H + T(0.5*dt)*(RD.d_h+HD_last);
+
+    }
+    return RD;
+}
+template <typename T>
+ResultData<T> VectorMultMethod(size_t NH,size_t NL,std::vector<T> &A_LL,std::vector<T> &A_HL_T,
+                               std::vector<T> &A_LH_T,std::vector<T> &A_HH,
+                               std::vector<T> &D_L_in,std::vector<T> &D_H_in,size_t n,T tau){
+    ResultData<T>  RD;
+    size_t ld_A_HL = NL;
+    size_t ld_A_LH = NH;
+    size_t ld_A_HH = NH;
+    size_t ld_A_LL = NL;
+
+    RD.n_l = decltype(RD.n_l)(Vector(n+1,[tau](size_t i)->T{return (i==0 ? 0 :tau*pow(2.0,i));}));
+    RD.N_H = RD.N_L= RD.n_h = RD.n_l;
+
+    RD.n_l[0] = vector_sum(D_L_in);
+    RD.n_h[0] = vector_sum(D_H_in);
+    RD.N_H[0] = 0;
+    RD.N_L[0] = 0;
+
+    RD.d_l = D_L_in;
+    RD.d_h = D_H_in;
+    auto LD_last = D_L_in;
+    auto HD_last = D_H_in;
+
+    RD.D_L = D_L_in*0;
+    RD.D_H = D_H_in*0;
+
+    for(size_t i=1;i<=n;++i){
+        std::swap(RD.d_l,LD_last);
+        std::swap(RD.d_h,HD_last);
+        //printPairMatrix(NL,NH,A_LL.data(),A_HL_T.data(),A_LH_T.data(),A_HH.data());
+        if(D_L_in.size() && D_H_in.size() && RD.d_l.size() && RD.d_h.size()){
+            gemv<T>(CblasColMajor,CblasNoTrans,NL,NL,1.0,A_LL.data(),ld_A_LL,LD_last.data(),1,0.0,RD.d_l.data(),1);
+            gemv<T>(CblasColMajor,CblasNoTrans,NL,NH,1.0,A_HL_T.data(),ld_A_HL,HD_last.data(),1,1.0,RD.d_l.data(),1);
+
+            gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,A_LH_T.data(),ld_A_LH,LD_last.data(),1,0.0,RD.d_h.data(),1);
+            gemv<T>(CblasColMajor,CblasNoTrans,NH,NH,1.0,A_HH.data(),ld_A_HH,HD_last.data(),1,1.0,RD.d_h.data(),1);
+        }
+
+        double dt = RD.n_l.Grid[i]-RD.n_l.Grid[i-1];
+        RD.n_l[i] = vector_sum(RD.d_l);
+        RD.n_h[i] = vector_sum(RD.d_h);
+        RD.N_L[i] = RD.N_L[i-1] +0.5*(RD.n_l[i]+RD.n_l[i-1])*dt;
+        RD.N_H[i] = RD.N_H[i-1] +0.5*(RD.n_h[i]+RD.n_h[i-1])*dt;
+        RD.D_L = RD.D_L+ T(0.5*dt)*(RD.d_l+LD_last);
+        RD.D_H = RD.D_H + T(0.5*dt)*(RD.d_h+HD_last);
+    }
+    return RD;
+}
+
 
 #define pget get<std::string>
 #define LOGIF(condition,expression) if(condition) PVAR(expression)
@@ -95,16 +234,16 @@ void make_work(const boost::property_tree::ptree& CP){
         Ev_L = std::get<0>(loadMatrix<T>(FPath("el_in"),MF));
     }
 
-    std::vector<T> EH_Distrib(NH,1.0); //LoadVectorBinary<vtype>("D:/Desktop/del_files/matrix/H_capt.matrix");
+    std::vector<T> H_Distrib(NH,1.0); //LoadVectorBinary<vtype>("D:/Desktop/del_files/matrix/H_capt.matrix");
     if(CP.find("dh_in") != CP.not_found()){
-        EH_Distrib = std::get<0>(loadMatrix<T>(FPath("dh_in"),MF));
+        H_Distrib = std::get<0>(loadMatrix<T>(FPath("dh_in"),MF));
     }
 
     //std::vector<T> EH_D_out(EH_Distrib.size());
 
-    std::vector<T> EL_Distrib(NL,1.0);
+    std::vector<T> L_Distrib(NL,1.0);
     if(CP.find("dl_in") != CP.not_found()){
-        EL_Distrib = std::get<0>(loadMatrix<T>(FPath("dl_in"),MF));
+        L_Distrib = std::get<0>(loadMatrix<T>(FPath("dl_in"),MF));
     }
 
     //std::vector<T> EL_D_out(EL_Distrib.size());
@@ -133,14 +272,47 @@ void make_work(const boost::property_tree::ptree& CP){
         if(Ev_H.size())
             A_HH[i*NH+i] -= Ev_H[i];
     }
-    T tau;
-    try {
-        tau = CP.get<float>("tau");
-    }  catch (std::exception & e) {
-        tau = 0.05/std::max(-min(A_HH),-min(A_LL));
-        PVAR(tau);
+    T tau = CP.get<float>("tau",-1);
+    int degree = CP.get<int>("deg",-1);
+    T fullT = CP.get<float>("T",-1);
+    bool isVectorMethod = CP.get<std::string>("method","vector") == "vector";
+
+    if(tau < 0){
+        if(degree < 0){
+            tau = 0.05/std::max(-min(A_HH),-min(A_LL));
+            if(fullT < 0)
+                degree = 1;
+            else
+                degree = fullT/tau + 0.5;
+        }
+        else{
+            if(fullT < 0){
+                tau = 0.05/std::max(-min(A_HH),-min(A_LL));
+                fullT = tau*degree;
+            }
+            else{
+                degree = degree = fullT/tau + 0.5;
+            }
+        }
+    }else{
+        if(degree > 0){
+           fullT = tau*degree;
+        }
+        else{
+            if(fullT < 0){
+                degree = 1;
+                fullT = tau*degree;
+            }
+            else{
+                degree = degree = fullT/tau + 0.5;
+            }
+        }
     }
-    LOGIF(log_std,tau);
+    if(log_std){
+        PVAR(tau);
+        PVAR(degree);
+        PVAR(fullT);
+    }
 
     A_LL*=tau;
     A_HH*=tau;
@@ -154,10 +326,11 @@ void make_work(const boost::property_tree::ptree& CP){
         A_HH[i*NH+i] += 1;
     }
 
+    /*
     std::vector<T>B_HL_T(A_HL_T.size());
     std::vector<T>B_LH_T(A_LH_T.size());
     std::vector<T>B_LL(A_LL.size());
-    std::vector<T>B_HH(A_HH.size());
+    std::vector<T>B_HH(A_HH.size());*/
     //print();
 
     size_t it_number = 10;
@@ -167,7 +340,7 @@ void make_work(const boost::property_tree::ptree& CP){
     }  catch (std::exception & e) {
         it_number = 10;
     }
-
+    /*
     Function::GridFunction<T,Function::VectorGrid<T>,Function::LinearInterpolator> LN_t(
                 Vector(it_number+1,[tau](size_t i)->T{return (i==0 ? 0 :tau*pow(2.0,i));}));
     auto HN_t = LN_t;
@@ -177,7 +350,7 @@ void make_work(const boost::property_tree::ptree& CP){
     auto LD_tmp = EL_Distrib;
     auto HD_tmp = EH_Distrib;
 
-    /**/
+
     if(log_std)
         printPairMatrix(NL,NH,A_LL.data(),A_HL_T.data(),A_LH_T.data(),A_HH.data());
 
@@ -220,35 +393,60 @@ void make_work(const boost::property_tree::ptree& CP){
         }
         LN_t[i] = vector_sum(LD_tmp);
         HN_t[i] = vector_sum(HD_tmp);
-    }
+    }*/
+
+    size_t iter_num = isVectorMethod ? degree : 1.5+log2(degree);
+    auto RD = isVectorMethod ? VectorMultMethod<T>(NH,NL,A_LL,A_HL_T,A_LH_T,A_HH,L_Distrib,H_Distrib,
+                                                iter_num,tau) :
+                               MatrixMultMethod<T>(NH,NL,A_LL,A_HL_T,A_LH_T,A_HH,L_Distrib,H_Distrib,iter_num,tau);
     if(log_std){
-        printPairVector(NL,NH,LD_tmp.data(),HD_tmp.data());
+        printPairVector(NL,NH,RD.d_l.data(),RD.d_h.data());
     }
-    auto LD_summ = vector_sum(LD_tmp);
-    auto HD_summ = vector_sum(LD_tmp);
+    auto ld_summ = vector_sum(RD.d_l);
+    auto hd_summ = vector_sum(RD.d_h);
+
+
+    auto LD_summ = vector_sum(RD.D_L);
+    auto HD_summ = vector_sum(RD.D_H);
+
     if(LD_summ == 0.0){
         std::cout << "WARNING, LD summ =0" <<std::endl;
     }
     if(HD_summ == 0.0){
         std::cout << "WARNING, HD summ =0" <<std::endl;
     }
-    LD_tmp *= (1.0/LD_summ);
-    HD_tmp *= (1.0/HD_summ);
+    RD.d_l *= (1.0/ld_summ);
+    RD.d_h *= (1.0/hd_summ);
+
+    RD.D_L *= (1.0/LD_summ);
+    RD.D_H *= (1.0/HD_summ);
 
     if(log_std){
-        printPairVector(NL,NH,LD_tmp.data(),HD_tmp.data());
+        printPairVector(NL,NH,RD.d_l.data(),RD.d_h.data());
+        printPairVector(NL,NH,RD.D_L.data(),RD.D_H.data());
     }
 
-    saveMatrix(LD_tmp.data(),1,NL,FPath("dl_out"),MF);
-    saveMatrix(HD_tmp.data(),1,NH,FPath("dh_out"),MF);
+    saveMatrix(RD.d_l.data(),1,NL,FPath("dl_out"),MF);
+    saveMatrix(RD.d_h.data(),1,NH,FPath("dh_out"),MF);
+
+    saveMatrix(RD.D_L.data(),1,NL,FPath("DL_out"),MF);
+    saveMatrix(RD.D_H.data(),1,NH,FPath("DH_out"),MF);
 
     if(CP.find("nl_out") != CP.not_found()){
-        std::ofstream LN_f(FPath("nl_out"));
-        LN_f <<LN_t.toString();
+        std::ofstream nl_f(FPath("nl_out"));
+        nl_f <<RD.n_l.toString();
     }
     if(CP.find("nh_out")  != CP.not_found()){
-        std::ofstream HN_f(FPath("nh_out"));
-        HN_f <<HN_t.toString();
+        std::ofstream nh_f(FPath("nh_out"));
+        nh_f <<RD.n_h.toString();
+    }
+    if(CP.find("NL_out") != CP.not_found()){
+        std::ofstream NL_f(FPath("NL_out"));
+        NL_f <<RD.N_L.toString();
+    }
+    if(CP.find("NL_out")  != CP.not_found()){
+        std::ofstream NH_f(FPath("NL_out"));
+        NH_f <<RD.N_H.toString();
     }
 }
 

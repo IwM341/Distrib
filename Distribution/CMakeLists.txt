@@ -36,6 +36,7 @@ message("boost include dir:" ${Boost_INCLUDE_DIR})
 message("boost library dir:" ${Boost_LIBRARY_DIRS})
 message("boost filesystem lib:" ${Boost_FILESYSTEM_LIBRARY})
 
+option(USE_OPENMP "use openmp" ON)
 if(${USE_OPENMP})
     find_package(OpenMP)
     if (OPENMP_FOUND)

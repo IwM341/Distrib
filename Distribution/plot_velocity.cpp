@@ -33,23 +33,25 @@ int main(int argc,char**argv){
         Function::Histogramm<double,Function::UniformGrid<double>> HV(
                         Function::UniformGrid<double>(0,2*(mD0+mU0),101));
         auto G = [](){return rand()/(RAND_MAX+1.0);};
-        for(size_t i=0;i<1000000;++i){
-            auto[v,dens] = Velocity(G,Vesc,mD0,mUeff);
+        auto G1 = [&G](){return (rand()+G())/(RAND_MAX+1.0);};
+        const size_t N = 10000000;
+        for(size_t i=0;i<N;++i){
+            auto[v,dens] = Velocity(G1,Vesc,mD0,mU0);
             double u = sqrt(v.quad()-Vesc*Vesc);
-            HV.putValue(dens/1000000,u);
+            HV.putValue(dens/N,u);
         }
         std::cout << HV.summ() <<std::endl;
 
-        const auto F = HV.toFunction()/HV.summ();
+        const auto F = HV.toFunction();
         auto F1 = F;
         F1.map([=](double u){
                 if(u==0){
                     return 0.0;
                 }
-                return u/(sqrt(2*M_PI)*mU0*mD0)*(exp(-0.5*(u-mU0)*(u-mU0)/(mD0*mD0))-
+                return sqrt(u*u+Vesc*Vesc)/(sqrt(2*M_PI)*mU0*mD0)*(exp(-0.5*(u-mU0)*(u-mU0)/(mD0*mD0))-
                                                  exp(-0.5*(u+mU0)*(u+mU0)/(mD0*mD0)));
             });
-        Gnuplot gp("%GNUPLOT%");
+        Gnuplot gp("D:\\Soft\\gnuplot\\bin\\gnuplot.exe");
         gp.plotd(F.toString(),"with lines title \"histo\"");
         gp.plotd(F1.toString(),"with lines title \"true\"");
         gp.show();
