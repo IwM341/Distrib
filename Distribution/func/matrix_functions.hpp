@@ -270,19 +270,19 @@ bool is_binary(const std::string & fname){
 
 }
 
-enum MatrixFormat{
+enum class MatrixFormat{
     BINARY,TEXT
 };
 template <typename T>
-void saveMatrix(const T*Mat,size_t N,size_t M,const std::string&fname,MatrixFormat MF = TEXT){
-    if(MF == BINARY)
+void saveMatrix(const T*Mat,size_t N,size_t M,const std::string&fname,MatrixFormat MF = MatrixFormat::TEXT){
+    if(MF == MatrixFormat::BINARY)
         SaveMatrixBinary<T>(Mat,N,M,fname);
     else
         SaveMatrixString<T>(Mat,N,M,fname);
 }
 template <typename T>
-auto loadMatrix(const std::string&fname,MatrixFormat MF = TEXT){
-    if(MF == BINARY)
+auto loadMatrix(const std::string&fname,MatrixFormat MF = MatrixFormat::TEXT){
+    if(MF == MatrixFormat::BINARY)
         return LoadMatrixBinary<T>(fname);
     else
         return LoadMatrixString<T>(fname);
@@ -297,7 +297,7 @@ void saveMatrixSmart(const T*Mat,size_t N,size_t M,const std::string&fname){
 }
 template <typename T,typename string_type>
 void SaveMatrix(const T*Mat,size_t N,size_t M, string_type&&fname,MatrixFormat MF){
-    if(MF == BINARY)
+    if(MF == MatrixFormat::BINARY)
         SaveMatrixBinary<T>(Mat,N,M,fname);
     else
         SaveMatrixString<T>(Mat,N,M,fname);
@@ -313,7 +313,7 @@ auto loadMatrixSmart(const std::string&fname){
 
 template <typename T,typename string_type>
 auto LoadMatrix(string_type&&fname,MatrixFormat MF){
-    if(MF == BINARY)
+    if(MF == MatrixFormat::BINARY)
         return LoadMatrixBinary<T>(fname);
     else
         return LoadMatrixString<T>(fname);

@@ -24,9 +24,9 @@ auto get_DLHL(const  boost::property_tree::ptree& tree){
     auto FPath = [&](const std::string & tree_path){
         return config_path_from(tree.pgets(tree_path),tree.pgets("config_path")).string();
     };
-    MatrixFormat  MF = BINARY;
+    MatrixFormat  MF = MatrixFormat::BINARY;
     if(ptree_gets(tree,"format") == "text")
-        MF = TEXT;
+        MF = MatrixFormat::TEXT;
     std::vector<double> D_L = vmap([](T x)->double{return x;},
             std::get<0>(
                 LoadMatrix<T>(

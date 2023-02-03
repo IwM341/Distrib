@@ -1,0 +1,26 @@
+{
+	"lh_in": "lh.matrix",
+	"hl_in": "hl.matrix",
+
+	"eh_in": "eh.matrix",
+	"el_in": "el.matrix",
+
+	"dl_out": "dl_out.matrix",
+	"dh_out": "dh_out.matrix",
+	
+	"DL_out": "DL_out.matrix",
+	"DH_out":  "DH_out.matrix",	
+
+	"nl_out": "nl_out.dat",
+	"nh_out":  "nh_out.dat",
+	
+	"NL_out": "NL__out.dat",
+	"NH_out":  "NH__out.dat",
+
+
+	"tau": "0.01",
+	"deg" :"0",
+	"debug":true,
+	"format":"text",
+	"method":"matrix"
+}

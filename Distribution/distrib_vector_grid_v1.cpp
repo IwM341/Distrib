@@ -230,10 +230,10 @@ int main(int argc,char **argv){
 
     bool count_evap = false;
     bool count_distrib= false;
-    MatrixFormat MF = BINARY;
+    MatrixFormat MF = MatrixFormat::BINARY;
 
     if(ptree_gets(cmd_params,"format") == "text")
-        MF=TEXT;
+        MF=MatrixFormat::TEXT;
 
     if(ptree_contain(cmd_params,"evap") or (ptree_contain(cmd_params,"eh_out") and
                                             ptree_contain(cmd_params,"el_out")) ){
@@ -258,7 +258,7 @@ int main(int argc,char **argv){
 
     boost::property_tree::ptree out_params;
 
-    out_params.put("format", (MF == BINARY) ? "bin" : "text");
+    out_params.put("format", (MF == MatrixFormat::BINARY) ? "bin" : "text");
     /*writing out params config file*/
     boost::filesystem::path out_path = programm_path;
     boost::filesystem::path config_out = "";
