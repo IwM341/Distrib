@@ -1,0 +1,23 @@
+{
+
+	"debug" : false,
+
+	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
+	"Vesc" : 2.056e-3,
+
+	"mk": 50,
+	"dmk" : 50,
+
+	"NE":60,
+	"NLmax":60,
+	"_Egird":"Uniform",
+	"_Lgird":"Uniform",
+
+	"elements" : ["H1","He4","Fe","O16","N14"],
+
+	"Nmk_H" : 10000000,
+	"Nmk_L" : 10000000,
+
+	"not_fill" : true,
+	"fractions": "masses_50_0.txt"
+}

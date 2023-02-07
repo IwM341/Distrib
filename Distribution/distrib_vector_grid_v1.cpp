@@ -214,13 +214,13 @@ int main(int argc,char **argv){
 
 
     std::map<std::string,std::string> hl_defaut_params =
-    {{"lh_out","lh.bmat"},{"hl_out","hl.mat"}};
+    {{"lh_out","lh.bmat"},{"hl_out","hl.bmat"}};
 
     std::map<std::string,std::string> evap_defaut_params =
-    {{"eh_out","eh.bmat"},{"el_out","el.mat"}};
+    {{"eh_out","eh.bmat"},{"el_out","el.bmat"}};
 
     std::map<std::string,std::string> distrib_defaut_params =
-    {{"dh_out","dh.bmat"},{"dl_out","dl.mat"}};
+    {{"dh_out","dh.bmat"},{"dl_out","dl.bmat"}};
 
 
     for(const auto &[key,val]:hl_defaut_params){
@@ -382,7 +382,9 @@ int main(int argc,char **argv){
         return 0;
     }
     auto BM = BodyModel::fromFile(Vesc1,config_path_from(bm_filename,programm_path).string());
-
+    if(ptree_gets(cmd_params,"debug") == "true"){
+        print("loaded body model");
+    }
 
 
     const auto & phi = BM["phi"];
@@ -404,6 +406,10 @@ int main(int argc,char **argv){
     Function::GridFunction<double,Function::UniformGrid<double>,Function::LinearInterpolator> Vesc(R,BM["Vesc"]);
 
 
+    if(ptree_gets(cmd_params,"debug") == "true"){
+        print("loaded r functions");
+    }
+
     double Emin = -phi[0];
     double Lmax = maxLndf(PhiC,0);
 
@@ -420,6 +426,9 @@ int main(int argc,char **argv){
         HistoGrid = decltype (HistoGrid)(E_grid,Function::VectorGrid<double>(0.,1.,NL_max));
     }
 
+    if(ptree_gets(cmd_params,"debug") == "true"){
+        print("created grids");
+    }
 
     //PVAR(HistoGrid.gridStr());
     //exit(0);
@@ -448,6 +457,10 @@ int main(int argc,char **argv){
         S_LH[i] = ELH_H;
     }
 
+    if(ptree_gets(cmd_params,"debug") == "true"){
+        print("created histogramms");
+    }
+
     double mk = ptree_condition(cmd_params,"mk",5.0);
     double delta_mk = ptree_condition(cmd_params,"dmk",1e-6);
 
@@ -459,7 +472,7 @@ int main(int argc,char **argv){
             ElementList.push_back(el.second.data());
         }
     }  catch (std::exception &e) {
-
+        print("error in element list");
     }
     PVAR(ElementList);
     auto RhoND = BM["Rho"];
@@ -481,19 +494,22 @@ int main(int argc,char **argv){
         size_t M = ME.at(element);
         double m_nuc = (M)*_mp;
         dF_Nuc_M dF(M);
+        auto PhiFactor_Nuc = [M](double q){return M*M;};
         if(!not_fill_ss){
             FillScatterHisoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
                                    mk,delta_mk,m_nuc,
-                                   S_HL,S_LH,EvapHisto_H,EvapHisto_L,PhiFactorSS,Nmk_HL,Nmk_LH);
+                                   S_HL,S_LH,EvapHisto_H,EvapHisto_L,PhiFactor_Nuc,Nmk_HL,Nmk_LH);
         }
+
         if(count_distrib){
             double numEl_H = SupressFactor_v1(ELH_H,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
-                             PhiFactorSS,G,Nmk_H,1,V_disp,V_body);
+                             PhiFactor_Nuc,G,Nmk_H,1,V_disp,V_body);
             std::cout << "H fraction for " << element << " = " << numEl_H << std::endl;
             double numEl_L = SupressFactor_v1(ELH_L,m_nuc,mk,delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
-                             PhiFactorSS,G,Nmk_L,1,V_disp,V_body);
+                             PhiFactor_Nuc,G,Nmk_L,1,V_disp,V_body);
             std::cout << "L fraction for " << element << " = " << numEl_L << std::endl;
-            elements_portions.put(element,numEl_L);
+            elements_portions.put("L."+element,numEl_L);
+            elements_portions.put("H."+element,numEl_H);
         }
     }
     if(ptree_contain(cmd_params,"fractions")){
