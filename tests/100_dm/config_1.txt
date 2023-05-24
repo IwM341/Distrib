@@ -1,20 +1,25 @@
 {
-	"lh_out" : "lh_100_dm.bmat",
-	"hl_out" : "hl_100_dm.bmat",
+	"lh_out" : "capt/lh_100_dm.bmat",
+	"hl_out" : "capt/hl_100_dm.bmat",
+	"o_hl" : "capt/o_hl_100_dm.bmat",
+	"o_lh" : "capt/o_lh_100_dm.bmat",
 
-	"sp_h" : "sph_100_dm.bmat",
-	"sp_l" : "spl_100_dm.bmat",
+	"sp_h" : "capt/sph_100_dm.bmat",
+	"sp_l" : "capt/spl_100_dm.bmat",
 
-	"el_out" : "el_100_dm.bmat",
-	"eh_out" : "eh_100_dm.bmat",
-	"dl_out" : "dl_100_dm.bmat",
-	"dh_out" : "dh_100_dm.bmat",
-	"l_grid" : "l_grid_100_dm.txt",
-	"h_grid" : "h_grid_100_dm.txt",
+	"el_out" : "capt/el_100_dm.bmat",
+	"eh_out" : "capt/eh_100_dm.bmat",
+	"dl_out" : "capt/cl_100_dm.bmat",
+	"dh_out" : "capt/ch_100_dm.bmat",
+	"l_grid" : "capt/l_grid_100_dm.txt",
+	"h_grid" : "capt/h_grid_100_dm.txt",
+	"LE" : "capt/LE.txt",
+	"LE_json" : "capt/LE.json.txt",
+	"pout" : "capt/pout.txt",
 
 	"debug" : true,
 
-	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
+	"body" : "../../../DMFramework/celestial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
 
 	"mk": 100,
@@ -25,15 +30,15 @@
 	"_Egird":"Uniform",
 	"_Lgird":"Uniform",
 
-	"elements" : ["H1","He4","Fe","O16","N14"],
+	"elements" : ["Fe"],
 
-	"Nmk_H" : 10000000,
-	"Nmk_L" : 10000000,
-	"l_fraction" : 1,
-	"h_fraction" : 0.0,
+	"Nmk_H" : 1000000,
+	"Nmk_L" : 1000000,
+	"Nmk_HL" : 10000,
+	"Nmk_LH" : 10000,
 
 	"__not_fill" : true,
-	"fractions": "fractions.txt",
+	"fractions": "capt/fractions.txt",
 	"-Vbody" : 2e-3
 
 }

@@ -42,6 +42,42 @@ double maxLnd(const BodyModel & BM, double End){
     return std::max(std::max(L0,L1),R[i0+1]*sqrt(End-phi[i0+1]));
 }
 
+template <typename GridFuncType>
+double maxLndf(const GridFuncType& phi, double End){
+    if(End >= -0.5){
+        return sqrt(1+End);
+    }
+    //std::vector<double> phi = -BM["phi"];
+
+    //auto & R = BM["Radius"];
+
+    //auto V = R*vmap(sqrt,2*(End-phi));
+
+    size_t i1 = Function::find_more(phi.Values,-End);
+    size_t i0 = 0;
+
+    double L0 = 0;
+    double L1 = 0;
+    while(i0 + 2 < i1){
+        size_t i_l = (i0+i1)/2;
+        size_t i_r = i_l + 1;
+        double L_l = phi.Grid[i_l]*sqrt(End+phi.Values[i_l]);
+        double L_r = phi.Grid[i_r]*sqrt(End+phi.Values[i_r]);
+
+        if(L_l > L_r){
+            i1 = i_r;
+            L1 = L_r;
+        }
+        else{
+            i0 = i_l;
+            L0 = L_l;
+        }
+
+    }
+    return std::max(std::max(L0,L1),phi.Grid[i0+1]*sqrt(End+phi.Values[i0+1]));
+}
+
+
 template <typename ...Args>
 double maxLndf(const Function::GridFunction<Args...>& phi, double End){
     if(End >= -0.5){
@@ -164,6 +200,11 @@ struct quadric_interpolator{
         return quadric_interpolator(F,F.Grid.pos(x));
     }
 
+    template <typename GridFuncType>
+    inline quadric_interpolator(const GridFuncType & F, size_t ix){
+        setAB(F.Grid[ix],F.Grid[ix+1],F.Values[ix],F.Values[ix+1]);
+    }
+
     template <typename...GF_ARGS>
     inline quadric_interpolator(const Function::GridFunction<GF_ARGS...> & F, size_t ix){
         setAB(F.Grid[ix],F.Grid[ix+1],F.values[ix],F.values[ix+1]);
@@ -240,6 +281,24 @@ inline double interval_function(double x,double a,double b){
         return b-a;
     else
         return 2*x-a-b;
+}
+
+template <typename GridFuncType>
+inline double r_zero_precise(const GridFuncType & phi,size_t ix,double ep,double lp){
+    quadric_interpolator qi(phi.Grid[ix],phi.Grid[ix+1],phi.Values[ix],phi.Values[ix+1]);
+    double r0,r1;
+    _R(r0,r1) = quad_solve(qi.b,ep-qi.a,lp*lp);
+
+    r0 = sqrt(r0);
+    r1 = sqrt(r1);
+    //print(r0,"\t",r1);
+    //PVAR(r0<=phi.Grid[ix+1]);
+    if(interval_function(r0,phi.Grid[ix],phi.Grid[ix+1]) <= interval_function(r1,phi.Grid[ix],phi.Grid[ix+1])){
+        return r0;
+    }
+    else{
+        return r1;
+    }
 }
 
 template <typename...GF_ARGS>
@@ -466,6 +525,156 @@ TrajectoryInfo CalculateTrajectory(const Function::GridFunction<GF_ARGS...> & ph
     TI.T_in = TI.Trajectory.Grid.grid().back();
 
     return TI;
+}
+
+
+struct TrajectoryPreInfo{
+    double rmin,rmax;
+    double T;
+
+    inline operator double()const noexcept{return T;}
+};
+
+template <typename PhiFunctype>
+TrajectoryPreInfo CalculatePeriod(const PhiFunctype & phi,double E_nd,double L_nd, size_t N_bins){
+    const double ep = -E_nd;
+    const double lp = L_nd;
+    //TrajectoryInfo TI;
+    //TI.E = E_nd;
+    //TI.L = L_nd;
+
+    double sqrt_e= sqrt(ep);
+    double sqrt_1_e_l2 =sqrt(1 - ep - lp*lp);
+
+
+    auto sqrt_function = [&phi,ep,lp](size_t i){
+        return phi.Values[i] - ep - lp*lp/(phi.Grid[i]*phi.Grid[i]+1e-100);
+    };
+
+
+    double T_in = 0,T_out = 0;
+    //PVAR(sqrt_function.toString());
+    double rmin,rmax,r_max1;
+    if(ep > 0)
+        _R(rmin,rmax) = quad_solve(ep,-1,L_nd*L_nd);
+    else
+        _R(rmin,rmax) = _T(L_nd*L_nd,1e10);
+//    PVAR(rmin);
+//    PVAR(rmax);
+    r_max1 = rmax;
+    if(rmin >= 1){
+        //TI.Trajectory = decltype(TI.Trajectory)(std::vector<double>({0,0}),std::vector<double>({1.,1.,}));
+//        print("all out");
+        return {rmin,rmax,M_PI/(2*ep*sqrt_e)};
+    }
+    else if(rmax >= 1 && rmin < 1){
+        r_max1 = 1;
+        if(lp == 0){
+            rmin = 0;
+        }
+        else{
+            rmin = r_zero_precise(phi,find_zero_index(sqrt_function,0,phi.Grid.size()-1),ep,lp);
+        }
+        if(ep != 0)
+           T_out = (M_PI-2*asin((2*ep-1)/sqrt(1-4*ep*lp*lp)))/(4*ep*sqrt_e) + sqrt_1_e_l2/ep;
+        else
+           T_out = 1e10;
+//        if(std::isnan(rmin) or std::isnan(rmax)){
+//            print("rmin: ",rmin,", rmax: ",rmax);
+//            PVAR(ep);
+//            PVAR(sqrt_function(phi.Grid.size()-1));
+//            PVAR(phi.values[phi.Grid.size()-1]);
+//        }
+//        PVAR(TI.T_out );
+    }
+    else{
+//        print("all in");
+        T_out = 0;
+        if(lp == 0){
+            if(phi[0] - ep >0){
+                rmin = 0;
+                rmax = r_zero_precise(phi,find_zero_index(sqrt_function,0,phi.Grid.size()-1),ep,lp);
+                size_t i =(find_zero_index(sqrt_function,0,phi.Grid.size()-1));
+                //COMPARE(sqrt_function(0),sqrt_function(1));
+            }
+            else{
+                T_in = M_PI/(2*sqrt(quadric_interpolator(phi,0).b));
+                //Trajectory = decltype(TI.Trajectory)(std::vector<double>({0,TI.T_in}),std::vector<double>({0.,0.,}));
+                return {rmin,rmax,T_in+T_out};
+            }
+        }
+        else{
+            size_t i0 = 0;
+            size_t i1 = phi.Grid.size()-1;
+            size_t im = argmax(sqrt_function,i0,i1);
+            if(sqrt_function(im) <=0){
+                double rt = 1;
+                quadric_interpolator qi;
+                if(im >= phi.Grid.size()-1){
+                    qi= quadric_interpolator(phi,phi.Grid.size()-2);
+                }
+                else{
+                    qi = quadric_interpolator(phi,im);
+                    rt =  sqrt(sqrt(lp*lp/qi.b));
+                }
+
+//                COMPARE(rt,phi.Grid[im]);
+//                PVAR(qi.b);
+
+                T_in = M_PI/(2*sqrt(qi.b));
+                //TI.Trajectory = decltype(TI.Trajectory)(std::vector<double>({0,TI.T_in}),std::vector<double>({phi.Grid[im],phi.Grid[im],}));
+                return {rmin,rmax,T_in+T_out};
+            }
+            else{
+                rmin = r_zero_precise(phi,find_zero_index(sqrt_function,i0,im),ep,lp);
+                rmax = r_zero_precise(phi,find_zero_index(sqrt_function,im,i1),ep,lp);
+//                if(std::isnan(rmin) or std::isnan(rmax))
+//                    printd(", ",i0,im,i1,sqrt_function(i0),sqrt_function(im),sqrt_function(i1));
+            }
+        }
+        r_max1 = rmax;
+    }
+//    PVAR(TI.T_out);
+//    print("rmin = ", rmin, "\trmax = ", rmax);
+    double h = (r_max1-rmin)/(N_bins-1);
+
+    auto _x = [N_bins,rmin,r_max1](size_t i){
+        double a = i/(N_bins-1.0);return rmin*(1-a) + a*r_max1;
+    };
+
+    double x_ref = -1;
+    //quadric_interpolator qi;
+    quadric_interpolator qi_s;
+    for(size_t i=1;i<N_bins;++i){
+        double x0 = _x(i-1);
+
+        size_t ix = phi.Grid.pos(x0);
+        size_t ix_1 =  std::max(ix+1,phi.Grid.pos(_x(i)));
+        double x_0 = phi.Grid[ix];
+        double x_1 = phi.Grid[ix_1];
+
+        //qi = quadric_interpolator(phi,ix);
+        qi_s.setAB(x_0,x_1,phi[ix],phi[ix_1]);
+//            COMPARE(qi.a,qi_s.a);
+//        if(i==5){
+//        printd(", ",TI.Trajectory.values[i-1],TI.Trajectory.values[i],ix,ix_1,x_0,x_1,phi[ix],phi[ix_1]);
+//            COMPARE(qi.b,qi_s.b);
+//        printd(", ",qi_s.a,qi_s.b);
+//        print("intergeral from ",x0," to ",x0+h);
+//        PVAR(sqrt_integral(x0,h,qi_s,ep,lp));
+//        }
+//        if(qi.b > 100){
+//            PVAR(x0);
+//            PVAR(phi.Grid.size());
+//            PVAR(phi.Grid[1]);
+//            printd(", ",phi[ix],phi[ix]-phi[ix+1]);
+//            PVAR(x_ref);
+//        }
+        //print("qi: ", qi.a, ", ",qi.b);
+        T_in += sqrt_integral(x0,h,qi_s,ep,lp);
+    }
+
+    return {rmin,rmax,T_in+T_out};
 }
 
 

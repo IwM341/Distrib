@@ -194,6 +194,9 @@ void SaveMatrixString(const T *X,size_t N,size_t M,std::ostream &S){
 template <typename T >
 void SaveMatrixString(const T *X,size_t N,size_t M,const std::string&fname){
     std::ofstream _of(fname);
+    if(!_of){
+        throw std::runtime_error("no such file" + fname);
+    }
     SaveMatrixString<T>(X,N,M,_of);
 }
 
@@ -222,6 +225,9 @@ template <typename T>
 auto LoadMatrixString(const std::string&fname){
     std::ifstream S;
     S.open(fname);
+    if(!S){
+        throw std::runtime_error("no such file" + fname);
+    }
     return LoadMatrixString<T>(S);
 }
 
@@ -238,6 +244,9 @@ template <typename T>
 void SaveMatrixBinary(const T*X,size_t N,size_t M,const std::string&fname){
     std::ofstream _of;
     _of.open(fname,std::ios::binary);
+    if(!_of){
+        throw std::runtime_error("no such file" + fname);
+    }
     SaveMatrixBinary<T>(X,N,M,_of);
 }
 
@@ -255,6 +264,9 @@ template <typename T>
 auto LoadMatrixBinary(const std::string&fname){
     std::ifstream _in;
     _in.open(fname,std::ios::binary);
+    if(!_in){
+        throw std::runtime_error("no such file" + fname);
+    }
     return LoadMatrixBinary<T>(_in);
 }
 

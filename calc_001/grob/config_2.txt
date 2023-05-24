@@ -1,0 +1,18 @@
+{
+	"lh_in" : "lh_100_dm.bmat",
+	"hl_in" : "hl_100_dm.bmat",
+
+	"dl_in" : "dl_100_dm.bmat",
+	"dh_in" : "dh_100_dm.bmat",
+
+	"dl_out" : "dlf_100_dm.bmat",
+	"dh_out" : "dhf_100_dm.bmat",
+
+	"nl_out": "nlf_100_dm.dat",
+	"nh_out" : "nhf_100_dm.dat",
+	
+	"T" :"2",
+	"debug":true,
+	"format":"binary",
+	"_method":"vector"
+}

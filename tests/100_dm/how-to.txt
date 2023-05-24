@@ -1,0 +1,9 @@
+1) Calculate matricies and capture distribution:
+distrib_vector_grid_grob -config config_1.txt
+
+2) calculate evolution:
+matrix_modelling -config config_2.txt
+
+3) convert binary data to text : use convertion_script
+-------------
+capt: after capture: 

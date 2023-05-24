@@ -13,14 +13,23 @@ add_definitions(-DTEST_SF_HISTO)
 if(NOT DEFINED DM_PATH)
     set(DM_PATH "..\\..\\DMFramework\\utils")
 endif()
+
+if(NOT DEFINED GO_PATH)
+    set(GO_PATH "D:\\Tmp\\GridObject\\src")
+endif()
 include_directories(${DM_PATH})
 
+include_directories(${GO_PATH})
 
 
 
-add_executable(distrib_vector_grid distrib_vector_grid_v1.cpp)
+
+#add_executable(distrib_vector_grid distrib_vector_grid_v1.cpp)
+add_executable(distrib_vector_grid_grob distrib_vector_grid_grob.cpp)
+add_executable(intersec intersection.cpp)
 add_executable(matrix_mult matrix_modelling.cpp)
 add_executable(graphics graphs.cpp)
+add_executable(conversions conversions.cpp)
 
 target_compile_definitions(graphics PUBLIC GNUPLOT_PATH="${GNUPLOT_PATH}")
 
@@ -55,9 +64,12 @@ if(${Boost_FOUND})
 #    target_link_libraries(matrix_mult PRIVATE ${Boost_FILESYSTEM_LIBRARY})
 #    target_link_libraries(graphics PRIVATE ${Boost_FILESYSTEM_LIBRARY})
 
-    target_link_libraries(distrib_vector_grid PRIVATE Boost::filesystem)
+ #   target_link_libraries(distrib_vector_grid PRIVATE Boost::filesystem)
+    target_link_libraries(distrib_vector_grid_grob PRIVATE Boost::filesystem)
     target_link_libraries(matrix_mult PRIVATE Boost::filesystem)
     target_link_libraries(graphics PRIVATE Boost::filesystem)
+    target_link_libraries(intersec PRIVATE Boost::filesystem)
+    target_link_libraries(conversions PRIVATE Boost::filesystem)
 endif()
 
 

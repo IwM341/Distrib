@@ -1,0 +1,19 @@
+{
+	"lh_in" : "test1/lh.txt",
+	"hl_in" : "test1/hl.txt",
+
+	"dl_in" : "test1/dl.txt",
+	"dh_in" : "test1/dh.txt",
+
+	"dl_out" : "test1/dl_out.txt",
+	"dh_out" : "test1/dh_out.txt",
+
+	"nl_out": "test1/nlf.dat",
+	"nh_out" : "test1/nhf.dat",
+	
+	"tau" :1,
+	"deg" : 1,
+	"debug":true,
+	"format":"text",
+	"method":"vector"
+}

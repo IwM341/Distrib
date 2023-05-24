@@ -1,14 +1,24 @@
 {
-	"lh_in" : "lh_100_dm.bmat",
-	"hl_in" : "hl_100_dm.bmat",
+	"lh_in" : "capt/lh_100_dm.bmat",
+	"hl_in" : "capt/hl_100_dm.bmat",
 
-	"dl_in" : "dl_100_dm.bmat",
-	"dh_in" : "dh_100_dm.bmat",
+	"dl_in" : "capt/cl_100_dm.bmat",
+	"dh_in" : "capt/ch_100_dm.bmat",
+	"eh_in" : "capt/eh_100_dm.bmat",
+	"el_in" : "capt/el_100_dm.bmat",
 
-	"dl_out" : "dlf_100_dm.bmat",
-	"dh_out" : "dhf_100_dm.bmat",
+	"dl_out" : "evolute/dlf_100_dm.bmat",
+	"dh_out" : "evolute/dhf_100_dm.bmat",
+	"DL_out" : "evolute/DL_100_dm.bmat",
+	"DH_out" : "evolute/DH_100_dm.bmat",
 
-	"nl_out": "nlf_100_dm.dat",
-	"nh_out" : "nhf_100_dm.dat",
-	"fac2" : 16
+	"NL_out": "evolute/NLt_100_dm.dat",
+	"NH_out" : "evolute/NHt_100_dm.dat",
+	"nl_out": "evolute/nlf_100_dm.dat",
+	"nh_out" : "evolute/nhf_100_dm.dat",
+	
+	"T": "50",
+	"debug":true,
+	"format":"binary",
+	"method":"vector"
 }

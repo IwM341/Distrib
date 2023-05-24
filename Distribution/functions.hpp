@@ -460,6 +460,24 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
 
 }
 
+/*!
+ * \brief SupressFactor_v1
+ * \param H histo of output values
+ * \param mi nuclei mass
+ * \param mk DM mass
+ * \param delta_mk in_mass - out_mass
+ * \param dF form factor
+ * \param NR concentration(r)
+ * \param VescMin
+ * \param VescR
+ * \param TempR
+ * \param PhiFactor form factor
+ * \param G generator from 0 to 1 (not including)
+ * \param Nmk
+ * \param pow_r (double pow, increase leads to generation r in perepherial of sphere)
+ * \param Vdisp
+ * \param mU0
+ */
 template <typename VescFuncType,typename ThermFuncType,typename NFuncType,
           typename PhiFuncType,typename HType,typename dF_Type,typename Generator>
 auto SupressFactor_v1(HType & H, double mi,double mk,double delta_mk,dF_Type dF,
@@ -483,8 +501,26 @@ auto SupressFactor_v1(HType & H, double mi,double mk,double delta_mk,dF_Type dF,
 
 
         //double Ewas = H.values[1].values[0];
-        if(H.putValue(dens,E_nd,L_nd))
+        /*
+        auto l = L_nd/H.LE_func(E_nd);
+        auto [b,MI] = H.Histo.Grid.spos(E_nd,l);
+        auto i_h = H.Histo.Grid.LinearIndex(MI);
+        if(b){
+            auto Elem = H.Histo.Grid[MI];
+            auto H_i = H.Histo.Values[i_h];
+        }
+        if(E_nd < -4.5){
+            dens = dens +0.0;
+        }*/
+        if(H.putValue(dens,E_nd,L_nd)){
+            /*
+            auto H_i_1 = H.Histo.Values[i_h];
+            */
             sum += dens;
+        }/*
+        else{
+            auto l = L_nd/H.LE_func(E_nd);
+        }*/
          /*
         if(Ewas != H.values[1].values[0]){
             PVAR(dens);
@@ -513,9 +549,9 @@ template <class Generator>
 /*MK generator of output nu'*/
 inline auto NuOutTherm(Generator const & G,const vec3& Vcm,const vec3&Nu,
                                      double mp,double mk,double deltaE = 0){
-    double VcmN = Vcm.norm();
+    //double VcmN = Vcm.norm();
 
-    vec3  n_v = Vcm/VcmN;
+    vec3  n_v = Vcm.normalized();
 
     double cosThetaVcm = n_v.z;
     double sinThetaVcm = sqrt(n_v.x*n_v.x+n_v.y*n_v.y);
@@ -718,13 +754,17 @@ inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Fact
 
     // Generating out velocity
     auto Numk = NuOutTherm(G,Vcm,Nu,mp,mk,EnLoss.Result-delta_mk);
-    vec3 Nu1 = Numk.Result;
+    vec3 const&Nu1 = Numk.Result;
     factor*=Numk.RemainDensity;
 
     // q - exchange momentum
     double q = mk*(Nu-Nu1).norm();
     factor *= dF.ScatterFactor(q,EnLoss.Result);
     factor *=  PhiFactor(q);
+    /*
+    if(std::isnan(factor)){
+        int __var__ = 10;
+    }*/
     return MC::MCResult<vec3>(Nu1+Vcm,factor);
 }
 
@@ -912,17 +952,38 @@ inline void TrajectoryIntegral(Generator const & G,
     }
 }
 
+
+/*!
+ * \brief TrajectoryIntegral1
+ * \param G generator of values from 0 to 1 (1 is not included)
+ * \param e_nd
+ * \param l_nd
+ * \param TI
+ * \param VescMin
+ * \param nR - concentration of nuclie(r)
+ * \param ThermR T(t)
+ * \param Vesc
+ * \param Out histo to put values of scaterred particles
+ * \param EvaporationOut double & value to add evaporaton count
+ * \param mk mass of WIMP
+ * \param mp mass of nuclei
+ * \param delta_mk = in_mass - out_mass
+ * \param dF  form factor
+ * \param PhiFactor form factor
+ * \param Nmk MK samples
+ */
 template <typename HistoType,typename Generator,typename ThermFuncType,typename NFuncType,typename VescFuncType,typename dF_Type,typename ScatterFuncType>
-inline void TrajectoryIntegral1(Generator const & G,
+inline double TrajectoryIntegral1(Generator const & G,
                         double e_nd,double l_nd,const TrajectoryInfo & TI,double VescMin,NFuncType const& nR,const ThermFuncType & ThermR,
                                const VescFuncType & Vesc,
                         HistoType &Out,double & EvaporationOut,double mk,double mp,double delta_mk,
                                dF_Type dF,ScatterFuncType const & PhiFactor,size_t Nmk)
 {
     if(TI.T_in == 0.0){
-        return;
+        return 0.0;
     }
     double const_fact_rd = mk/(mk+mp)/Nmk;
+    double summ =0;
     for(size_t sch = 0;sch<Nmk;++sch){
         double factor = TI.T_in/(TI.T_in+TI.T_out);
         double t = G()*TI.T_in;
@@ -946,8 +1007,11 @@ inline void TrajectoryIntegral1(Generator const & G,
         if(!Out.putValue(dens,e_nd_1,l_nd_1)){
             //PVAR(dens);
             EvaporationOut += dens;
+        }else{
+            summ += dens;
         }
     }
+    return summ;
 }
 
 template <typename HistoType,typename Generator,typename ThermFuncType,typename NFuncType,typename VescFuncType,typename dF_Type,typename ScatterFuncType>

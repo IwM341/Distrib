@@ -31,6 +31,9 @@ boost::filesystem::path config_path_from(const boost::filesystem::path & filenam
     }
 }
 
+/*!
+ * \brief gives relative tp config path of filename path
+ */
 boost::filesystem::path config_path_to(const boost::filesystem::path & filename,
                             const boost::filesystem::path & config){
     auto sr = boost::filesystem::relative(filename,config);
@@ -70,13 +73,16 @@ T ptree_condition(const boost::property_tree::ptree &tree,
 
 std::string add_config_file(boost::property_tree::ptree &tree,const std::string &fname){
     using namespace std::string_literals;
+    std::ifstream cnf_file(fname);
+    if(!cnf_file.is_open()){
+        return "cant open config file "s + fname+ "\n";
+    }
     try{
-        std::ifstream cnf_file(fname);
         boost::property_tree::ptree ftree;
         boost::property_tree::read_json(cnf_file,ftree);
         merge_ptree(tree,ftree);
     }catch(std::exception & e){
-        return  "cant parse config file "s + fname+ "\n";
+        return  "cant parse config file "s + fname+ e.what() + "\n";
     }
     tree.put("config_path",boost::filesystem::path(fname).parent_path().string());
     return "";
@@ -145,8 +151,8 @@ std::string parse_command_line(int argc,char ** argv,boost::property_tree::ptree
 }
 std::string parse_command_line_v1(int argc,char ** argv,boost::property_tree::ptree &tree){
     using namespace std::string_literals;
-    std::regex parametr("-+([a-z]\\w*)");
-    std::regex parametr_seter("-+([a-z]\\w*)=?(.*)");
+    std::regex parametr("-+([a-zA-Z]\\w*)");
+    std::regex parametr_seter("-+([a-zA-Z]\\w*)=?(.*)");
 
     std::smatch sm;
 

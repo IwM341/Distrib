@@ -89,9 +89,9 @@ def test_parametr_array_mks(mk_list:list,dmk:float,prog_name = m_progname,parall
 def test_parametr_array_dmks(mk:float,dmk_list:list,prog_name = m_progname,parallel = False):
     parametrs_list = [{'mk':mk,'dmk':dmk} for dmk in dmk_list]
     if(parallel):
-        return  test_parametr_array(parametrs_list,prog_name)
-    else:
         return  test_parametr_array_p(parametrs_list,prog_name)
+    else:
+        return  test_parametr_array(parametrs_list,prog_name)
 
 def load_fractions(parametrs_list:list):
     fractions_list = list(range(len(parametrs_list)))
@@ -121,3 +121,6 @@ def dict_concat(a,b):
     c = dict(a)
     c.update(b)
     return c
+
+def map_dict(values:dict,func):
+    return dict({key:func(values[key]) for key in values})

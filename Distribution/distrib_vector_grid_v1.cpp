@@ -11,8 +11,8 @@
 #include "func/dens_grid.hpp"
 #include "func/matrix_functions.hpp"
 
-
-
+#include "func/move_to_go.hpp"
+#include "func/load_histo.hpp"
 int omp_thread_count() {
     int n = 0;
     #pragma omp parallel reduction(+:n)
@@ -87,6 +87,16 @@ struct dF_Nuc_M{
     }
 };
 
+struct dF_Nuc_No_FormFactor{
+    dF_Nuc_No_FormFactor(){}
+    inline MC::MCResult<double> EnergyLoss(double Emax)const noexcept{
+        return MC::MCResult<double>(0,1);
+    }
+    inline double ScatterFactor(double q,double enLoss)const noexcept{
+        return 1;
+    }
+};
+
 struct random_shuffler{
     size_t N;
     size_t x;
@@ -108,6 +118,8 @@ struct random_shuffler{
     }
     size_t operator [](size_t j) const{return (j*x) % N;}
 };
+
+
 
 template <typename N_type,typename Therm_type,typename Phi_Type,typename VescFuncType,
           typename dF_Type,typename EvapHisto,typename ScatterHisto,
@@ -151,6 +163,11 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
                                E_H.values[i].values[j],
                                mk,mp,dmk,dF,PhiFactor,Nmk_HL);
 
+            if(std::isnan(E_H.values[i].values[j])){
+                PVAR(_T(i,j));
+                PVAR(_T(e_nd,l_nd));
+            }
+
             curr_progress_hl++;
             #ifndef NDEBUG
             prog_hl.show(curr_progress_hl/((float)total_progress_hl));
@@ -174,7 +191,7 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
     size_t curr_progress_lh = 0;
 
     const size_t NE_LH = S_LH.Grid.size()-1;
-
+    prog_lh.show(curr_progress_lh/((float)total_progress_lh));
     #pragma omp parallel for
     for(size_t _i=0;_i<NE_LH;++_i){
         size_t i = rs_lh[_i];
@@ -439,9 +456,13 @@ int main(int argc,char **argv){
 
     std::ofstream gh_out(grid_h_out_path.string());
     PVAR(gh_out.is_open());
+
     ELH_H.save_text(gh_out);
     ELH_L.save_text(std::ofstream(grid_l_out_path.string()));
 
+
+
+    //exit(0);
     auto EvapHisto_H = ELH_H;
     auto EvapHisto_L = ELH_L;
 
