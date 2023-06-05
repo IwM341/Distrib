@@ -23,7 +23,7 @@ std::string process_space(std::string const &S){
 
 
 template <typename HistoType,typename FuncType>
-double EL_dens(const HistoType &H,FuncType && LE,double E,double L){
+double EL_dens(const HistoType &H,FuncType && LE,char method,double E,double L){
 
     double Lmax = LE(E);
     double l = L/Lmax;
@@ -32,6 +32,8 @@ double EL_dens(const HistoType &H,FuncType && LE,double E,double L){
     }
     auto [Index,RectR] = H.Grid.FindElement(E,l);
     double Value = H[Index];
+    if(method == 'f')
+        return Value;
     double E0 = RectR.left();
     double E1 = RectR.right();
 
@@ -44,19 +46,23 @@ double EL_dens(const HistoType &H,FuncType && LE,double E,double L){
     double L01 = l1*Lmax0;
     double L10 = l0*Lmax1;
     double L11 = l1*Lmax1;
-
-    return Value/(0.5*(E1-E0)*(L01+L11-L00-L10));
+    if(method == 'l')
+        return Value/(0.5*(E1-E0)*(l1-l0));
+    else
+        return Value/(0.5*(E1-E0)*(L01+L11-L00-L10));
 }
 
 template <typename FuncType,typename HistoType>
-auto ELH_toFunction(const HistoType &H,FuncType && LE,size_t EN,size_t LN){
+auto ELH_toFunction(const HistoType &H,FuncType && LE,char method,size_t EN,size_t LN){
     double E0 = grob::Grid1Cast(H.Grid.first()).front();
     double E1 = grob::Grid1Cast(H.Grid.first()).back();
     double L0 = 0;
     double L1 = LE(E1);
     return grob::make_function_f(grob::mesh_grids(grob::GridUniform<double>( E0,E1,EN),
                                                   grob::GridUniform<double>( L0,L1,LN)),
-                                 [&](double E,double L){return EL_dens(H,LE,E,L);});
+                                 [&](double E,double L){
+                                        return EL_dens(H,LE,method,E,L);
+                                    });
 }
 
 int main(int argc,char **argv){
@@ -156,7 +162,17 @@ int main(int argc,char **argv){
     size_t NE = (ptree_contain(cmd_params,"NE") ? cmd_params.get<int>("NE") : 100);
     size_t NL = (ptree_contain(cmd_params,"NL") ? cmd_params.get<int>("NL") : 100);
 
-    as_csv(ELH_toFunction(Histo,LE_func,NE,NL)).save(std::ofstream(cmd_params.pgets(out_p)));
+    char method = 'L';
+    if(ptree_contain(cmd_params,"func") ||
+       ptree_contain(cmd_params,"f") ||
+       ptree_contain(cmd_params,"F"))
+        method = 'f';
+    else if (ptree_contain(cmd_params,"El") ||
+             ptree_contain(cmd_params,"l")){
+          method = 'l';
+    }
+
+    as_csv(ELH_toFunction(Histo,LE_func,method,NE,NL)).save(std::ofstream(cmd_params.pgets(out_p)),6,std::defaultfloat);
 
 	return 0;
 }

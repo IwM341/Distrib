@@ -4,23 +4,26 @@
 
 	"eh_in": "eh.matrix",
 	"el_in": "el.matrix",
-
-	"dl_out": "dl_out.matrix",
-	"dh_out": "dh_out.matrix",
 	
+	"dh_in": "ch.matrix",
+	"dl_in": "cl.matrix",
+
 	"DL_out": "DL_out.matrix",
-	"DH_out":  "DH_out.matrix",	
+	"DH_out":  "DH_out.matrix",
 
-	"nl_out": "nl_out.dat",
-	"nh_out":  "nh_out.dat",
-	
+	"CL_out": "CL_out.matrix",
+	"CH_out":  "CH_out.matrix",	
+
 	"NL_out": "NL__out.dat",
 	"NH_out":  "NH__out.dat",
+	"nl_out": "nl_out.dat",
+	"nh_out":  "nh_out.dat",
 
 
-	"tau": "0.01",
-	"deg" :"0",
+	"tau": "0.1",
+	"skip_pow": 3,
+	"deg" :"1",
 	"debug":true,
 	"format":"text",
-	"method":"matrix"
+	"method":"euler2"
 }

@@ -25,17 +25,17 @@
 	"mk": 100,
 	"dmk" : 1e-4,
 
-	"NE":60,
-	"NLmax":60,
+	"NE":120,
+	"NLmax":80,
 	"_Egird":"Uniform",
 	"_Lgird":"Uniform",
 
 	"elements" : ["H1","He4","Ne","C12","Na","Fe","O16","N14","Si","Mg","Ni"],
 
-	"Nmk_H" : 1000000,
-	"Nmk_L" : 1000000,
-	"Nmk_HL" : 10000,
-	"Nmk_LH" : 10000,
+	"Nmk_H" : 10000000,
+	"Nmk_L" : 10000000,
+	"Nmk_HL" : 1000000,
+	"Nmk_LH" : 1000000,
 
 	"__not_fill" : true,
 	"fractions": "capt/fractions.txt",

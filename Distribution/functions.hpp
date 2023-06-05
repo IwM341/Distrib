@@ -329,6 +329,9 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
     double r_nd = pow(G(),pow_r);//pow(G(),1.0/3.0);
     factor *= (3*pow_r* pow(r_nd,(3*pow_r-1.0)/pow_r));
     //gain escape velocity from redius
+    //if(r_nd < 0.3){
+    //    r_nd+=0.0;
+    //}
     double Vesc = VescR(r_nd);
 
     //random input velocity
@@ -508,9 +511,10 @@ auto SupressFactor_v1(HType & H, double mi,double mk,double delta_mk,dF_Type dF,
         if(b){
             auto Elem = H.Histo.Grid[MI];
             auto H_i = H.Histo.Values[i_h];
-        }
-        if(E_nd < -4.5){
+        }*/
+        /*if(E_nd < -4.5){
             dens = dens +0.0;
+            print("E<-4.5");
         }*/
         if(H.putValue(dens,E_nd,L_nd)){
             /*
@@ -982,10 +986,10 @@ inline double TrajectoryIntegral1(Generator const & G,
     if(TI.T_in == 0.0){
         return 0.0;
     }
-    double const_fact_rd = mk/(mk+mp)/Nmk;
+    double const_fact_rd = mk/(mk+mp)/Nmk*TI.T_in/(TI.T_in+TI.T_out);
     double summ =0;
     for(size_t sch = 0;sch<Nmk;++sch){
-        double factor = TI.T_in/(TI.T_in+TI.T_out);
+        double factor = const_fact_rd;
         double t = G()*TI.T_in;
         double r = TI.Trajectory(t);
         double vesc = Vesc(r);
@@ -993,17 +997,24 @@ inline double TrajectoryIntegral1(Generator const & G,
         double n_r = nR(r);
 
         double v2 = e_nd*VescMin*VescMin+vesc*vesc;
-        if(v2 < 0)
-            v2 = 0;
-        double v = sqrt(v2);
-        vec3 Vin = RandomN(G)*v;
+        double v_xy = (l_nd/r)*VescMin;
+        if(!(v_xy >= 0))
+            v_xy = 0;
+        double v2_z = v2 - v_xy*v_xy;
+        if(!(v2_z >= 0))
+            v2_z = 0;
+        double Phi = RandomPhi(G);
+        vec3 Vin(v_xy*cos(Phi),v_xy*sin(Phi),sqrt(v2_z));
+        if(std::isnan(Vin.norm())){
+            throw std::runtime_error("nan at Vin");
+        }
         auto Vout = VoutTherm1(mk,mp,delta_mk,dF,PhiFactor,Vin,n_r,Therm,G);
 
         double e_nd_1 = (Vout.Result*Vout.Result - vesc*vesc)/(VescMin*VescMin);
         double l_nd_1  = r*sqrt(Vout.Result.x*Vout.Result.x+Vout.Result.y*Vout.Result.y)/VescMin;
 
 
-        double dens = Vout.RemainDensity*const_fact_rd;
+        double dens = Vout.RemainDensity*factor;//*const_fact_rd;
         if(!Out.putValue(dens,e_nd_1,l_nd_1)){
             //PVAR(dens);
             EvaporationOut += dens;

@@ -4,21 +4,28 @@
 
 	"dl_in" : "capt/cl_100_dm.bmat",
 	"dh_in" : "capt/ch_100_dm.bmat",
-	"eh_in" : "capt/eh_100_dm.bmat",
-	"el_in" : "capt/el_100_dm.bmat",
+	"-eh_in" : "capt/eh_100_dm.bmat",
+	"-el_in" : "capt/el_100_dm.bmat",
 
-	"dl_out" : "evolute/dlf_100_dm.bmat",
-	"dh_out" : "evolute/dhf_100_dm.bmat",
-	"DL_out" : "evolute/DL_100_dm.bmat",
-	"DH_out" : "evolute/DH_100_dm.bmat",
-
-	"NL_out": "evolute/NLt_100_dm.dat",
-	"NH_out" : "evolute/NHt_100_dm.dat",
-	"nl_out": "evolute/nlf_100_dm.dat",
-	"nh_out" : "evolute/nhf_100_dm.dat",
+	"CL_out" : "evolute/CL_1e-4.bmat",
+	"CH_out" : "evolute/CH_1e-4.bmat",
+	"DL_out" : "evolute/DL_1e-4.bmat",
+	"DH_out" : "evolute/DH_1e-4.bmat",
 	
-	"T": "50",
+	"nl_out" : "evolute/CLt_1e-4.dat",
+	"nh_out" : "evolute/CHt_1e-4.dat",
+	
+	"NL_out": "evolute/NLt_1e-4.dat",
+	"NH_out" : "evolute/NHt_1e-4.dat",
+
+	"h_nuf" : 1,
+	"l_nuf" : 1,
+	
+	"T_": "376000",
+	"tau" : 0.4,
+	"deg" : 1,
+	"skip_pow" : "auto",
 	"debug":true,
 	"format":"binary",
-	"method":"vector"
+	"method":"euler2"
 }

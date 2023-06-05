@@ -1,0 +1,31 @@
+{
+	"lh_in" : "capt_light/lh_100_dm.bmat",
+	"hl_in" : "capt_light/hl_100_dm.bmat",
+
+	"dl_in" : "capt_light/cl_100_dm.bmat",
+	"dh_in" : "capt_light/ch_100_dm.bmat",
+	"-eh_in" : "capt_light/eh_100_dm.bmat",
+	"-el_in" : "capt_light/el_100_dm.bmat",
+
+	"CL_out" : "ev_light/CL_1e0.bmat",
+	"CH_out" : "ev_light/CH_1e0.bmat",
+	"DL_out" : "ev_light/DL_1e0.bmat",
+	"DH_out" : "ev_light/DH_1e0.bmat",
+	
+	"nl_out" : "ev_light/CLt_1e0.dat",
+	"nh_out" : "ev_light/CHt_1e0.dat",
+	
+	"NL_out": "ev_light/NLt_1e0.dat",
+	"NH_out" : "ev_light/NHt_1e0.dat",
+
+	"h_nuf" : 1,
+	"l_nuf" : 1,
+	
+	"T": "3360000000",
+	"tau" : 100000,
+	"deg--" : 1,
+	"skip_pow" : "auto",
+	"debug":true,
+	"format":"binary",
+	"method":"euler2"
+}

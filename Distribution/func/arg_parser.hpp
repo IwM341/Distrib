@@ -32,7 +32,7 @@ boost::filesystem::path config_path_from(const boost::filesystem::path & filenam
 }
 
 /*!
- * \brief gives relative tp config path of filename path
+ * \brief gives relative to config path of filename path
  */
 boost::filesystem::path config_path_to(const boost::filesystem::path & filename,
                             const boost::filesystem::path & config){

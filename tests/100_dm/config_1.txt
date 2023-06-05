@@ -32,10 +32,10 @@
 
 	"elements" : ["Fe"],
 
-	"Nmk_H" : 1000000,
-	"Nmk_L" : 1000000,
-	"Nmk_HL" : 10000,
-	"Nmk_LH" : 10000,
+	"Nmk_H" : 10000000,
+	"Nmk_L" : 10000000,
+	"Nmk_HL" : 1000000,
+	"Nmk_LH" : 1000000,
 
 	"__not_fill" : true,
 	"fractions": "capt/fractions.txt",

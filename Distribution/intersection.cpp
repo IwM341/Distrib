@@ -110,7 +110,7 @@ struct scatter_counter<grob::Histogramm<Histo_LArgs...>,
             size_t curr_progress_lh = 0;
 
             auto Mi = Histo_L.size();
-            #pragma omp parallel for
+            #pragma omp parallel for shared(Out)
             for(size_t i=0;i<Mi;++i)
             {
                 auto MI = Histo_L.Grid.FromLinear(i);
@@ -189,8 +189,11 @@ struct scatter_counter<grob::Histogramm<Histo_LArgs...>,
                         double Vsum = sqrt(v_L*v_L+v_H*v_H+2*v_L_dot_v_H);
                         double Vdiff = sqrt(v_L*v_L+v_H*v_H-2*v_L_dot_v_H);
                         double fac = rge_dens*d3v_L*d3v_H*rho_L*rho_H/(N_mk*2);
-                        Out.put(fac,Vsum,Vdiff);
-                        Out.put(fac,Vdiff,Vsum);
+                        #pragma omp critical
+                        {
+                            Out.put(fac,Vsum,Vdiff);
+                            Out.put(fac,Vdiff,Vsum);
+                        }
                     }
                     curr_progress_lh++;
                     prog_lh.show(curr_progress_lh/((float)total_progress_lh));

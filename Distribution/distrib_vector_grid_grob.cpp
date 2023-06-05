@@ -13,6 +13,7 @@
 #include "csv_io.hpp"
 #include "func/move_to_go.hpp"
 #include "func/load_histo.hpp"
+#include "grid_gen.hpp"
 int omp_thread_count() {
     int n = 0;
     #pragma omp parallel reduction(+:n)
@@ -30,6 +31,14 @@ Function::VectorGrid<double> CreateEGrid_sqrt(size_t N,double Emin,double eps = 
         double t = (x-Emin)/std::abs(Emin);
         return 1/std::abs(Emin)*0.5*( 0.5/sqrt(t+eps)+0.5/sqrt(1-t+eps));
     },N);
+}
+
+auto CreateSqrtGrid(size_t N,double a,double b,double eq = 1,
+                    double ineq_a = 0,double ineq_b = 0,double eps = 1e-4){
+    return grob::density_grid(a,b,[=](double x){
+        double t = (x-a)/(b-a);
+        return eq + ineq_a*(0.5/sqrt(t+eps))+ineq_b*(0.5/sqrt(1-t+eps));
+    },N,20,30);
 }
 
 template <typename Functype_E_L,typename Functype_N_E>
@@ -199,11 +208,6 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
     auto NH = S_LH.Grid.size();
     auto NL = S_HL.Grid.size();
 
-    #ifdef _OPENMP
-    random_shuffler rs_hl(NL);
-    #else
-    random_shuffler rs_hl(S_HL.Grid.size()-1,1);
-    #endif
 
     std::cout << "calculating scatter hl" <<std::endl;
     show_prog prog_hl(100);
@@ -212,12 +216,7 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
     size_t curr_progress_hl = 0;
 
     #pragma omp parallel for
-    for(size_t _i=0;_i<NL;++_i){
-        #ifdef _OPENMP
-        size_t i = rs_hl[_i];
-        #else
-        size_t i = _i;
-        #endif
+    for(size_t i=0;i<NL;++i){
         auto Index = S_HL.Grid.FromLinear(i);
         const auto & [e0e1,l0l1] = S_HL.Grid[Index];
 
@@ -230,6 +229,31 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
 
         auto TI = CalculateTrajectory(phi,e_nd,l_nd,100);
         auto phi_min = phi(TI.Trajectory.values[0]);
+
+        /*check*//*
+        for(auto j = 0;j<TI.Trajectory.Grid.size()-1;++j){
+            double r = 0.5*(TI.Trajectory.values[j+1]+TI.Trajectory.values[j]);
+            double v_r = (TI.Trajectory.values[j+1]-TI.Trajectory.values[j])/
+                    (TI.Trajectory.Grid[j+1]-TI.Trajectory.Grid[j]);
+            double v_phi = sqrt(l_nd*l_nd/(r*r+1e-10)+ v_r*v_r);
+            double E = v_phi*v_phi-phi(r);
+            if(std::abs((E-e_nd)/(E+e_nd-phi(r))) > 1e-1 && l_nd>1e-10 && j>2){
+
+                PVAR(j);
+                COMPARE(E,e_nd);
+                PVAR(r);
+                PVAR(v_r);
+                PVAR(v_phi);
+                PVAR(l_nd);
+                print("T[j] = ",TI.Trajectory.Grid[j]);
+                print("T[j+1] = ",TI.Trajectory.Grid[j+1]);
+                print("r[j] = ",TI.Trajectory.values[j]);
+                print("r[j+1] = ",TI.Trajectory.values[j+1]);
+                auto TI = CalculateTrajectory(phi,e_nd,l_nd,100);
+                exit(0);
+            }
+
+        }*/
         if((phi_min + e_nd)*(0.5*Vesc*Vesc)*mp*mk/(mp+mk) > dmk){
             LE_histo_adapter S_HL_old(S_HL[Index],LE_func);
 
@@ -252,11 +276,6 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
     }
     prog_hl.end();
 
-    #ifdef _OPENMP
-    random_shuffler rs_lh(NH);
-    #else
-    random_shuffler rs_lh(S_LH.Grid.size()-1,1);
-    #endif
 
     std::cout << "calculating scatter lh" <<std::endl;
     show_prog prog_lh(100);
@@ -265,12 +284,7 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
     size_t curr_progress_lh = 0;
 
     #pragma omp parallel for
-    for(size_t _i=0;_i<NH;++_i){
-        #ifdef _OPENMP
-        size_t i = rs_lh[_i];
-        #else
-        size_t i = _i;
-        #endif
+    for(size_t i=0;i<NH;++i){
 
         auto Index = S_LH.Grid.FromLinear(i);
         auto [e0e1,l0l1] = S_LH.Grid[Index];
@@ -503,25 +517,23 @@ int main(int argc,char **argv){
 
     size_t NE = ptree_condition<int>(cmd_params,"NE",30+1);
     size_t NL_max = ptree_condition<int>(cmd_params,"NLmax",30+1);
-    auto E_grid = (ptree_condition<std::string>(cmd_params,"Egird","") != "Uniform"? CreateEGrid_sqrt(NE,Emin) :
-                                          Function::VectorGrid<double>(Emin,0.0,NE));
+
+    //auto E_grid = (ptree_condition<std::string>(cmd_params,"Egird","") != "Uniform"? CreateEGrid_sqrt(NE,Emin) :
+    //                                     Function::VectorGrid<double>(Emin,0.0,NE));
+
     auto N_L_func = [&NL_max,Lmax,&BM](double _E){return 2+(NL_max-2)*maxLnd(BM,_E)/Lmax;};
     auto Lgridrho = [](double _E,double _L_nd){return 1.0;};
-    auto HistoGrid = Create_EL_grid(E_grid,Lgridrho,N_L_func);
-    if(ptree_condition<std::string>(cmd_params,"Lgird","") == "Uniform"){
-        HistoGrid = decltype (HistoGrid)(E_grid,Function::VectorGrid<double>(0.,1.,NL_max));
-    }
-
-    if(ptree_gets(cmd_params,"debug") == "true"){
-        print("created grids");
-    }
+    //auto HistoGrid = Create_EL_grid(E_grid,Lgridrho,N_L_func);
+    //if(ptree_condition<std::string>(cmd_params,"Lgird","") == "Uniform"){
+    //    HistoGrid = decltype (HistoGrid)(E_grid,Function::VectorGrid<double>(0.,1.,NL_max));
+    //}
 
     //PVAR(HistoGrid.gridStr());
     //exit(0);
 
-    EL_Histo<double,Function::VectorGrid<double>,Function::VectorGrid<double>> ELH_L
-            (HistoGrid,Function::FunctorM(BM,maxLnd));
-    auto ELH_H = ELH_L;
+    //EL_Histo<double,Function::VectorGrid<double>,Function::VectorGrid<double>> ELH_L
+    //        (HistoGrid,Function::FunctorM(BM,maxLnd));
+    //auto ELH_H = ELH_L;
 
     //std::ofstream gh_out(grid_h_out_path.string());
     //PVAR(gh_out.is_open());
@@ -546,12 +558,35 @@ int main(int argc,char **argv){
     // grob implementation
     // *******************
     // Creating 2dim grids
+    /*
     auto GridH = grobGetHistoGrid((decltype(ELH_H)::HBase const&)(ELH_H));
+
+    // Creating 2dim grids
+    auto GridL = grobGetHistoGrid((decltype(ELH_H)::HBase const&)(ELH_H));
+
+    */
+    double ineqE_a = cmd_params.get<double>("Egrid.ineq_a",
+                                    cmd_params.get<double>("Egrid.ineq",0.0));
+
+    double ineqE_b = cmd_params.get<double>("Egrid.ineq_b",
+                                    cmd_params.get<double>("Egrid.ineq",0.0));
+
+    double ineqL_b = cmd_params.get<double>("Lgrid.ineq",0.0);
+
+    auto GridE = grob::make_histo_grid(CreateSqrtGrid(NE,Emin,0,
+                                1,
+                                ineqE_a,
+                                ineqE_b));
+    auto GridH = grob::make_grid_f(GridE,[&](size_t i){
+            double _E = GridE[i].left();
+        return grob::make_histo_grid(
+                CreateSqrtGrid(N_L_func(_E),0.0,1.0,1,0.0,ineqL_b)
+                );
+    });
     WriteObject(GridH,std::ofstream(
                     config_path_from(cmd_params.pgets("h_grid","h_grid.txt"),out_path)
                     ));
-    // Creating 2dim grids
-    auto GridL = grobGetHistoGrid((decltype(ELH_H)::HBase const&)(ELH_H));
+    auto GridL = GridH;
     WriteObject(GridL,std::ofstream(
                     config_path_from(cmd_params.pgets("l_grid","l_grid.txt"),out_path)
                     ));
@@ -605,7 +640,7 @@ int main(int argc,char **argv){
     }
     PVAR(ElementList);
     auto RhoND = BM["Rho"];
-    Therm.Values*=0;
+    //Therm.Values*=0;
     bool not_fill_ss = ptree_condition(cmd_params,"not_fill",false);
 
     double V_body = ptree_condition(cmd_params,"Vbody",0.73e-3);

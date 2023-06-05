@@ -1,0 +1,31 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe сборка активного файла",
+            "command": "D:\\Soft\\Qt\\Tools\\mingw1120_64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-ID:/Soft/cpp_packages/boost_1_81_0/build_mingw64/include/boost-1_81",
+                "-ID:/Tmp/GridObject/__build/install/include",
+                "-g",
+                "${file}",
+                "-Wall",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Задача создана отладчиком."
+        }
+    ],
+    "version": "2.0.0"
+}

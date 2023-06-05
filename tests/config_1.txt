@@ -14,7 +14,7 @@
 
 	"debug" : false,
 
-	"body" : "D:/Important/articles/DMFramework/celstial_models/solar_model.dat",
+	"body" : "../../DMFramework/celestial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
 
 	"mk": 100,
