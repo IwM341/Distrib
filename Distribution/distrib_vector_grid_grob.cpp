@@ -254,7 +254,7 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
             }
 
         }*/
-        if((phi_min + e_nd)*(0.5*Vesc*Vesc)*mp*mk/(mp+mk) > dmk){
+        if(Therm[0] != 0 || (phi_min + e_nd)*(0.5*Vesc*Vesc)*mp*mk/(mp+mk) > dmk){
             LE_histo_adapter S_HL_old(S_HL[Index],LE_func);
 
                 auto HL_int = TrajectoryIntegral1(G1,e_nd,l_nd,TI,
@@ -653,7 +653,7 @@ int main(int argc,char **argv){
 
     double FullCap_H = 0;
     double FullCap_L = 0;
-
+    double VescMin = BM.VescMin();
     boost::property_tree::ptree elements_portions;
     for(const auto & element : ElementList){
         decltype(Therm) Element_N(Therm.Grid,RhoND*BM[element]);
@@ -662,7 +662,8 @@ int main(int argc,char **argv){
         size_t M = ME.at(element);
         double m_nuc = (M)*_mp;
         dF_Nuc_M dF(M);
-        auto PhiFactor_Nuc = [M](double q){return M*M;};
+        auto PhiFactor_Nuc = [M](double q){return fast_pow(M,4);};
+        //auto PhiFactor_Nuc_55 = [M,mk,VescMin](double q){return fast_pow(M*q/(mk*VescMin),4);};
         if(!not_fill_ss){
             FillScatterHisoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
                                    mk,delta_mk,m_nuc,
@@ -715,13 +716,14 @@ int main(int argc,char **argv){
     double c_plus = std::max(FullCap_H,FullCap_L);
     PVAR(c_plus);
 
+    /*
     Cap_H.Values /= c_plus;
     Cap_L.Values /= c_plus;
     HL_Mat /= c_plus;
     LH_Mat /= c_plus;
     Evap_H.Values /= c_plus;
     Evap_L.Values /= c_plus;
-
+    */
     boost::property_tree::ptree OutParams;
 
     OutParams.put("cp",c_plus);

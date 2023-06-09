@@ -6,7 +6,7 @@
 #include <iostream>
 #include <debug/debugdef.hpp>
 #include "complex/complex_ex.hpp"
-#include <grid_objects.hpp>>
+#include <grid_objects.hpp>
 template <typename T>
 constexpr auto gemm = std::conditional<std::is_same<T,float>::value,
                                     std::integral_constant<decltype((cblas_sgemm)),cblas_sgemm>,
@@ -220,7 +220,10 @@ BlockMatrix<T> PowMatrixSumm(size_t NL,size_t NH,std::vector<T> &A_LL,std::vecto
     std::vector<T> B_HL(A_HL.size());
     std::vector<T> B_HH(A_HH.size());
 
-    BlockMatrix Summ_tmp{A_LL.size(),A_LH.size(),A_HL.size(),A_HH.size()};
+    BlockMatrix<T> Summ_tmp{std::vector<T>(A_LL.size()),
+                            std::vector<T>(A_LH.size()),
+                            std::vector<T>(A_HL.size()),
+                            std::vector<T>(A_HH.size())};
 
     print("exponentiat into pow 2^" + std::to_string(log_2_pow) +
           " = "+ std::to_string(1<<log_2_pow));
@@ -296,7 +299,7 @@ std::vector<T> PowMatrixSumm(size_t N,std::vector<T> &A,
     std::vector<T> B(A.size());
 
 
-    std::vector<T> Summ_tmp(N);
+    std::vector<T> Summ_tmp(N*N);
 
     print("exponentiat into pow 2^" + std::to_string(log_2_pow) +
           " = "+ std::to_string(1<<log_2_pow));
@@ -597,11 +600,18 @@ void vector_apply(ResultContainer_t & Result,
     }
 }
 
+enum class AnnCalcPolicy{
+    IGNORE,
+    ONLY_OUT,
+    FULL
+};
+
 template <typename T>
 ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,std::vector<T> &A_LL,std::vector<T> & A_LH,
                         std::vector<T> & A_HL,std::vector<T> & A_HH,
                            std::string scheme,
                            std::vector<T> & ANN_HL,
+                           AnnCalcPolicy AP,
                            std::vector<T> &C_L,std::vector<T> & C_H,
                            std::vector<T> &C_L_I,std::vector<T> & C_H_I,
                            std::vector<T> &D_L_I,std::vector<T> & D_H_I,
@@ -650,12 +660,11 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,std::vector<T> &A_LL,std::vector<
     std::vector<T> C_H_tmp_1 = (C_H_I.size() ? C_H_I : C_H);
 
     std::vector<T> C_L_tmp_2 = C_L_tmp_1;
-    std::vector<T> C_H_tmp_2 = C_H_tmp_2;
+    std::vector<T> C_H_tmp_2 = C_H_tmp_1;
 
     std::vector<T> C_L_eff(NL);
     std::vector<T> C_H_eff(NH);
-    gemv_LH(SM.LL,SM.LH,SM.HL,SM.HH,
-            C_L,C_H,C_L_eff,C_H_eff);
+
 
     size_t N_steps = T_full/tau+0.5;
 
@@ -677,24 +686,26 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,std::vector<T> &A_LL,std::vector<
     std::vector<T> c_h_t(N_steps+1);
     c_h_t[0] = vector_sum(C_H_tmp_1);
 
-    std::vector<T> ann_t(N_steps+1);
+    std::vector<T> ann_t(N_steps+1,0);
     get_ann_matrix(D_L,D_H,ANN_L,ANN_H);
     ann_t[0] = vector_sum(ANN_L*D_L);
 
     progress_bar PB(N_steps,100);
 
     for(size_t i=1;i<=N_steps;++i){
-        if(calc_ann){
+        if(calc_ann  && (AP != AnnCalcPolicy::IGNORE) ){
             get_ann_matrix(D_L,D_H,ANN_L,ANN_H);
             ann_t[i] = 0.5*vector_sum(ANN_L*D_L);
-            v_exp(ANN_L,-tau/2,R_ANN_L);
-            v_exp(ANN_H,-tau/2,R_ANN_H);
-            diag_v_mult(R_ANN_L,D_L,D_L);
-            diag_v_mult(R_ANN_H,D_H,D_H);
+            if(AP == AnnCalcPolicy::FULL){
+                v_exp(ANN_L,-tau/2,R_ANN_L);
+                v_exp(ANN_H,-tau/2,R_ANN_H);
 
-            diag_v_mult(R_ANN_L,C_L_tmp_1,C_L_tmp_1);
-            diag_v_mult(R_ANN_H,C_H_tmp_1,C_H_tmp_1);
+                diag_v_mult(R_ANN_L,C_L_tmp_1,C_L_tmp_1);
+                diag_v_mult(R_ANN_H,C_H_tmp_1,C_H_tmp_1);
+            }
         }
+        gemv_LH(SM.LL,SM.LH,SM.HL,SM.HH,
+                C_L_tmp_1,C_H_tmp_1,C_L_eff,C_H_eff);
         D_L += C_L_eff;
         D_H += C_H_eff;
         gemv_LH(R.LL,R.LH,R.HL,R.HH,
@@ -702,13 +713,11 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,std::vector<T> &A_LL,std::vector<
                 C_L_tmp_2,C_H_tmp_2);
         std::swap(C_L_tmp_1,C_L_tmp_2);
         std::swap(C_H_tmp_1,C_H_tmp_2);
-        if(calc_ann){
+        if(calc_ann && (AP == AnnCalcPolicy::FULL)){
             get_ann_matrix(D_L,D_H,ANN_L,ANN_H);
             ann_t[i] += 0.5*vector_sum(ANN_L*D_L);
             v_exp(ANN_L,-tau/2,R_ANN_L);
             v_exp(ANN_H,-tau/2,R_ANN_H);
-            diag_v_mult(R_ANN_L,D_L,D_L);
-            diag_v_mult(R_ANN_H,D_H,D_H);
 
             diag_v_mult(R_ANN_L,C_L_tmp_1,C_L_tmp_1);
             diag_v_mult(R_ANN_H,C_H_tmp_1,C_H_tmp_1);
@@ -730,10 +739,13 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,std::vector<T> &A_LL,std::vector<
     };
 }
 
+
+
 template <typename T>
-Result_F<T> Evolution_LH(size_t N,size_t NH,std::vector<T> &A,
+Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
                            std::string scheme,
                            std::vector<T> & ANN,
+                           AnnCalcPolicy AP,
                            std::vector<T> &C,
                            std::vector<T> &C_I,
                            std::vector<T> &D_I,
@@ -805,25 +817,29 @@ Result_F<T> Evolution_LH(size_t N,size_t NH,std::vector<T> &A,
     progress_bar PB(N_steps,100);
 
     for(size_t i=1;i<=N_steps;++i){
-        if(calc_ann){
+        if(calc_ann && (AP != AnnCalcPolicy::IGNORE)){
             get_ann_matrix(D_,ANN_);
             ann_t[i] = 0.5*vector_sum(ANN_*D_);
-            v_exp(ANN_,-tau/2,R_ANN);
-            v_exp(ANN_,-tau/2,R_ANN);
-            diag_v_mult(R_ANN,D_,D_);
+            if(AP == AnnCalcPolicy::FULL){
+                v_exp(ANN_,-tau/2,R_ANN);
+                v_exp(ANN_,-tau/2,R_ANN);
+                //diag_v_mult(R_ANN,D_,D_);
 
-            diag_v_mult(R_ANN,C_tmp_1,C_tmp_1);
+                diag_v_mult(R_ANN,C_tmp_1,C_tmp_1);
+            }
         }
+        gemv_(SM,C_tmp_1,
+                C_eff);
         D_ += C_eff;
         gemv_(R,C_tmp_1,
                 C_tmp_2);
         std::swap(C_tmp_1,C_tmp_2);
-        if(calc_ann){
+        if(calc_ann && (AP == AnnCalcPolicy::FULL)){
             get_ann_matrix(D_,ANN_);
             ann_t[i] = 0.5*vector_sum(ANN_*D_);
             v_exp(ANN_,-tau/2,R_ANN);
             v_exp(ANN_,-tau/2,R_ANN);
-            diag_v_mult(R_ANN,D_,D_);
+            //diag_v_mult(R_ANN,D_,D_);
             diag_v_mult(R_ANN,C_tmp_1,C_tmp_1);
         }
 

@@ -90,7 +90,7 @@ inline MC::MCResult<vec3> VelocityConstrained(Generator && G,double VescTmp,doub
 template <class Generator> 
 /*MK generator of output nu'*/
 inline MC::MCResult<vec3> NuOut(Generator && G,const vec3& Vcm,const vec3&Nu,
-						double Vesc,double mp,double mk,double deltaE = 0){
+                        double Vesc,double VescMin,double mp,double mk,double deltaE = 0){
 	double VcmN = Vcm.norm();
 	
     vec3  n_v = Vcm/VcmN;
@@ -148,11 +148,11 @@ inline MC::MCResult<vec3> NuOut(Generator && G,const vec3& Vcm,const vec3&Nu,
 
     }*/
 
-    return MC::MCResult<vec3>(vNu1,0.5*(1.0+cosTh1max)*Nu1);
+    return MC::MCResult<vec3>(vNu1,0.5*(1.0+cosTh1max)*Nu1/VescMin);
 }
 
 
-
+/*
 template <typename ScatterFuncType,typename VescRFuncType,typename N_FuncType,typename TempRFuncType,typename Generator>
 inline MC::MCResult<std::tuple<vec3,double,double>> Vout(double mk,double delta_mk,ScatteringType ST,Target T,
                               ScatterFuncType const & PhiFactor, VescRFuncType const & VescR,
@@ -264,8 +264,8 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout(double mk,double delta_
                                                            factor);
 }
 
-
-
+*/
+/*
 template <typename FuncType,typename HType>
 auto SupressFactor(HType & H, double mk,double delta_mk,ScatteringType ST,Target T,
                     FuncType PhiFactor,
@@ -309,17 +309,17 @@ auto SupressFactor(HType & H, double mk,double delta_mk,ScatteringType ST,Target
             PVAR(H.values[H.Grid.pos(H.Grid[H.Grid.pos(E_nd)])].Grid[H.values[H.Grid.pos(E_nd)].Grid.size()-1]);
             print();
         }
-        */
+        //
         sum += mk_res.RemainDensity/Nmk;
     }
     return sum;
 
 }
-
+*/
 
 template <typename dF_Type,typename ScatterFuncType,typename VescRFuncType,typename N_FuncType,typename TempRFuncType,typename Generator>
 inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,double delta_mk,dF_Type dF,
-                              ScatterFuncType const & PhiFactor, VescRFuncType const & VescR,
+                              ScatterFuncType const & PhiFactor, VescRFuncType const & VescR,double VescMin,
                              N_FuncType const & nR ,TempRFuncType const & TempR, Generator  && G,
                                double Vdisp, double mU0,double pow_r=1){
 
@@ -359,7 +359,7 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
     factor *= EnLoss.RemainDensity;
 
     // Generating out velocity
-    auto Numk = NuOut(G,Vcm,Nu,Vesc,mp,mk,EnLoss.Result-delta_mk);
+    auto Numk = NuOut(G,Vcm,Nu,Vesc,VescMin,mp,mk,EnLoss.Result-delta_mk);
     vec3 Nu1 = Numk.Result;
     factor*=Numk.RemainDensity;
 
@@ -401,7 +401,7 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
                                                            std::tuple<vec3,double,double>(Nu1+Vcm,r_nd,Vesc),
                                                            factor);
 }
-
+/*
 template <typename FuncType,typename HType,typename dF_Type>
 auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
                     FuncType PhiFactor,
@@ -425,7 +425,7 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
     auto NR = [](double){return 1.0;};//BM.UniformRadFunc(element);
     double VescMin = BM.VescMin();
     for(size_t i=0;i<Nmk;++i){
-        auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0);
+        auto mk_res = Vout1(mp,mk,delta_mk,dF,PhiFactor,VescR,VescMin,NR,TempR,G,Vdisp,mU0);
         auto v_nd = std::get<0>(mk_res.Result)/VescMin;
         auto r_nd = std::get<1>(mk_res.Result);
         auto v_esc_nd = std::get<2>(mk_res.Result)/VescMin;
@@ -456,13 +456,13 @@ auto SupressFactor1(HType & H, double mp,double mk,double delta_mk,dF_Type dF,
             PVAR(H.values[H.Grid.pos(H.Grid[H.Grid.pos(E_nd)])].Grid[H.values[H.Grid.pos(E_nd)].Grid.size()-1]);
             print();
         }
-        */
+        //
 
     }
     return sum;
 
 }
-
+*/
 /*!
  * \brief SupressFactor_v1
  * \param H histo of output values
@@ -491,9 +491,9 @@ auto SupressFactor_v1(HType & H, double mi,double mk,double delta_mk,dF_Type dF,
 
     double sum = 0;
     double sum2 = 0;
-    double const_fact_rd = mk/(mk+mi)/Nmk;
+    double const_fact_rd = (_mp*fast_pow((_mp+mk),2))/(mi*mi*(mi+mk))/Nmk;//mk/(mk+mi)/Nmk;
     for(size_t i=0;i<Nmk;++i){
-        auto mk_res = Vout1(mi,mk,delta_mk,dF,PhiFactor,VescR,NR,TempR,G,Vdisp,mU0,pow_r);
+        auto mk_res = Vout1(mi,mk,delta_mk,dF,PhiFactor,VescR,VescMin,NR,TempR,G,Vdisp,mU0,pow_r);
         auto v_nd = std::get<0>(mk_res.Result)/VescMin;
         auto r_nd = std::get<1>(mk_res.Result);
         auto v_esc_nd = std::get<2>(mk_res.Result)/VescMin;
@@ -551,7 +551,7 @@ auto SupressFactor_v1(HType & H, double mi,double mk,double delta_mk,dF_Type dF,
 
 template <class Generator>
 /*MK generator of output nu'*/
-inline auto NuOutTherm(Generator const & G,const vec3& Vcm,const vec3&Nu,
+inline auto NuOutTherm(Generator const & G,const vec3& Vcm,const vec3&Nu,double VescMin,
                                      double mp,double mk,double deltaE = 0){
     //double VcmN = Vcm.norm();
 
@@ -604,14 +604,14 @@ inline auto NuOutTherm(Generator const & G,const vec3& Vcm,const vec3&Nu,
 
     }*/
 
-    return MC::MCResult<vec3>(vNu1,Nu1);
+    return MC::MCResult<vec3>(vNu1,Nu1/VescMin);
 }
 
 
 
 
 
-
+/*
 template <typename ScatterFuncType,typename Generator>
 inline MC::MCResult<vec3> VoutTherm(double mk,double delta_mk,ScatteringType ST,Target T,
                               ScatterFuncType const &PhiFactor, const vec3& V_wimp, double n_r,double Therm, Generator && G){
@@ -629,7 +629,7 @@ inline MC::MCResult<vec3> VoutTherm(double mk,double delta_mk,ScatteringType ST,
         PVAR(V1);
         PVAR(V_wimp);
     }
-    */
+    //
     //Vcm - is a vrlocity of momentum center
     vec3 Vcm = (V_wimp*mk + V1*mp)/(mp+mk);
     //Nu is input velocity of WIMP in cm coordinatesd
@@ -710,7 +710,7 @@ inline MC::MCResult<vec3> VoutTherm(double mk,double delta_mk,ScatteringType ST,
             SVAR(Vesc)+ "\n" +
             SVAR(Nu1+Vcm)+ "\n\n";
     }
-    */
+    //
     if(std::isnan(factor)){
         PVAR(V_wimp);
         PVAR(V1);
@@ -728,10 +728,11 @@ inline MC::MCResult<vec3> VoutTherm(double mk,double delta_mk,ScatteringType ST,
     }
     return MC::MCResult<vec3>(Nu1+Vcm,factor);
 }
-
+*/
 template <typename ScatterFuncType,typename Generator,typename dF_Factor_Type>
 inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Factor_Type dF,
-                              ScatterFuncType const &PhiFactor, const vec3& V_wimp, double n_r,double Therm, Generator  && G){
+                              ScatterFuncType const &PhiFactor, const vec3& V_wimp,
+                                     double VescMin,double n_r,double Therm, Generator  && G){
 
     double factor = 1.0;
 
@@ -757,7 +758,7 @@ inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Fact
     factor *= EnLoss.RemainDensity;
 
     // Generating out velocity
-    auto Numk = NuOutTherm(G,Vcm,Nu,mp,mk,EnLoss.Result-delta_mk);
+    auto Numk = NuOutTherm(G,Vcm,Nu,VescMin,mp,mk,EnLoss.Result-delta_mk);
     vec3 const&Nu1 = Numk.Result;
     factor*=Numk.RemainDensity;
 
@@ -822,7 +823,8 @@ auto Perps(const vec3 & V){
 //generation of therm velocity to cross the treshold
 template <typename ScatterFuncType,typename Generator,typename dF_Factor_Type>
 inline MC::MCResult<vec3> VoutTherm_Opt(double mk,double mp,double delta_mk,dF_Factor_Type dF,
-                              ScatterFuncType const &PhiFactor, const vec3& V_wimp, double n_r,double Therm, Generator  && G){
+                              ScatterFuncType const &PhiFactor, const vec3& V_wimp,
+                                        double VescMin,double n_r,double Therm, Generator  && G){
 
     double factor = 1.0;
 
@@ -888,7 +890,7 @@ inline MC::MCResult<vec3> VoutTherm_Opt(double mk,double mp,double delta_mk,dF_F
     factor *= EnLoss.RemainDensity;
 
     // Generating out velocity
-    auto Numk = NuOutTherm(G,Vcm,Nu,mp,mk,EnLoss.Result-delta_mk);
+    auto Numk = NuOutTherm(G,Vcm,Nu,VescMin,mp,mk,EnLoss.Result-delta_mk);
     vec3 Nu1 = Numk.Result;
     factor*=Numk.RemainDensity;
 
@@ -900,7 +902,7 @@ inline MC::MCResult<vec3> VoutTherm_Opt(double mk,double mp,double delta_mk,dF_F
 }
 
 
-
+/*
 template <typename HistoType,typename Generator,typename ThermFuncType,typename NFuncType,typename VescFuncType,typename ScatterFuncType>
 inline void TrajectoryIntegral(Generator const & G,
                         double e_nd,double l_nd,const TrajectoryInfo & TI,double VescMin,NFuncType const& nR,const ThermFuncType & ThermR,
@@ -955,7 +957,7 @@ inline void TrajectoryIntegral(Generator const & G,
         }
     }
 }
-
+*/
 
 /*!
  * \brief TrajectoryIntegral1
@@ -980,13 +982,13 @@ template <typename HistoType,typename Generator,typename ThermFuncType,typename 
 inline double TrajectoryIntegral1(Generator const & G,
                         double e_nd,double l_nd,const TrajectoryInfo & TI,double VescMin,NFuncType const& nR,const ThermFuncType & ThermR,
                                const VescFuncType & Vesc,
-                        HistoType &Out,double & EvaporationOut,double mk,double mp,double delta_mk,
+                        HistoType &Out,double & EvaporationOut,double mk,double mi,double delta_mk,
                                dF_Type dF,ScatterFuncType const & PhiFactor,size_t Nmk)
 {
     if(TI.T_in == 0.0){
         return 0.0;
     }
-    double const_fact_rd = mk/(mk+mp)/Nmk*TI.T_in/(TI.T_in+TI.T_out);
+    double const_fact_rd = (_mp*fast_pow((_mp+mk),2))/(mi*mi*(mi+mk))/Nmk*TI.T_in/(TI.T_in+TI.T_out);
     double summ =0;
     for(size_t sch = 0;sch<Nmk;++sch){
         double factor = const_fact_rd;
@@ -1005,10 +1007,10 @@ inline double TrajectoryIntegral1(Generator const & G,
             v2_z = 0;
         double Phi = RandomPhi(G);
         vec3 Vin(v_xy*cos(Phi),v_xy*sin(Phi),sqrt(v2_z));
-        if(std::isnan(Vin.norm())){
-            throw std::runtime_error("nan at Vin");
-        }
-        auto Vout = VoutTherm1(mk,mp,delta_mk,dF,PhiFactor,Vin,n_r,Therm,G);
+//        if(std::isnan(Vin.norm())){
+//            throw std::runtime_error("nan at Vin");
+//        }
+        auto Vout = VoutTherm1(mk,mi,delta_mk,dF,PhiFactor,Vin,VescMin,n_r,Therm,G);
 
         double e_nd_1 = (Vout.Result*Vout.Result - vesc*vesc)/(VescMin*VescMin);
         double l_nd_1  = r*sqrt(Vout.Result.x*Vout.Result.x+Vout.Result.y*Vout.Result.y)/VescMin;

@@ -1,15 +1,9 @@
 {
-	"H_D" : {
-		"grid" : "capt/h_grid_100_dm.txt",
-		"values" : "evolute/DH_100_dm.bmat"
-	},
-	"L_D" : {
-		"grid" : "capt/l_grid_100_dm.txt",
-		"values" : "evolute/DL_100_dm.bmat"
-	},
-	"vsd" : "ann/vsd.txt",
+	"l_grid" : "capt_light/l_grid_100_dm.txt",
+	"h_grid" : "capt_light/h_grid_100_dm.txt",
+	"ann" : "ann/ann_HL.bmat",
 	"body" : "../../../DMFramework/celestial_models/solar_model.dat",
-	"Nmk" : 100,
+	"Nmk" : 1000,
 	"Rcut" : 10,
 	"Vesc" : 2.056e-3
 	

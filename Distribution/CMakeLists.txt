@@ -12,11 +12,11 @@ add_definitions(-DTEST_SF_HISTO)
 #add_definitions(-DTEST_TRAJECTORY)
 #add_definitions(-DTEST_EQUIALENCE)
 if(NOT DEFINED DM_PATH)
-    set(DM_PATH "..\\..\\DMFramework\\utils")
+    set(DM_PATH "DMFramework\\utils")
 endif()
 
 if(NOT DEFINED GO_PATH)
-    set(GO_PATH "D:\\Tmp\\GridObject\\src")
+    set(GO_PATH "D:\\Tmp\\GridObject\\include\\grob")
 endif()
 include_directories(${DM_PATH})
 

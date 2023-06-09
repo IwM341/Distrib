@@ -277,10 +277,9 @@ int main(int argc, char ** argv){
                              cmd_params.get<int>("Rcut",10));
 
 
-    /*
-    if(ptree_contain(cmd_params,"csv")){
+    saveMatrix(Ann_Matrix.data(),L_Grid.size(),H_Grid.size(),
+               config_path_from(cmd_params.pgets("ann","ann.bmat"),programm_path).string(),MatrixFormat::BINARY);
 
-    }*/
 
 
 

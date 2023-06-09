@@ -16,12 +16,17 @@
 	"LE" : "capt_light/LE.txt",
 	"LE_json" : "capt_light/LE.json.txt",
 	"pout" : "capt_light/pout.txt",
+	
+	"Egrid":{
+		"ineq_a" : 1,
+		"ineq_b" : 1
+	},
 
 	"debug" : true,
 
 	"body" : "../../../DMFramework/celestial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
-
+	
 	"mk": 100,
 	"dmk" : 1e-4,
 

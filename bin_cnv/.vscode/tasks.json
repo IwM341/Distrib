@@ -7,7 +7,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-ID:/Soft/cpp_packages/boost_1_81_0/build_mingw64/include/boost-1_81",
-                "-ID:/Tmp/GridObject/__build/install/include",
+                "-ID:/Tmp/GridObject/include",
                 "-g",
                 "${file}",
                 "-Wall",
@@ -19,6 +19,26 @@
             },
             "problemMatcher": [
                 "$gcc"
+            ],
+            "group": "build",
+            "detail": "Задача создана отладчиком."
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: cl.exe сборка активного файла",
+            "command": "cl.exe",
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/nologo",
+                "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "${file}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$msCompile"
             ],
             "group": {
                 "kind": "build",
