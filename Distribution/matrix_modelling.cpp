@@ -52,10 +52,9 @@ void make_work(const boost::property_tree::ptree& CP){
     bool log_std = ptree_condition(CP,"debug",false);
     //LOGIF(log_std,MF);
     //bool isVectorMethod = true;//CP.get<std::string>("method","vector") != "matrix";
-
+    auto prog_path = CP.pgets("config_path");
     auto FPath = [&](const std::string & tree_path){
-        return config_path_from(CP.pgets(tree_path),CP.pgets
-                                ("config_path")).string();
+        return config_path_from(CP.pgets(tree_path),prog_path).string();
     };
 
     auto Mat0_LH = loadMatrix<T>(FPath("lh_in"),MF);
@@ -98,10 +97,38 @@ void make_work(const boost::property_tree::ptree& CP){
     std::vector<T> C_L_Distrib = std::get<0>(loadMatrix<T>(FPath("cl_in"),MF))*
             CP.get<T>("l_nuf",1);
 
+    AnnCalcPolicy AP = ptree_contain(CP,"ann_ignore") ?
+                                    AnnCalcPolicy::IGNORE:
+                                    (
+                                        ptree_contain(CP,"ann_full") ?
+                                            AnnCalcPolicy::FULL :
+                                            AnnCalcPolicy::ONLY_OUT
+                                    );
+    const int factor = (AP == AnnCalcPolicy::FULL ? 1 : 0);
     std::vector<T> ANN_HL;
     if(CP.find("ann_hl") != CP.not_found()){
         ANN_HL = std::get<0>(loadMatrix<T>(FPath("ann_hl"),MF))*
-                CP.get<float>("ann_coeff",1);
+                CP.get<float>("a_hl",1);
+    }
+    std::vector<T> ANN_LL;
+    if(CP.find("ann_ll") != CP.not_found()){
+        ANN_LL = std::get<0>(loadMatrix<T>(FPath("ann_ll"),MF))*
+                CP.get<float>("a_ll",1);
+    }
+    std::vector<T> ANN_HH;
+    if(CP.find("ann_hh") != CP.not_found()){
+        ANN_HH = std::get<0>(loadMatrix<T>(FPath("ann_hh"),MF))*
+                CP.get<float>("a_hh",1);
+    }
+    std::vector<T> ANN_L;
+    if(CP.find("ann_el") != CP.not_found()){
+        ANN_L = std::get<0>(loadMatrix<T>(FPath("ann_el"),MF))*
+                CP.get<float>("a_el",1);
+    }
+    std::vector<T> ANN_H;
+    if(CP.find("ann_eh") != CP.not_found()){
+        ANN_H = std::get<0>(loadMatrix<T>(FPath("ann_eh"),MF))*
+                CP.get<float>("a_eh",1);
     }
     //std::vector<T> EL_D_out(EL_Distrib.size());
 
@@ -122,14 +149,25 @@ void make_work(const boost::property_tree::ptree& CP){
 
     for(size_t i=0;i<NL;++i){
         A_LL[i] = -std::accumulate(&A_HL_T[i*NH],&A_HL_T[i*NH]+NH,0.0);
-        if(Ev_L.size())
-            A_LL[i] -= Ev_L[i];
     }
+    for(size_t i=0;i<Ev_L.size();++i){
+        A_LL[i] -= Ev_L[i];
+    }
+    for(size_t i=0;i<ANN_L.size();++i){
+        A_LL[i] -= ANN_L[i]*factor;
+    }
+
+
     for(size_t i=0;i<NH;++i){
         A_HH[i] = -std::accumulate(&A_LH_T[i*NL],&A_LH_T[i*NL]+NL,0.0);
-        if(Ev_H.size())
-            A_HH[i] -= Ev_H[i];
     }
+    for(size_t i=0;i<Ev_H.size();++i){
+        A_HH[i] -= Ev_H[i];
+    }
+    for(size_t i=0;i<ANN_H.size();++i){
+        A_HH[i] -= ANN_H[i]*factor;
+    }
+
 
     T tau = CP.get<float>("tau",-1);
     int degree = CP.get<int>("deg",-1);
@@ -140,7 +178,7 @@ void make_work(const boost::property_tree::ptree& CP){
 
     if(tau < 0){
         if(degree < 0){
-            tau = 0.1*approp_tau;
+            tau = approp_tau;
             if(fullT < 0)
                 degree = 1;
             else
@@ -148,7 +186,7 @@ void make_work(const boost::property_tree::ptree& CP){
         }
         else{
             if(fullT < 0){
-                tau = 0.1*approp_tau;
+                tau = approp_tau;
                 fullT = tau*degree;
             }
             else{
@@ -170,13 +208,15 @@ void make_work(const boost::property_tree::ptree& CP){
         }
     }
     size_t sp = 0;
+    std::string method = CP.pgets("method","euler");
     if(CP.get<std::string>("skip_pow","") == "auto"){
-        sp = std::max(0,int(log2(tau/approp_tau)+2.5));
+        //int pre_factor = (method == "euler" ? 10 : 1);
+        sp = std::max(0,int(log2(10*tau/approp_tau)+1.5));
     }else{
         sp = CP.get<int>("skip_pow",0);
     }
-
-    if(tau/(1<<sp) > approp_tau){
+    T tau_eff = (1<<sp);
+    if(tau_eff> approp_tau){
         print("WARNING: tau too big");
         print("tau_max = ",approp_tau);
     }
@@ -215,22 +255,62 @@ void make_work(const boost::property_tree::ptree& CP){
                                                 iter_num,tau) :
                                MatrixMultMethod<T>(NH,NL,A_LL,A_LH_T,A_HL_T,A_HH,L_Distrib,H_Distrib,iter_num,tau);
     */
-    std::string method = CP.pgets("method","euler");
-    AnnCalcPolicy AP = ptree_contain(CP,"ann_hl") ?
-                            (
-                                ptree_contain(CP,"ann_ignore") ?
-                                    AnnCalcPolicy::IGNORE:
-                                    (
-                                        ptree_contain(CP,"ann_full") ?
-                                            AnnCalcPolicy::FULL :
-                                            AnnCalcPolicy::ONLY_OUT
-                                    )
-                            )
-                        : AnnCalcPolicy::IGNORE;
-    ResultLH_F<T> RD = Evolution_LH<T>( NL, NH,A_LL, A_LH_T,
-                                       A_HL_T,A_HH,
-                                          method,
-                                          ANN_HL,
+    BlockMatrix<T> R;
+    BlockMatrix<T> SM;
+    if(ptree_contain(CP,"load_state")){
+        boost::filesystem::path backup_path = FPath("load_matrix");
+        try{
+            R.LL = std::get<0>(loadMatrix<T>((backup_path / "R_LL.bmat").string(),MF));
+            R.LH = std::get<0>(loadMatrix<T>((backup_path / "R_LH.bmat").string(),MF));
+            R.HL = std::get<0>(loadMatrix<T>((backup_path / "R_HL.bmat").string(),MF));
+            R.HH = std::get<0>(loadMatrix<T>((backup_path / "R_HH.bmat").string(),MF));
+
+            SM.LL = std::get<0>(loadMatrix<T>((backup_path / "I_LL.bmat").string(),MF));
+            SM.LH = std::get<0>(loadMatrix<T>((backup_path / "I_LH.bmat").string(),MF));
+            SM.HL = std::get<0>(loadMatrix<T>((backup_path / "I_HL.bmat").string(),MF));
+            SM.HH = std::get<0>(loadMatrix<T>((backup_path / "I_HH.bmat").string(),MF));
+            goto Success;
+        } catch(std::exception & e){
+            std::cout << e.what()<< std::endl;
+        }
+        goto CreateMatrix;
+
+    } else {
+        CreateMatrix:
+
+        R = (method == "order2" ? RMatrix2Order(NL,NH,A_LL,A_LH_T,A_HL_T,A_HH,tau_eff) :
+                                   RMatrixEuler(NL,NH,A_LL,A_LH_T,A_HL_T,A_HH,tau_eff));
+        SM = PowMatrixSumm(NL,NH,R.LL,R.LH,R.HL,R.HH,sp,tau_eff);
+
+        try{
+            boost::filesystem::path backup_path = config_path_from(
+                        CP.pgets("save_matrix","rs_matrix_backup")
+                        ,prog_path);
+
+            if (!boost::filesystem::exists(backup_path))
+                boost::filesystem::create_directory(backup_path);
+
+
+            saveMatrix<T>(R.LL.data(),NL,NL,(backup_path / "R_LL.bmat").string(),MF);
+            saveMatrix<T>(R.LH.data(),NL,NH,(backup_path / "R_LH.bmat").string(),MF);
+            saveMatrix<T>(R.HL.data(),NH,NL,(backup_path / "R_HL.bmat").string(),MF);
+            saveMatrix<T>(R.HH.data(),NH,NH,(backup_path / "R_HH.bmat").string(),MF);
+
+            saveMatrix<T>(SM.LL.data(),NL,NL,(backup_path / "SM_LL.bmat").string(),MF);
+            saveMatrix<T>(SM.LH.data(),NL,NH,(backup_path / "SM_LH.bmat").string(),MF);
+            saveMatrix<T>(SM.HL.data(),NH,NL,(backup_path / "SM_HL.bmat").string(),MF);
+            saveMatrix<T>(SM.HH.data(),NH,NH,(backup_path / "SM_HH.bmat").string(),MF);
+        } catch (std::exception & e){
+            print("problems saving matricies");
+            print(e.what());
+
+        }
+    }
+    Success:
+
+    ResultLH_F<T> RD = Evolution_LH<T>( NL, NH,R,SM,
+                                        Ev_L,Ev_H,ANN_L,ANN_H,
+                                        ANN_LL,ANN_HL,ANN_HH,
                                             AP,
                                           C_L_Distrib,C_H_Distrib,
                                           L_C_I,H_C_I,
@@ -250,6 +330,13 @@ void make_work(const boost::property_tree::ptree& CP){
         printPairVector(NL,NH,RD.C_L_F.data(),RD.C_H_F.data());
     }
 
+    if(CP.get<bool>("norm",false)){
+        auto normz = [](auto & x){x /= vector_sum(x);};
+        normz(RD.C_L_F);
+        normz(RD.C_H_F);
+        normz(RD.D_L_F);
+        normz(RD.D_H_F);
+    }
     saveMatrix(RD.C_L_F.data(),1,NL,FPath("cl_out"),MF);
     saveMatrix(RD.C_H_F.data(),1,NH,FPath("ch_out"),MF);
     saveMatrix(RD.D_L_F.data(),1,NL,FPath("dl_out"),MF);
@@ -257,16 +344,20 @@ void make_work(const boost::property_tree::ptree& CP){
 
 
     std::ofstream all_f(FPath("all_out"));
-    print_values(all_f,"t[Ts]","C_l(t)","C_h(t)","N_l(t)","N_h(t)","A(t)");
+    print_values(all_f,"t[Ts]","C_l(t)","C_h(t)","N_l(t)","N_h(t)",
+                 "E_h(t)","E_l(t)","A_LL(t)","A_HL(t)","A_HH(t)","A_L(t)","A_H(t)","A(t)");
     print_vectors_tab(all_f,RD.T_grid,
                       RD.c_l_t,RD.c_h_t,
                       RD.n_l_t,RD.n_h_t,
+                      RD.e_l_t,RD.e_h_t,
+                      RD.a_ll_t,RD.a_hl_t,RD.a_hh_t,
+                      RD.a_l_t,RD.a_h_t,
                       RD.a_t);
 }
 
 int main(int argc, char ** argv){
     boost::property_tree::ptree CP;
-    auto ret_key = parse_command_line(argc,argv,CP);
+    auto ret_key = parse_command_line_v1(argc,argv,CP);
     if(!ret_key.empty()){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;

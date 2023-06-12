@@ -1153,4 +1153,62 @@ inline void TrajectoryIntegral_AntiIonization(Generator const & G,
         }
     }
 }
+
+
+
+/**
+ * @brief  \f$\int{dx\sqrt{Ax+B}}\f$
+ * @param A  A
+ * @param B  B
+ * @return
+ */
+double sqrt_integral(double A,double B,double x0,double x1){
+    if(A == 0){
+        return (x1-x0)*sqrt(B);
+    }
+    double F02 = A*x0+B;
+    double F0 = (F02 > 0 ? sqrt(F02) : 0);
+    double F12 = A*x1+B;
+    double F1 = (F12 > 0 ? sqrt(F12) : 0);
+    return (-2.0/3)*(F1*F12-F0*F02)/(A);
+}
+
+/**
+ * @brief d_3_v_mes \f$\int{d^3v = \cfrac{2\pi vdv dL^2}{r\sqrt{r^2v^2-L^2}}}\f$
+ * @param R - Rect, contaning E and L
+ * @param L_E - function to get L(E)
+ * @param r - radius, place, where to calculate
+ */
+template <typename RectType,typename L_E_Functype,typename PhiFunctype>
+inline double d_3_v_mes(RectType const &R,L_E_Functype const & L_E,
+                 PhiFunctype const& phi,double r) noexcept{
+    if(r == 0)
+        return 0;
+    auto [E0,E1] = R.first();
+    double mphi = (r < 1 ? phi(r) : 1/r);
+    double v02 = mphi+E0;
+    double v12 = mphi+E1;
+    if(v12 < 0){
+        return 0;
+    }
+    if(v02 < 0){
+        v02 = 0;
+        E0 = -mphi;
+    }
+
+    double vl02_m = fast_pow(L_E(E0)/r,2);
+    double vl12_m = fast_pow(L_E(E1)/r,2);
+    auto [l0,l1] = R.template getR<1>();
+    double v2l_00 = l0*l0*vl02_m;
+    double v2l_01 = l1*l1*vl02_m;
+    double v2l_10 = l0*l0*vl12_m;
+    double v2l_11 = l1*l1*vl12_m;
+    double D0 = (v2l_10-v2l_00)/(v12-v02);
+    double D1 = (v2l_11-v2l_01)/(v12-v02);
+    return (2*M_PI)*(sqrt_integral(1-D1,v02*D1-v2l_01,v02,v12)
+                -sqrt_integral(1-D0,v02*D0-v2l_00,v02,v12));
+
+
+
+}
 #endif

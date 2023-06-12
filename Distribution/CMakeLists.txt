@@ -29,6 +29,10 @@ include_directories(${GO_PATH})
 add_executable(distrib_vector_grid_grob distrib_vector_grid_grob.cpp)
 add_executable(intersec intersection.cpp)
 add_executable(annihilation annihilation.cpp)
+add_executable(annihilation_vector annihilation_vector.cpp)
+add_executable(annihilation_rd annihilation_rd.cpp)
+add_executable(annihilation_rd_vector annihilation_rd_vector.cpp)
+add_executable(r_distrib r_distrib.cpp)
 
 add_executable(matrix_mult matrix_modelling.cpp)
 add_executable(graphics graphs.cpp)
@@ -74,6 +78,11 @@ if(${Boost_FOUND})
     target_link_libraries(intersec PRIVATE Boost::filesystem)
     target_link_libraries(conversions PRIVATE Boost::filesystem)
     target_link_libraries(annihilation PRIVATE Boost::filesystem)
+
+    target_link_libraries(annihilation_vector PRIVATE Boost::filesystem)
+    target_link_libraries(annihilation_rd PRIVATE Boost::filesystem)
+    target_link_libraries(annihilation_rd_vector PRIVATE Boost::filesystem)
+    target_link_libraries(r_distrib PRIVATE Boost::filesystem)
 endif()
 
 

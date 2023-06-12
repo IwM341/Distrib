@@ -20,53 +20,6 @@
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
 
-/**
- * @brief  \f$\int{dx\sqrt{Ax+B}}\f$
- * @param A  A
- * @param B  B
- * @return
- */
-double sqrt_integral(double A,double B,double x0,double x1){
-    if(A == 0){
-        return (x1-x0)*sqrt(B);
-    }
-    double F02 = A*x0+B;
-    double F0 = (F02 > 0 ? sqrt(F02) : 0);
-    double F12 = A*x1+B;
-    double F1 = (F12 > 0 ? sqrt(F12) : 0);
-    return (2.0/3)*(F1*F12-F0*F02)/(A);
-}
-
-/**
- * @brief d_3_v_mes \f$\int{d^3v = \cfrac2{\pi vdv dL^2}{r\sqrt{r^2v^2-L^2}}}\f$
- * @param R - Rect, contaning E and L
- * @param L_E - function to get L(E)
- * @param r - radius, place, where to calculate
- */
-template <typename RectType,typename L_E_Functype,typename PhiFunctype>
-inline double d_3_v_mes(RectType const &R,L_E_Functype const & L_E,
-                 PhiFunctype const& phi,double r) noexcept{
-    if(r == 0)
-        return 0;
-    double L0 = L_E(R.left());
-    double L1 = L_E(R.right());
-    auto [l0,l1] = R.template getR<1>();
-    double dL2_dE = (L1*L1-L0*L0)*(R.right()-R.left());
-    double r2 = r*r;
-    return M_PI*(
-                sqrt_integral(r2-l1*l1*dL2_dE,
-                              r2*phi(r)-l1*l1*(L0*L0-dL2_dE*R.left()),
-                              R.left(),R.right()
-                              )-
-                sqrt_integral(r2-l0*l0*dL2_dE,
-                                              r2*phi(r)-l0*l0*(L0*L0-dL2_dE*R.left()),
-                                              R.left(),R.right()
-                                              )
-                          )/r;
-
-
-
-}
 
 
 
@@ -124,15 +77,15 @@ struct scatter_counter{
                 double L10_L = EL_rect_L.template get<1,0b01>()*L_E(EL_rect_L.right());
                 double L11_L = EL_rect_L.template get<1,0b11>()*L_E(EL_rect_L.right());
 
-                double T00_L = CalculatePeriod(phi,EL_rect_L.left(),L00_L,10);
-                double T01_L = CalculatePeriod(phi,EL_rect_L.left(),L01_L,10);
-                double T10_L = CalculatePeriod(phi,EL_rect_L.right(),L10_L,10);
-                double T11_L = CalculatePeriod(phi,EL_rect_L.right(),L11_L,10);
-
+//                double T00_L = CalculatePeriod(phi,EL_rect_L.left(),L00_L,10);
+//                double T01_L = CalculatePeriod(phi,EL_rect_L.left(),L01_L,10);
+//                double T10_L = CalculatePeriod(phi,EL_rect_L.right(),L10_L,10);
+//                double T11_L = CalculatePeriod(phi,EL_rect_L.right(),L11_L,10);
+                TrajectoryPreInfo T_L = CalculatePeriod(phi,E_L,L_L,10);
                 double rho_L = 1/
-                        EL_bin_volume(EL_rect_L.left(),EL_rect_L.right(),
+                        EL_volume(EL_rect_L.left(),EL_rect_L.right(),
                                       L00_L,L01_L,L10_L,L11_L,
-                                      T00_L,T01_L,T10_L,T11_L);
+                                      T_L.T);
 
 
                 for(grob::MultiIndex<2> MJ = {0,0};
@@ -152,19 +105,11 @@ struct scatter_counter{
                     double L10_H = EL_rect_H.template get<1,0b01>()*L_E(EL_rect_H.right());
                     double L11_H = EL_rect_H.template get<1,0b11>()*L_E(EL_rect_H.right());
 
-                    double T00_H = CalculatePeriod(phi,EL_rect_H.left(),L00_H,10);
-                    double T01_H = CalculatePeriod(phi,EL_rect_H.left(),L01_H,10);
-                    double T10_H = CalculatePeriod(phi,EL_rect_H.right(),L10_H,10);
-                    double T11_H = CalculatePeriod(phi,EL_rect_H.right(),L11_H,10);
-
-                    double rho_H = 1/
-                            EL_bin_volume(EL_rect_H.left(),EL_rect_H.right(),
-                                          L00_H,L01_H,L10_H,L11_H,
-                                          T00_H,T01_H,T10_H,T11_H);
-
-
-                    TrajectoryPreInfo T_L = CalculatePeriod(phi,E_L,L_L,10);
                     TrajectoryPreInfo T_H = CalculatePeriod(phi,E_H,L_H,10);
+                    double rho_H = 1/
+                            EL_volume(EL_rect_H.left(),EL_rect_H.right(),
+                                          L00_H,L01_H,L10_H,L11_H,
+                                          T_H.T);
 
                     double & HL_Value = ANN_HL[i*NH+j];
 
@@ -175,7 +120,7 @@ struct scatter_counter{
 
 
                             double r = r_min + G()*(r_max-r_min);
-                            double rge_dens = 4*M_PI*r*r*(r_max-r_min);
+                            double rge_dens = (4*M_PI*4*M_PI/3)*r*r*(r_max-r_min);
 
                             double d3v_L= d_3_v_mes(EL_rect_L,L_E,phi,r);
                             double d3v_H= d_3_v_mes(EL_rect_H,L_E,phi,r);
@@ -213,6 +158,14 @@ auto sc_cnt(Args &&...args){
 
 
 int main(int argc, char ** argv){
+    print("getting annihilation matrix");
+    print("params: ",
+          "l_grid [filename of L grid]",
+          "h_grid [filename of H grid]",
+          "body [filename of body model]",
+          "Rcut [default is 10]",
+          "ann [out annihilation col major matrix A_HL]",
+          "Nmk [default is 1000]");
     boost::property_tree::ptree cmd_params;
     auto ret_key = parse_command_line(argc,argv,cmd_params);
     if(!ret_key.empty()){
@@ -274,11 +227,11 @@ int main(int argc, char ** argv){
                 );
     auto sc = sc_cnt(L_Grid,H_Grid,LE_func,phiR,G);
     auto Ann_Matrix = sc.annihilation_matrix([](auto){return 1.0;},cmd_params.get<int>("Nmk",100000),
-                             cmd_params.get<int>("Rcut",10));
+                             cmd_params.get<double>("Rcut",10));
 
 
     saveMatrix(Ann_Matrix.data(),L_Grid.size(),H_Grid.size(),
-               config_path_from(cmd_params.pgets("ann","ann.bmat"),programm_path).string(),MatrixFormat::BINARY);
+               config_path_from(cmd_params.pgets("ann","ann_HL.bmat"),programm_path).string(),MatrixFormat::BINARY);
 
 
 

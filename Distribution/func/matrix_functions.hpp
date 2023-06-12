@@ -265,7 +265,7 @@ auto LoadMatrixBinary(const std::string&fname){
     std::ifstream _in;
     _in.open(fname,std::ios::binary);
     if(!_in){
-        throw std::runtime_error("no such file" + fname);
+        throw std::runtime_error("no such file: " + fname);
     }
     return LoadMatrixBinary<T>(_in);
 }

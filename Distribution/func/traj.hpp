@@ -579,13 +579,6 @@ TrajectoryPreInfo CalculatePeriod(const PhiFunctype & phi,double E_nd,double L_n
            T_out = (M_PI-2*asin((2*ep-1)/sqrt(1-4*ep*lp*lp)))/(4*ep*sqrt_e) + sqrt_1_e_l2/ep;
         else
            T_out = 1e10;
-//        if(std::isnan(rmin) or std::isnan(rmax)){
-//            print("rmin: ",rmin,", rmax: ",rmax);
-//            PVAR(ep);
-//            PVAR(sqrt_function(phi.Grid.size()-1));
-//            PVAR(phi.values[phi.Grid.size()-1]);
-//        }
-//        PVAR(TI.T_out );
     }
     else{
 //        print("all in");
@@ -653,24 +646,9 @@ TrajectoryPreInfo CalculatePeriod(const PhiFunctype & phi,double E_nd,double L_n
         double x_0 = phi.Grid[ix];
         double x_1 = phi.Grid[ix_1];
 
-        //qi = quadric_interpolator(phi,ix);
+
         qi_s.setAB(x_0,x_1,phi[ix],phi[ix_1]);
-//            COMPARE(qi.a,qi_s.a);
-//        if(i==5){
-//        printd(", ",TI.Trajectory.values[i-1],TI.Trajectory.values[i],ix,ix_1,x_0,x_1,phi[ix],phi[ix_1]);
-//            COMPARE(qi.b,qi_s.b);
-//        printd(", ",qi_s.a,qi_s.b);
-//        print("intergeral from ",x0," to ",x0+h);
-//        PVAR(sqrt_integral(x0,h,qi_s,ep,lp));
-//        }
-//        if(qi.b > 100){
-//            PVAR(x0);
-//            PVAR(phi.Grid.size());
-//            PVAR(phi.Grid[1]);
-//            printd(", ",phi[ix],phi[ix]-phi[ix+1]);
-//            PVAR(x_ref);
-//        }
-        //print("qi: ", qi.a, ", ",qi.b);
+
         T_in += sqrt_integral(x0,h,qi_s,ep,lp);
     }
 

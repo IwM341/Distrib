@@ -90,8 +90,8 @@ std::string add_config_file(boost::property_tree::ptree &tree,const std::string 
 
 std::string parse_command_line(int argc,char ** argv,boost::property_tree::ptree &tree){
     using namespace std::string_literals;
-    std::regex parametr("-+([a-z]\\w*)");
-    std::regex parametr_seter("-+([a-z]\\w*)=?(.*)");
+    std::regex parametr("-+([._-a\\-zA-Z][.\\-\\w]*)");
+    std::regex parametr_seter("-+([._a\\-zA-Z][.\\-\\w]*)=?(.*)");
     std::string last_par;
     std::smatch sm;
     tree.put("config_path","");
@@ -151,8 +151,8 @@ std::string parse_command_line(int argc,char ** argv,boost::property_tree::ptree
 }
 std::string parse_command_line_v1(int argc,char ** argv,boost::property_tree::ptree &tree){
     using namespace std::string_literals;
-    std::regex parametr("-+([a-zA-Z]\\w*)");
-    std::regex parametr_seter("-+([a-zA-Z]\\w*)=?(.*)");
+    std::regex parametr("-+([a-zA-Z][\\.\\-\\w]*)");
+    std::regex parametr_seter("-+([a-zA-Z][\\.\\-\\w]*)=?(.*)");
 
     std::smatch sm;
 

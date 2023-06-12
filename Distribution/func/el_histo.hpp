@@ -330,6 +330,10 @@ inline double EL_column_measure(const EL_column &C0,const EL_column &C1) noexcep
 inline double EL_reg(double x) noexcept{
     return sqrt(-x*x*x);
 }
+inline double EL_volume(double E0,double E1,double L00,double L01,double L10,double L11,double T){
+    return 2*M_PI*M_PI*(E1-E0)*(L01*L01+L11*L11-L10*L10-L00*L00)*T;
+}
+
 double EL_bin_volume(double E0,double E1,double L00,double L01,double L10,double L11,
                   double T00,double T01,double T10,double T11) noexcept{
     if(std::isinf(T00) or std::isinf(T01)
