@@ -15,9 +15,14 @@ executables:
   -> matrix_mult_elastic_mult : evolution of elastic DM
 
   -> conversions : convert histogramm (grid + values) to density function
-  all parametrs in executables are listed in form: -[parametr_name] [parametr_value] or
+  
+*all parametrs in executables are listed in form: -[parametr_name] [parametr_value] or
   -[parametr_name]=[parametr_value] or use config file in json format, writing -config [path/to/config/file],
   in that case all filename pathes would be relative to config file.
+*if you write -parametr without value, it interprets it as true value
+*composed parameters such as soph.par in json file are used as sub classes for examle:
+  -par.a=1 -par.b=2 is equals in config json file as "par" : {"a" : a, "b" : 2}
+*to find parametrs of each executable, use -help flag
 
 form factors:
   -> in folder factors the file factors.hpp contain typedefs for using form factors:
