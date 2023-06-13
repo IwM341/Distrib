@@ -27,5 +27,7 @@ form factors:
     * Phi_Fac_Ann - annihilation phi factor
   -> file __factors.hpp contain implementation of this factors
 
+celestial_models:
+  -> files of celestial models are in the folder celestial_models
 
 
