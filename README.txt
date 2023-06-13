@@ -15,6 +15,9 @@ executables:
   -> matrix_mult_elastic_mult : evolution of elastic DM
 
   -> conversions : convert histogramm (grid + values) to density function
+  all parametrs in executables are listed in form: -[parametr_name] [parametr_value] or
+  -[parametr_name]=[parametr_value] or use config file in json format, writing -config [path/to/config/file],
+  in that case all filename pathes would be relative to config file.
 
 form factors:
   -> in folder factors the file factors.hpp contain typedefs for using form factors:
