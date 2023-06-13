@@ -1208,7 +1208,13 @@ inline double d_3_v_mes(RectType const &R,L_E_Functype const & L_E,
     return (2*M_PI)*(sqrt_integral(1-D1,v02*D1-v2l_01,v02,v12)
                 -sqrt_integral(1-D0,v02*D0-v2l_00,v02,v12));
 
-
-
 }
+
+inline double del_nan(double x)noexcept{
+    return !std::isnan(x) ? x : 0;
+}
+inline double del_neg(double x)noexcept{
+    return x>0 ? x : 0;
+}
+
 #endif

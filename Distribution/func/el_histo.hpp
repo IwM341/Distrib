@@ -2,7 +2,7 @@
 #define EL_HISTO_H
 #include <utils>
 #include <limits>
-#include <grid_objects.hpp>
+#include <grob/grid_objects.hpp>
 
 template <typename T,typename EGridType,typename LGridType>
 class EL_Histo:

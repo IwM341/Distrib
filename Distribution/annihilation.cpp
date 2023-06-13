@@ -13,13 +13,13 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include "func/move_to_go.hpp"
-#include "templates.hpp"
-#include "grid_objects.hpp"
-#include "object_serialization.hpp"
-#include "serialization.hpp"
+#include "grob/templates.hpp"
+#include "grob/grid_objects.hpp"
+#include "grob/object_serialization.hpp"
+#include "grob/serialization.hpp"
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
-
+#include "../factors/factors.hpp"
 
 
 
@@ -126,13 +126,13 @@ struct scatter_counter{
                             double d3v_H= d_3_v_mes(EL_rect_H,L_E,phi,r);
 
 
-                            double v_L = sqrt(E_L+phi(r));
-                            double v_t_L = L_L/r;
+                            double v_L = del_nan(sqrt(E_L+phi(r)));
+                            double v_t_L = del_nan(L_L/r);
                             double v_r_L = sqrt(v_L*v_L-v_t_L*v_t_L);
 
-                            double v_H = sqrt(E_H+phi(r));
-                            double v_t_H = L_H/r;
-                            double v_r_H = sqrt(v_H*v_H-v_t_H*v_t_H);
+                            double v_H = del_nan(sqrt(E_H+phi(r)));
+                            double v_t_H = del_nan(L_H/r);
+                            double v_r_H = del_nan(sqrt(v_H*v_H-v_t_H*v_t_H));
 
                             double v_L_dot_v_H = v_t_L*v_t_H*cos(G()*M_PI) + v_r_L*v_r_H;
                             double Vsum = sqrt(v_L*v_L+v_H*v_H+2*v_L_dot_v_H);
@@ -226,7 +226,7 @@ int main(int argc, char ** argv){
                 [&phiR](double e){return maxLndf(phiR,e);}
                 );
     auto sc = sc_cnt(L_Grid,H_Grid,LE_func,phiR,G);
-    auto Ann_Matrix = sc.annihilation_matrix([](auto){return 1.0;},cmd_params.get<int>("Nmk",100000),
+    auto Ann_Matrix = sc.annihilation_matrix(Phi_Fac_Ann{},cmd_params.get<int>("Nmk",100000),
                              cmd_params.get<double>("Rcut",10));
 
 

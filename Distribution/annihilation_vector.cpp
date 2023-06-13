@@ -13,13 +13,13 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include "func/move_to_go.hpp"
-#include "templates.hpp"
-#include "grid_objects.hpp"
-#include "object_serialization.hpp"
-#include "serialization.hpp"
+#include "grob/templates.hpp"
+#include "grob/grid_objects.hpp"
+#include "grob/object_serialization.hpp"
+#include "grob/serialization.hpp"
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
-
+#include "../factors/factors.hpp"
 
 
 
@@ -72,7 +72,7 @@ std::vector<double> annihilation_vector(Grid_t const& Grid,L_E_Functype const & 
 
                 double d3v_L= d_3_v_mes(EL_rect_L,L_E,phi,r);
 
-                double v_L = sqrt(E_L+phi(r));
+                double v_L = del_nan(sqrt(E_L+phi(r)));
 
                 auto [v_H,vh_rd] = Velocity(G,VescR(r),Vdisp,U0_);
 
@@ -153,7 +153,7 @@ int main(int argc, char ** argv){
     double V_disp = ptree_condition(cmd_params,"Vdisp",0.52e-3);
 
     auto Ann_Vector = annihilation_vector(Grid,LE_func,VescR,V_disp,V_body,phiR,G,
-                                          [](auto){return 1.0;},cmd_params.get<int>("Nmk",100000),
+                                          Phi_Fac_Ann{},cmd_params.get<int>("Nmk",100000),
                              cmd_params.get<double>("Rcut",100));
 
 

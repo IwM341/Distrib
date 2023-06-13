@@ -13,14 +13,14 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include "func/move_to_go.hpp"
-#include "templates.hpp"
-#include "grid_objects.hpp"
-#include "object_serialization.hpp"
-#include "serialization.hpp"
+#include "grob/templates.hpp"
+#include "grob/grid_objects.hpp"
+#include "grob/object_serialization.hpp"
+#include "grob/serialization.hpp"
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
-#include "csv_io.hpp"
-
+#include "grob/csv_io.hpp"
+#include "../factors/factors.hpp"
 
 
 template <typename L_E_Functype,typename Phi_FuncType,
@@ -95,13 +95,13 @@ auto annihilation_r_distrib(grob::Histogramm<HistoArgs...> const&Histo_L,
                     double d3v_H= d_3_v_mes(EL_rect_H,L_E,phi,r);
 
 
-                    double v_L = sqrt(E_L+phi(r));
-                    double v_t_L = L_L/r;
-                    double v_r_L = sqrt(v_L*v_L-v_t_L*v_t_L);
+                    double v_L = del_nan(sqrt(E_L+phi(r)));
+                    double v_t_L = del_nan(L_L/r);
+                    double v_r_L = del_nan(sqrt(v_L*v_L-v_t_L*v_t_L));
 
-                    double v_H = sqrt(E_H+phi(r));
-                    double v_t_H = L_H/r;
-                    double v_r_H = sqrt(v_H*v_H-v_t_H*v_t_H);
+                    double v_H = del_nan(sqrt(E_H+phi(r)));
+                    double v_t_H = del_nan(L_H/r);
+                    double v_r_H = del_nan(sqrt(v_H*v_H-v_t_H*v_t_H));
                     double fac  = 0;
                     for(size_t k = 0;k<N_mk;++k){
                         double v_L_dot_v_H = v_t_L*v_t_H*cos(G()*M_PI) + v_r_L*v_r_H;
@@ -192,7 +192,7 @@ int main(int argc, char ** argv){
     size_t Nmk = cmd_params.get<int>("Nmk",1);
     double Rcut = cmd_params.get<double>("Rcut",10);
     size_t Nr = cmd_params.get<int>("Nr",1000);
-    auto rd_func = annihilation_r_distrib(L_distrib,H_distrib,LE_func,phiR,G,[](double vd){return 1;},Nmk,Nr,Rcut);
+    auto rd_func = annihilation_r_distrib(L_distrib,H_distrib,LE_func,phiR,G,Phi_Fac_Ann{},Nmk,Nr,Rcut);
 
     grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("out")),6,std::defaultfloat);
 

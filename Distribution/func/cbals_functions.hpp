@@ -6,7 +6,7 @@
 #include <iostream>
 #include <debug/debugdef.hpp>
 #include "complex/complex_ex.hpp"
-#include <grid_objects.hpp>
+#include <grob/grid_objects.hpp>
 template <typename T>
 constexpr auto gemm = std::conditional<std::is_same<T,float>::value,
                                     std::integral_constant<decltype((cblas_sgemm)),cblas_sgemm>,
@@ -359,7 +359,7 @@ std::vector<T> RMatrix2Order(size_t N,
     std::vector<T> R_2 = R_1;
 
     gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,N,N,N,
-                tau/2.0,R_1,N,A.data(),N,0.0,R_2.data(),N);
+                tau/2.0,R_1.data(),N,A.data(),N,0.0,R_2.data(),N);
     return R_2;
 }
 template <typename T>
@@ -585,6 +585,7 @@ struct Result_F{
     grob::GridUniform<T> T_grid;
     std::vector<T> c_t;
     std::vector<T> n_t;
+    std::vector<T>  e_t;
     std::vector<T>  a_t;
     std::vector<T> C_F;
     std::vector<T> D_F;
@@ -713,6 +714,10 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
 
     std::vector<T>  e_l_t(N_steps+1,0),
                     e_h_t(N_steps+1,0);
+
+    e_l_t[0] = dot_vv(Ev_L,D_L);
+    e_h_t[0] = dot_vv(Ev_H,D_H);
+
     std::vector<T>  a_ll_t(N_steps+1,0),
                     a_hl_t(N_steps+1,0),
                     a_hh_t(N_steps+1,0);
@@ -721,6 +726,8 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
                     a_h_t(N_steps+1,0),
                     a_t(N_steps+1,0);
 
+    a_l_t[0] = dot_vv(_ANN_L,D_L);
+    a_h_t[0] = dot_vv(_ANN_H,D_H);
 
 
     progress_bar PB(N_steps,100);
@@ -729,8 +736,12 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
 
         if(AP != AnnCalcPolicy::IGNORE){
             get_ann_matrix(D_L,D_H,ANN_L_HL,ANN_H_HL);
-            get_ann_matrix_xx(D_L,ANN_LL,ANN_L_HL,1);
-            get_ann_matrix_xx(D_H,ANN_HH,ANN_H_HL,1);
+            a_hl_t[i-1]= dot_vv(ANN_L_HL,D_L);
+            get_ann_matrix_xx(D_L,ANN_LL,ANN_L_HL,0.0);
+            a_ll_t[i-1] = dot_vv(ANN_L_LL,D_L);
+            get_ann_matrix_xx(D_H,ANN_H_HH,ANN_H_HH,0.0);
+            a_hh_t[i-1] = dot_vv(ANN_H_HH,D_H);
+
 
             if(AP == AnnCalcPolicy::FULL){
                 v_exp(ANN_L_HL,-tau,R_ANN_L);
@@ -747,7 +758,9 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
 
         e_l_t[i] = dot_vv(D_L,Ev_L);
         e_h_t[i] = dot_vv(D_H,Ev_H);
-
+        a_l_t[i] = dot_vv(_ANN_L,D_L);
+        a_h_t[i] = dot_vv(_ANN_H,D_H);
+        a_t[i-1] = a_hl_t[i-1]+a_ll_t[i-1]+a_hh_t[i-1]+a_l_t[i-1]+a_h_t[i-1];
         gemv_LH(R.LL,R.LH,R.HL,R.HH,
                 C_L_tmp_1,C_H_tmp_1,
                 C_L_tmp_2,C_H_tmp_2);
@@ -768,9 +781,6 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
         a_ll_t.back() = dot_vv(ANN_L_LL,D_L);
         get_ann_matrix_xx(D_H,ANN_HH,ANN_H_HH,0);
         a_hh_t.back() = dot_vv(ANN_H_HH,D_H);
-
-        a_l_t.back() = dot_vv(D_L,_ANN_L);
-        a_h_t.back() = dot_vv(D_L,_ANN_H);
         a_t.back() = a_hl_t.back()+a_ll_t.back()+a_hh_t.back()+a_l_t.back()+a_h_t.back();
     }
     return ResultLH_F<T>{
@@ -788,8 +798,8 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
 
 
 template <typename T>
-Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
-                           std::string scheme,
+Result_F<T> Evolution_E(size_t N,std::vector<T> &R,std::vector<T> &SM,
+                           std::vector<T> &Ev,
                            std::vector<T> & ANN,
                            AnnCalcPolicy AP,
                            std::vector<T> &C,
@@ -798,10 +808,6 @@ Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
                         T tau,T T_full,size_t skip_pow =0){
 
     T tau_eff = tau / (1 << skip_pow);
-    std::vector<T> R = (scheme == "order2" ? RMatrix2Order(N,A,tau_eff) :
-                                   RMatrixEuler(N,A,tau_eff));
-
-    std::vector<T> SM = PowMatrixSumm(N,R,skip_pow,tau_eff);
     auto gemv_ = [N](std::vector<T> & _A,
                         std::vector<T> & _V,
                         std::vector<T> & _V1,
@@ -831,6 +837,19 @@ Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
         }
     };
 
+    auto dot_vv = [](std::vector<T> & X,std::vector<T> & Y){
+        if(X.size() != Y.size()) {
+            return static_cast<T>(0.0);
+        }
+        else {
+            T summ = 0;
+            for(size_t i=0;i<X.size();++i){
+                summ += X[i]*Y[i];
+            }
+            return summ;
+        }
+    };
+
     std::vector<T> D_ = (D_I.size() ? D_I : std::vector<T>(N,0));
 
     std::vector<T> C_tmp_1 = (C_I.size() ? C_I : C);
@@ -839,7 +858,7 @@ Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
 
     std::vector<T> C_eff(N);
 
-    gemv_LH(SM,
+    gemv_(SM,
             C,C_eff);
 
     size_t N_steps = T_full/tau+0.5;
@@ -856,19 +875,21 @@ Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
     std::vector<T> c_t(N_steps+1);
     c_t[0] = vector_sum(C_tmp_1);
 
-    std::vector<T> ann_t(N_steps+1);
-    get_ann_matrix(D_,ANN_);
-    ann_t[0] = vector_sum(ANN_*D_);
+    std::vector<T> e_t(N_steps+1,0);
+    e_t[0] = dot_vv(Ev,D_);
+
+    std::vector<T> a_t(N_steps+1,0);
+    //get_ann_matrix(D_,ANN_);
+    //ann_t[0] = vector_sum(ANN_*D_);
 
     progress_bar PB(N_steps,100);
 
     for(size_t i=1;i<=N_steps;++i){
         if(calc_ann && (AP != AnnCalcPolicy::IGNORE)){
             get_ann_matrix(D_,ANN_);
-            ann_t[i] = 0.5*vector_sum(ANN_*D_);
+            a_t[i-1] = dot_vv(ANN_,D_);
             if(AP == AnnCalcPolicy::FULL){
-                v_exp(ANN_,-tau/2,R_ANN);
-                v_exp(ANN_,-tau/2,R_ANN);
+                v_exp(ANN_,-tau,R_ANN);
                 //diag_v_mult(R_ANN,D_,D_);
 
                 diag_v_mult(R_ANN,C_tmp_1,C_tmp_1);
@@ -877,27 +898,29 @@ Result_F<T> Evolution(size_t N,size_t NH,std::vector<T> &A,
         gemv_(SM,C_tmp_1,
                 C_eff);
         D_ += C_eff;
+
+        e_t[i] = dot_vv(Ev,D_);
+
+
         gemv_(R,C_tmp_1,
                 C_tmp_2);
         std::swap(C_tmp_1,C_tmp_2);
-        if(calc_ann && (AP == AnnCalcPolicy::FULL)){
-            get_ann_matrix(D_,ANN_);
-            ann_t[i] = 0.5*vector_sum(ANN_*D_);
-            v_exp(ANN_,-tau/2,R_ANN);
-            v_exp(ANN_,-tau/2,R_ANN);
-            //diag_v_mult(R_ANN,D_,D_);
-            diag_v_mult(R_ANN,C_tmp_1,C_tmp_1);
-        }
+
 
         n_t[i] = vector_sum(D_);
         c_t[i] = vector_sum(C_tmp_1);
         PB++;
     }
+    if(calc_ann && (AP == AnnCalcPolicy::FULL)){
+        get_ann_matrix(D_,ANN_);
+        a_t.back() = dot_vv(ANN_,D_);
+    }
     return Result_F<T>{
         Vector(N_steps+1,[=](size_t i){return i*tau;}),
         std::move(c_t),
         std::move(n_t),
-        std::move(ann_t),
+        std::move(e_t),
+        std::move(a_t),
         std::move(C_tmp_1),
         std::move(D_)
     };

@@ -10,10 +10,11 @@
 #include "func/arg_parser.hpp"
 #include "func/dens_grid.hpp"
 #include "func/matrix_functions.hpp"
-#include "csv_io.hpp"
+#include "grob/csv_io.hpp"
 #include "func/move_to_go.hpp"
 #include "func/load_histo.hpp"
-#include "grid_gen.hpp"
+#include "grob/grid_gen.hpp"
+#include "../factors/factors.hpp"
 int omp_thread_count() {
     int n = 0;
     #pragma omp parallel reduction(+:n)
@@ -56,10 +57,10 @@ auto Create_EL_grid(const Function::VectorGrid<double>&Egrid,
 }
 
 
-struct dF_Nuc{
+struct dF_Nuc_naive{
     size_t N,Z;
     double const_factor;
-    dF_Nuc(size_t Z = 1,size_t  N = 0,double const_factor = 1):Z(Z),N(N),const_factor(const_factor){}
+    dF_Nuc_naive(size_t Z = 1,size_t  N = 0,double const_factor = 1):Z(Z),N(N),const_factor(const_factor){}
     MC::MCResult<double> EnergyLoss(double Emax)const{
         return MC::MCResult<double>(0,1);
     }
@@ -68,33 +69,7 @@ struct dF_Nuc{
     }
 };
 
-constexpr double fermi_GeV = 5;
-inline double BesselX(double x) noexcept{
-    if(x<0.01){
-        return 1.0/3-x*x*(1-x*x/28)/10;
-    }else{
-        return (sin(x)-x*cos(x))/(x*x*x);
-    }
-}
-struct dF_Nuc_M{
-    size_t M;
-    double const_factor;
-    double s,R;
-    dF_Nuc_M(size_t M=0,double const_factor = 1):M(M),const_factor(const_factor){
-        s =  fermi_GeV*0.9;
-        double b = (1.23*pow(M,1.0/3)-0.6)*fermi_GeV;
-        double a = 0.52*fermi_GeV;
-        R = sqrt(b*b+7*M_PI*M_PI*a*a/3-5*s*s);
-    }
-    inline MC::MCResult<double> EnergyLoss(double Emax)const noexcept{
-        return MC::MCResult<double>(0,1);
-    }
-    inline double ScatterFactor(double q,double enLoss)const noexcept{
-        double bf = 3*BesselX(q*R)*exp(-q*q*s*s/2);
 
-        return const_factor*bf*bf;
-    }
-};
 
 struct dF_Nuc_No_FormFactor{
     dF_Nuc_No_FormFactor(){}
@@ -143,7 +118,7 @@ struct  grob_histo_adapter{
     template <typename...Args>
     inline auto putValue(Args &&...args) noexcept->decltype(Histo.put(std::forward<Args>(args)...)){
         return Histo.put(std::forward<Args>(args)...);
-    };
+    }
 };
 
 template <typename HistoType,typename LE_FuncType>
@@ -193,7 +168,7 @@ struct  LE_histo_adapter{
 template <typename N_type,typename Therm_type,typename Phi_Type,typename VescFuncType,
           typename dF_Type,typename EvapHisto,typename ScatterHisto,typename LE_FuncType,
           typename PhiFactorType>
-inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Therm,Phi_Type const& phi,
+inline void FillScatterHistoFromElement(const N_type & N_el,Therm_type const & Therm,Phi_Type const& phi,
                                        double Vesc, const VescFuncType & VescR,
                                        const dF_Type&dF,double mk,double dmk,double mp,
                                 ScatterHisto &S_LH,ScatterHisto &S_HL,EvapHisto & E_H,EvapHisto & E_L,
@@ -283,47 +258,54 @@ inline void FillScatterHisoFromElement(const N_type & N_el,Therm_type const & Th
     size_t total_progress_lh = S_LH.size();
     size_t curr_progress_lh = 0;
 
-    #pragma omp parallel for
-    for(size_t i=0;i<NH;++i){
+    if(dmk == 0){
+        prog_lh.end();
+        print("skip, dmk = 0");
+    } else{
+        #pragma omp parallel for
+        for(size_t i=0;i<NH;++i){
 
-        auto Index = S_LH.Grid.FromLinear(i);
-        auto [e0e1,l0l1] = S_LH.Grid[Index];
+            auto Index = S_LH.Grid.FromLinear(i);
+            auto [e0e1,l0l1] = S_LH.Grid[Index];
 
-        if(i != S_LH.Grid.LinearIndex(Index)){
-            print("linear index not matches multiindex");
-            PVAR(Index);
-            PVAR(i);
+            if(i != S_LH.Grid.LinearIndex(Index)){
+                print("linear index not matches multiindex");
+                PVAR(Index);
+                PVAR(i);
+            }
+
+            double e_nd=  e0e1.center();
+            double l_nd=  l0l1.center()*maxLndf(phi,e_nd);//ELH_H.Lmax(e_nd);
+
+            LE_histo_adapter S_LH_old(S_LH[Index],LE_func);
+            auto TI = CalculateTrajectory(phi,e_nd,l_nd,100);
+            auto LH_int =  TrajectoryIntegral1(G1,e_nd,l_nd,TI,
+                               Vesc,N_el,Therm,VescR,
+                               S_LH_old,
+                               E_H[Index],
+                               mk,mp,dmk,dF,PhiFactor,Nmk_LH);
+            /*
+            auto LH_Th = sum_lambda(NL,[&](size_t ih){return S_LH[Index].Values[ih];});
+            if(LH_int == 0 || std::abs(LH_int-LH_Th) > 1e-10*(LH_int+LH_Th)){
+                COMPARE(LH_int,LH_Th);
+            }*/
+
+            curr_progress_lh++;
+            #ifndef NDEBUG
+            prog_lh.show(curr_progress_lh/((float)total_progress_lh));
+            #endif
+
         }
-
-        double e_nd=  e0e1.center();
-        double l_nd=  l0l1.center()*maxLndf(phi,e_nd);//ELH_H.Lmax(e_nd);
-
-        LE_histo_adapter S_LH_old(S_LH[Index],LE_func);
-        auto TI = CalculateTrajectory(phi,e_nd,l_nd,100);
-        auto LH_int =  TrajectoryIntegral1(G1,e_nd,l_nd,TI,
-                           Vesc,N_el,Therm,VescR,
-                           S_LH_old,
-                           E_H[Index],
-                           mk,mp,dmk,dF,PhiFactor,Nmk_LH);
-        /*
-        auto LH_Th = sum_lambda(NL,[&](size_t ih){return S_LH[Index].Values[ih];});
-        if(LH_int == 0 || std::abs(LH_int-LH_Th) > 1e-10*(LH_int+LH_Th)){
-            COMPARE(LH_int,LH_Th);
-        }*/
-
-        curr_progress_lh++;
-        #ifndef NDEBUG
-        prog_lh.show(curr_progress_lh/((float)total_progress_lh));
-        #endif
-
+        prog_lh.end();
     }
-    prog_lh.end();
+
+
 }
 
 
 
 
-
+void print_params();
 int main(int argc,char **argv){
 
     boost::property_tree::ptree cmd_params;
@@ -332,7 +314,9 @@ int main(int argc,char **argv){
         std::cout << cmd_parse_log <<std::endl;
         return 0;
     }
-
+    if(ptree_contain(cmd_params,"help")){
+        print_params();
+    }
 
 
     std::map<std::string,std::string> hl_defaut_params =
@@ -656,28 +640,19 @@ int main(int argc,char **argv){
     double VescMin = BM.VescMin();
     boost::property_tree::ptree elements_portions;
     for(const auto & element : ElementList){
-        decltype(Therm) Element_N(Therm.Grid,RhoND*BM[element]);
-
-        std::cout << "calculating for element " << element <<std::endl;
-        size_t M = ME.at(element);
-        double m_nuc = (M)*_mp;
-        dF_Nuc_M dF(M);
-        auto PhiFactor_Nuc = [M](double q){return fast_pow(M,4);};
-        //auto PhiFactor_Nuc_55 = [M,mk,VescMin](double q){return fast_pow(M*q/(mk*VescMin),4);};
-        if(!not_fill_ss){
-            FillScatterHisoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
-                                   mk,delta_mk,m_nuc,
-                                   S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFactor_Nuc,Nmk_HL,Nmk_LH);
-        }
-
-        if(count_distrib){
+        auto CalcCapture = [&](auto const & dF_Factor,
+                auto const & mPhiFactor,auto const & N_el_conc,
+                double m_nuc){
             LE_histo_adapter Cap_H_old(Cap_H,LE_func);
             LE_histo_adapter Cap_L_old(Cap_L,LE_func);
-            double numEl_H = SupressFactor_v1(Cap_H_old,m_nuc,mk,-delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
-                             PhiFactor_Nuc,G,Nmk_H,1.5,V_disp,V_body);
+            double numEl_H = 0;
+            if(delta_mk != 0){
+                numEl_H = SupressFactor_v1(Cap_H_old,m_nuc,mk,-delta_mk,dF_Factor,N_el_conc,BM.VescMin(),Vesc,Therm,
+                                 mPhiFactor,G,Nmk_H,1.5,V_disp,V_body);
+            }
             std::cout << "H fraction for " << element << " = " << numEl_H << std::endl;
-            double numEl_L = SupressFactor_v1(Cap_L_old,m_nuc,mk,delta_mk,dF,Element_N,BM.VescMin(),Vesc,Therm,
-                             PhiFactor_Nuc,G,Nmk_L,1.5,V_disp,V_body);
+            double numEl_L = SupressFactor_v1(Cap_L_old,m_nuc,mk,delta_mk,dF_Factor,N_el_conc,BM.VescMin(),Vesc,Therm,
+                             mPhiFactor,G,Nmk_L,1.5,V_disp,V_body);
             std::cout << "L fraction for " << element << " = " << numEl_L << std::endl;
 
             FullCap_H += numEl_H;
@@ -685,6 +660,56 @@ int main(int argc,char **argv){
 
             elements_portions.put("L."+element,numEl_L);
             elements_portions.put("H."+element,numEl_H);
+        };
+        if(element == "H_e_p"){
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
+            dF_Nuc dF(1,1);
+            Phi_Fac_S PhiFac(_mp,mk);
+            CalcCapture(dF,PhiFac,Element_N,_mp);
+        } else if (element == "H_e_e") {
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
+            dF_H_Elastic_Electron dF;
+            Phi_Fac_Electron_S PhiFac(_mp,mk);
+            CalcCapture(dF,PhiFac,Element_N,_mp);
+        } else if (element == "H_m_p") {
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
+            dF_H_Migdal_Proton dF(G);
+            Phi_Fac_S PhiFac(_mp,mk);
+            CalcCapture(dF,PhiFac,Element_N,_mp);
+        } else if (element == "H_m_e") {
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
+            dF_H_Migdal_Electron dF(G);
+            Phi_Fac_Electron_S PhiFac(_mp,mk);
+            CalcCapture(dF,PhiFac,Element_N,_mp);
+        } else if (element == "H_i_p") {
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
+            dF_H_Ion_Proton dF(G);
+            Phi_Fac_S PhiFac(_mp,mk);
+            CalcCapture(dF,PhiFac,Element_N,_mp);
+        } else if (element == "H_i_e") {
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
+            dF_H_Ion_Electron dF(G);
+            Phi_Fac_Electron_S PhiFac(_mp,mk);
+            CalcCapture(dF,PhiFac,Element_N,_mp);
+        } else {
+            decltype(Therm) Element_N(Therm.Grid,RhoND*BM[element]);
+
+            std::cout << "calculating for element " << element <<std::endl;
+            size_t M = ME.at(element);
+            size_t Z = QE.at(element);
+            double m_nuc = (M)*_mp;
+            dF_Nuc dF(M,Z);
+            Phi_Fac_S PhiFactor_Nuc(m_nuc,mk);
+            //auto PhiFactor_Nuc_55 = [M,mk,VescMin](double q){return fast_pow(M*q/(mk*VescMin),4);};
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,m_nuc,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFactor_Nuc,Nmk_HL,Nmk_LH);
+            }
+
+            if(count_distrib){
+                CalcCapture(dF,PhiFactor_Nuc,Element_N,m_nuc);
+            }
         }
     }
     if(ptree_contain(cmd_params,"fractions")){
@@ -770,4 +795,27 @@ int main(int argc,char **argv){
     }
 
     return 0;
+}
+
+
+void print_params(){
+    printd('\n',
+           "mk : [mass of WIMP, GeV]",
+           "dmk : [optinal, (default 0) delta mass of WIMP, GeV]",
+           "body : [filename of celestial bject]",
+           "Vesc : [first consmic velocity of body]",
+           "fractions : [optional, filename to put fractions of elements in capture rate]",
+           "Vbody : [optional, velocity of object, default is 0.73e-3]",
+           "Vdisp : [optional, velocity in halo distribution, default is 0.52e-3]",
+           "LE : [output path to save dat file of Lmax(E) function]",
+           "LE_json : [output path to save json file of Lmax(E) function]",
+           "pout : [output path to save full rates (capture, scatter)]",
+           "Egrid.ineq_a : [optional, default 0, makes grid more tight in E ~ Emin]",
+           "Egrid.ineq_b : [optional, default 0, makes grid more tight in E ~ Emax]",
+           "Lgrid.ineq : [optional, default 0, makes grid more tight in L ~ Lmax]",
+           "NE : [optional, default 31, size of E grid",
+           "NLmax : [optional, default 31, max size of L grid",
+           "elements : [array of elements to consider]",
+           "Nmk_H, Nmk_L : [Monte-Carlo steps in capture rate in H and L resp.]",
+           "Nmk_HL, Nmk_LL : [Monte-Carlo steps in scatter HL and LH  resp.]");
 }

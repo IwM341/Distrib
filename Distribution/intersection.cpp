@@ -13,10 +13,10 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include "func/move_to_go.hpp"
-#include "templates.hpp"
-#include "grid_objects.hpp"
-#include "object_serialization.hpp"
-#include "serialization.hpp"
+#include "grob/templates.hpp"
+#include "grob/grid_objects.hpp"
+#include "grob/object_serialization.hpp"
+#include "grob/serialization.hpp"
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
 

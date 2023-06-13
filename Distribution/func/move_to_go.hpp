@@ -2,9 +2,9 @@
 #define MOVE_TO_GO_HPP
 
 #include <utils>
-#include "grid.hpp"
-#include "grid_objects.hpp"
-#include "object_serialization.hpp"
+#include "grob/grid.hpp"
+#include "grob/grid_objects.hpp"
+#include "grob/object_serialization.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 template <typename T>

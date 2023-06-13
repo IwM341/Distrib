@@ -13,14 +13,14 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include "func/move_to_go.hpp"
-#include "templates.hpp"
-#include "grid_objects.hpp"
-#include "object_serialization.hpp"
-#include "serialization.hpp"
+#include "grob/templates.hpp"
+#include "grob/grid_objects.hpp"
+#include "grob/object_serialization.hpp"
+#include "grob/serialization.hpp"
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
-#include "csv_io.hpp"
-
+#include "grob/csv_io.hpp"
+#include "../factors/factors.hpp"
 
 
 /*!
@@ -80,7 +80,7 @@ auto annihilation_rd_vector(grob::Histogramm<HistoArgs...> const&Histo,
 
                     double d3v_L= d_3_v_mes(EL_rect_L,L_E,phi,r);
 
-                    double v_L = sqrt(E_L+phi(r));
+                    double v_L = del_nan(sqrt(E_L+phi(r)));
 
                     auto [v_H,vh_rd] = Velocity(G,VescR(r),Vdisp,U0_);
 
@@ -153,7 +153,7 @@ int main(int argc, char ** argv){
                 );
     double V_body = ptree_condition(cmd_params,"Vbody",0.73e-3);
     double V_disp = ptree_condition(cmd_params,"Vdisp",0.52e-3);
-    auto rd_func = annihilation_rd_vector(M_distrib,LE_func,VescR,V_disp,V_body,phiR,G,[](double){return 1;},
+    auto rd_func = annihilation_rd_vector(M_distrib,LE_func,VescR,V_disp,V_body,phiR,G,Phi_Fac_Ann{},
                              cmd_params.get<int>("Nmk",10000),
                              cmd_params.get<double>("Rcut",10));
 

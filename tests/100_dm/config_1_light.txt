@@ -32,8 +32,6 @@
 
 	"NE":100,
 	"NLmax":80,
-	"_Egird":"Uniform",
-	"_Lgird":"Uniform",
 
 	"elements" : ["H1","He4","Ne","C12","Na","Fe","O16","N14","Si","Mg","Ni"],
 
@@ -44,6 +42,6 @@
 
 	"__not_fill" : true,
 	"fractions": "capt/fractions.txt",
-	"-Vbody" : 2e-3
+	"Vbody" : 2e-3
 
 }

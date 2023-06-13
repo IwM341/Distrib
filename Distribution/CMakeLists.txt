@@ -16,8 +16,9 @@ if(NOT DEFINED DM_PATH)
 endif()
 
 if(NOT DEFINED GO_PATH)
-    set(GO_PATH "D:\\Tmp\\GridObject\\include\\grob")
+    message("ERROR: set GO_PATH to GridObject headers")
 endif()
+
 include_directories(${DM_PATH})
 
 include_directories(${GO_PATH})
@@ -27,7 +28,9 @@ include_directories(${GO_PATH})
 
 #add_executable(distrib_vector_grid distrib_vector_grid_v1.cpp)
 add_executable(distrib_vector_grid_grob distrib_vector_grid_grob.cpp)
-add_executable(intersec intersection.cpp)
+
+#add_executable(intersec intersection.cpp)
+
 add_executable(annihilation annihilation.cpp)
 add_executable(annihilation_vector annihilation_vector.cpp)
 add_executable(annihilation_rd annihilation_rd.cpp)
@@ -35,10 +38,12 @@ add_executable(annihilation_rd_vector annihilation_rd_vector.cpp)
 add_executable(r_distrib r_distrib.cpp)
 
 add_executable(matrix_mult matrix_modelling.cpp)
-add_executable(graphics graphs.cpp)
+add_executable(matrix_mult_elastic matrix_modelling_elastic.cpp)
+
+#add_executable(graphics graphs.cpp)
 add_executable(conversions conversions.cpp)
 
-target_compile_definitions(graphics PUBLIC GNUPLOT_PATH="${GNUPLOT_PATH}")
+#target_compile_definitions(graphics PUBLIC GNUPLOT_PATH="${GNUPLOT_PATH}")
 
 message("required paths:")
 
@@ -74,8 +79,8 @@ if(${Boost_FOUND})
  #   target_link_libraries(distrib_vector_grid PRIVATE Boost::filesystem)
     target_link_libraries(distrib_vector_grid_grob PRIVATE Boost::filesystem)
     target_link_libraries(matrix_mult PRIVATE Boost::filesystem)
-    target_link_libraries(graphics PRIVATE Boost::filesystem)
-    target_link_libraries(intersec PRIVATE Boost::filesystem)
+    #target_link_libraries(graphics PRIVATE Boost::filesystem)
+    #target_link_libraries(intersec PRIVATE Boost::filesystem)
     target_link_libraries(conversions PRIVATE Boost::filesystem)
     target_link_libraries(annihilation PRIVATE Boost::filesystem)
 
@@ -83,6 +88,7 @@ if(${Boost_FOUND})
     target_link_libraries(annihilation_rd PRIVATE Boost::filesystem)
     target_link_libraries(annihilation_rd_vector PRIVATE Boost::filesystem)
     target_link_libraries(r_distrib PRIVATE Boost::filesystem)
+    target_link_libraries(matrix_mult_elastic PRIVATE Boost::filesystem)
 endif()
 
 
@@ -95,7 +101,9 @@ message("OpenBLAS_LIBRARIES: " ${OpenBLAS_LIBRARIES})
 if(${OpenBLAS_FOUND})
     #include_directories(matrix_mult ${OpenBLAS_INCLUDE_DIRS})
     target_link_libraries(matrix_mult PRIVATE OpenBLAS::OpenBLAS)
+    target_link_libraries(matrix_mult_elastic PRIVATE OpenBLAS::OpenBLAS)
 endif()
+
 
 option(TEST_CMD_PARSER "test parser" OFF)
 if(TEST_CMD_PARSER)

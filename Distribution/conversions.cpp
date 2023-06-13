@@ -12,7 +12,7 @@
 #include "func/dens_grid.hpp"
 #include "func/matrix_functions.hpp"
 #include "func/load_histo.hpp"
-#include "csv_io.hpp"
+#include "grob/csv_io.hpp"
 
 //#include "boost/type_index.hpp"
 /*
@@ -73,8 +73,10 @@ int main(int argc,char **argv){
         return 1;
     }
     if(ptree_contain(cmd_params,"help")){
+        Help:
         print("convertions -histo [path_to_histo] -LE [path_to_LE_grid_function] -o output");
         print("or instread of -histo: -grid [path to grid] -values [path_to_values.bmat]");
+        print("add -func flag to calculate functions");
         return 0;
     }
     //std::cout << cmd_params.get<std::string>(0) << std::endl;

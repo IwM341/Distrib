@@ -14,9 +14,10 @@
 #include "func/arg_parser.hpp"
 #include <sstream>
 #include <boost/filesystem.hpp>
-#include <grid_objects.hpp>
-#include <csv_io.hpp>
+#include <grob/grid_objects.hpp>
+#include <grob/csv_io.hpp>
 #include "func/cbals_functions.hpp"
+
 
 template <typename Arg>
 void print_values(std::ostream & os,Arg const & value){
@@ -296,10 +297,10 @@ void make_work(const boost::property_tree::ptree& CP){
             saveMatrix<T>(R.HL.data(),NH,NL,(backup_path / "R_HL.bmat").string(),MF);
             saveMatrix<T>(R.HH.data(),NH,NH,(backup_path / "R_HH.bmat").string(),MF);
 
-            saveMatrix<T>(SM.LL.data(),NL,NL,(backup_path / "SM_LL.bmat").string(),MF);
-            saveMatrix<T>(SM.LH.data(),NL,NH,(backup_path / "SM_LH.bmat").string(),MF);
-            saveMatrix<T>(SM.HL.data(),NH,NL,(backup_path / "SM_HL.bmat").string(),MF);
-            saveMatrix<T>(SM.HH.data(),NH,NH,(backup_path / "SM_HH.bmat").string(),MF);
+            saveMatrix<T>(SM.LL.data(),NL,NL,(backup_path / "I_LL.bmat").string(),MF);
+            saveMatrix<T>(SM.LH.data(),NL,NH,(backup_path / "I_LH.bmat").string(),MF);
+            saveMatrix<T>(SM.HL.data(),NH,NL,(backup_path / "I_HL.bmat").string(),MF);
+            saveMatrix<T>(SM.HH.data(),NH,NH,(backup_path / "I_HH.bmat").string(),MF);
         } catch (std::exception & e){
             print("problems saving matricies");
             print(e.what());
@@ -362,7 +363,40 @@ int main(int argc, char ** argv){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;
     }
-
+    if(ptree_contain(CP,"help")){
+        printd('\n',"params: ",
+               "lh_in : [path to scatter matrix from H to L]",
+               "hl_in : [path to scatter matrix from L to H]",
+               "cl_in : [path to L capture vector]",
+               "ch_in : [path to H capture vector]",
+               "l_nuf : [coeff before L capture (or fraction of H in halo)]",
+               "h_nuf : [coeff before H capture (or fraction of L in halo)]",
+               "el_in : [optional, path to L evaporation matrix]",
+               "eh_in : [optional, path to H evaporation matrix]",
+               "load_matrix : [optional, path to folder, where R matrix stores",
+               "save_matrix : [optional, path to folder, where I matrix stores",
+               "cl_init : [optional, path to L full initial distrib]",
+               "ch_init : [optional, path to H full initial distri]",
+               "dl_init : [optional, path to L initial capture distrib]",
+               "dh_init : [optional, path to H initial capture distrib]",
+               "ann_ll : [optional, path to LL annihilation matrix]",
+               "ann_hl : [optional, path to HL annihilation matrix]",
+               "ann_hh : [optional, path to HH annihilation matrix]",
+               "ann_el : [optional, path to L annihilation vector]",
+               "ann_eh : [optional, path to H annihilation vector]",
+               "a_ll : [optional, coeff LL annihilation]",
+               "a_hl : [optional, coeff HL annihilation]",
+               "a_hh : [optional, coeff HH annihilation]",
+               "a_el : [optional, coeff L vector annihilation]",
+               "a_eh : [optional, coeff H vector annihilationr]",
+               "a_eh : [optional, coeff H vector annihilationr]",
+               "ann_ignore : [optinal, flag or bool, if true then annihilation ignored]",
+               "ann_full : [optinal, flag or bool, if true then annihilation is considered in equations]",
+               "method : [optinal, euler - default or order2 - scheme in diff solver]",
+               "T : [time to evolute]",
+               "tau : [optional, step in equations]",
+               "skip_pow : [optional, default is \"auto\" effective tau is tau/(2^sp)]");
+    }
     std::map<std::string,std::string> default_params{{"dl_out","dl_out.mat"},{"dh_out","dl_out.mat"},
                                                     {"DL_out","DL_out.mat"},{"DH_out","DH_out.mat"}};
     std::vector<std::string> required_params{"lh_in","hl_in"};
