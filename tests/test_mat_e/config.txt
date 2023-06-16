@@ -1,0 +1,18 @@
+{
+	"sc_in": "mats/sc.matrix",
+	"e_in": "mats/e.matrix",
+	"c_in": "mats/c.matrix",
+	"ann": "mats/ann.matrix",
+	"ann_full" : true,
+	"a_cc": 0.23,
+	"c_out": "outputs/c_final.matrix",
+	"d_out": "outputs/d_final.matrix",
+	"evolution_out" : "outputs/out.txt",
+
+	"tau": "0.1",
+	"skip_pow": 3,
+	"deg" : 2,
+	"debug":true,
+	"format":"text",
+	"method":"order2"
+}

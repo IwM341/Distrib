@@ -90,6 +90,7 @@ auto annihilation_rd_vector(grob::Histogramm<HistoArgs...> const&Histo,
                     rd_func[j] += fac;
                 }
             }
+            prog_lh++;
         }
     return rd_func;
 }
@@ -109,7 +110,7 @@ int main(int argc, char ** argv){
           "Nmk [default is 1000]");
 
     boost::property_tree::ptree cmd_params;
-    auto ret_key = parse_command_line(argc,argv,cmd_params);
+    auto ret_key = parse_command_line_v1(argc,argv,cmd_params);
     if(!ret_key.empty()){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;

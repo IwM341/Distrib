@@ -123,7 +123,7 @@ auto annihilation_r_distrib(grob::Histogramm<HistoArgs...> const&Histo_L,
 
 int main(int argc, char ** argv){
     print("getting annihilation matrix");
-    print("params: ",
+    printd('\n',"params: ",
           "l_d.grid [filename of L grid]",
           "l_d.values [filename of L values]",
           "h_d.grid [filename of H grid]",
@@ -134,7 +134,7 @@ int main(int argc, char ** argv){
           "Nmk [default is 1000]");
 
     boost::property_tree::ptree cmd_params;
-    auto ret_key = parse_command_line(argc,argv,cmd_params);
+    auto ret_key = parse_command_line_v1(argc,argv,cmd_params);
     if(!ret_key.empty()){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;

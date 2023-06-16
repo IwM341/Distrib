@@ -93,7 +93,12 @@ int main(int argc, char ** _argv){
 				std::abs(L-R.inner().right()*Lmax)
 			);
 			if(L > Lmax){
-				return 0;
+				if(dL_/dL*H*2 < dx){
+					return 1;
+				}
+				else{
+					return 0;
+				}
 			}
 			if(dL_/dL*H*2 < dx || de/dE*W*2 < dx){
 				return 1;

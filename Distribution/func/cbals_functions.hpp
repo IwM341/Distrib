@@ -331,7 +331,7 @@ std::vector<T> RMatrixEuler(size_t N,
     std::vector<T> R = A*tau;
 
     for(size_t i=0;i<N;++i){
-        R[N*i+i] = 1;
+        R[N*i+i] += 1;
     }
     return R;
 }
@@ -349,7 +349,7 @@ std::vector<T> RMatrix2Order(size_t N,
     std::vector<int32_t> ipiv_L(N+1);
     auto ret_L = getrf<T>(CblasColMajor,N,N,R_1.data(),N,ipiv_L.data());
     if(ret_L!=0){
-        throw std::runtime_error("error decompoeing L*U matrix, ret_L = " + std::to_string(ret_L));
+        throw std::runtime_error("error decomposing L*U matrix, ret_L = " + std::to_string(ret_L));
     }
     getri<T>(CblasColMajor,N,R_1.data(),N,ipiv_L.data());
     if(ret_L!=0){
@@ -357,9 +357,8 @@ std::vector<T> RMatrix2Order(size_t N,
     }
 
     std::vector<T> R_2 = R_1;
-
     gemm<T>(CblasColMajor,CblasNoTrans,CblasNoTrans,N,N,N,
-                tau/2.0,R_1.data(),N,A.data(),N,0.0,R_2.data(),N);
+                tau/2.0,R_1.data(),N,A.data(),N,1.0,R_2.data(),N);
     return R_2;
 }
 template <typename T>
@@ -649,17 +648,17 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
     };
 
     auto get_ann_matrix = [NL,NH,&ANN_HL](std::vector<T> & _D_L, std::vector<T> & _D_H,
-            std::vector<T> & _ANN_L, std::vector<T> & _ANN_H){
+            std::vector<T> & __ANN_L, std::vector<T> & __ANN_H){
         if(ANN_HL.size() == 0)
             return;
-        gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,ANN_HL.data(),NH,_D_L.data(),1,0.0,_ANN_H.data(),1);
-        gemv<T>(CblasColMajor,CblasTrans,NL,NH,1.0,ANN_HL.data(),NH,_D_H.data(),1,0.0,_ANN_L.data(),1);
+        gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,ANN_HL.data(),NH,_D_L.data(),1,0.0,__ANN_H.data(),1);
+        gemv<T>(CblasColMajor,CblasTrans,NH,NL,1.0,ANN_HL.data(),NH,_D_H.data(),1,0.0,__ANN_L.data(),1);
     };
     auto get_ann_matrix_xx = [](std::vector<T> & _D_X,std::vector<T> & _ANN_XX_MAT,
             std::vector<T> & _ANN_XX_VEC,T betha = 0.0){
         if(_ANN_XX_MAT.size() == 0)
             return;
-        gemv<T>(CblasColMajor,CblasNoTrans,_ANN_XX_MAT.size(),_ANN_XX_MAT.size(),1.0,
+        gemv<T>(CblasColMajor,CblasNoTrans,_D_X.size(),_D_X.size(),1.0,
                 _ANN_XX_MAT.data(),_D_X.size(),_D_X.data(),1,betha,_ANN_XX_VEC.data(),1);
     };
 
@@ -737,12 +736,13 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
         if(AP != AnnCalcPolicy::IGNORE){
             get_ann_matrix(D_L,D_H,ANN_L_HL,ANN_H_HL);
             a_hl_t[i-1]= dot_vv(ANN_L_HL,D_L);
-            get_ann_matrix_xx(D_L,ANN_LL,ANN_L_HL,0.0);
+            get_ann_matrix_xx(D_L,ANN_LL,ANN_L_LL,0.0);
             a_ll_t[i-1] = dot_vv(ANN_L_LL,D_L);
-            get_ann_matrix_xx(D_H,ANN_H_HH,ANN_H_HH,0.0);
+            get_ann_matrix_xx(D_H,ANN_HH,ANN_H_HH,0.0);
             a_hh_t[i-1] = dot_vv(ANN_H_HH,D_H);
 
-
+            ANN_L_HL += ANN_L_LL;
+            ANN_H_HL += ANN_H_HH;
             if(AP == AnnCalcPolicy::FULL){
                 v_exp(ANN_L_HL,-tau,R_ANN_L);
                 v_exp(ANN_H_HL,-tau,R_ANN_H);
@@ -818,7 +818,8 @@ Result_F<T> Evolution_E(size_t N,std::vector<T> &R,std::vector<T> &SM,
 
     auto get_ann_matrix = [N,&ANN](std::vector<T> & _D,
             std::vector<T> & _ANN){
-        gemv<T>(CblasColMajor,CblasNoTrans,N,N,1.0,ANN.data(),N,_D.data(),1,0.0,_ANN.data(),1);
+        if(_ANN.size())
+            gemv<T>(CblasColMajor,CblasNoTrans,N,N,1.0,ANN.data(),N,_D.data(),1,0.0,_ANN.data(),1);
     };
 
     auto v_exp = [](std::vector<T> & _A,T _t,std::vector<T> & Result){

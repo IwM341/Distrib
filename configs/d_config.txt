@@ -1,4 +1,0 @@
-{
-	"Vesc": 2.056e-3,
-	"body":"D:/tmp/art/DMFramework/celstial_models/solar_model.dat"
-}

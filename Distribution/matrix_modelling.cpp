@@ -216,7 +216,7 @@ void make_work(const boost::property_tree::ptree& CP){
     }else{
         sp = CP.get<int>("skip_pow",0);
     }
-    T tau_eff = (1<<sp);
+    T tau_eff = tau/(1<<sp);
     if(tau_eff> approp_tau){
         print("WARNING: tau too big");
         print("tau_max = ",approp_tau);
@@ -258,7 +258,7 @@ void make_work(const boost::property_tree::ptree& CP){
     */
     BlockMatrix<T> R;
     BlockMatrix<T> SM;
-    if(ptree_contain(CP,"load_state")){
+    if(ptree_contain(CP,"load_matrix")){
         boost::filesystem::path backup_path = FPath("load_matrix");
         try{
             R.LL = std::get<0>(loadMatrix<T>((backup_path / "R_LL.bmat").string(),MF));
@@ -344,7 +344,7 @@ void make_work(const boost::property_tree::ptree& CP){
     saveMatrix(RD.D_H_F.data(),1,NH,FPath("dh_out"),MF);
 
 
-    std::ofstream all_f(FPath("all_out"));
+    std::ofstream all_f(FPath("evolution_out"));
     print_values(all_f,"t[Ts]","C_l(t)","C_h(t)","N_l(t)","N_h(t)",
                  "E_h(t)","E_l(t)","A_LL(t)","A_HL(t)","A_HH(t)","A_L(t)","A_H(t)","A(t)");
     print_vectors_tab(all_f,RD.T_grid,
@@ -369,6 +369,12 @@ int main(int argc, char ** argv){
                "hl_in : [path to scatter matrix from L to H]",
                "cl_in : [path to L capture vector]",
                "ch_in : [path to H capture vector]",
+               "cl_out : [normilized output captured L distribution]",
+               "ch_out : [normilized output captured H distribution]",
+               "dl_out : [normilized output full L distribution]",
+               "dh_out : [normilized output full L distribution]",
+               "norm : [optional, if true, result normalizet to 1]",
+               "evolution_out : [output dat file of evolution]",
                "l_nuf : [coeff before L capture (or fraction of H in halo)]",
                "h_nuf : [coeff before H capture (or fraction of L in halo)]",
                "el_in : [optional, path to L evaporation matrix]",

@@ -128,7 +128,7 @@ struct scatter_counter{
 
                             double v_L = del_nan(sqrt(E_L+phi(r)));
                             double v_t_L = del_nan(L_L/r);
-                            double v_r_L = sqrt(v_L*v_L-v_t_L*v_t_L);
+                            double v_r_L = del_nan(sqrt(v_L*v_L-v_t_L*v_t_L));
 
                             double v_H = del_nan(sqrt(E_H+phi(r)));
                             double v_t_H = del_nan(L_H/r);
@@ -159,7 +159,7 @@ auto sc_cnt(Args &&...args){
 
 int main(int argc, char ** argv){
     print("getting annihilation matrix");
-    print("params: ",
+    printd('\n',"params: ",
           "l_grid [filename of L grid]",
           "h_grid [filename of H grid]",
           "body [filename of body model]",
@@ -167,7 +167,7 @@ int main(int argc, char ** argv){
           "ann [out annihilation col major matrix A_HL]",
           "Nmk [default is 1000]");
     boost::property_tree::ptree cmd_params;
-    auto ret_key = parse_command_line(argc,argv,cmd_params);
+    auto ret_key = parse_command_line_v1(argc,argv,cmd_params);
     if(!ret_key.empty()){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;
@@ -226,7 +226,7 @@ int main(int argc, char ** argv){
                 [&phiR](double e){return maxLndf(phiR,e);}
                 );
     auto sc = sc_cnt(L_Grid,H_Grid,LE_func,phiR,G);
-    auto Ann_Matrix = sc.annihilation_matrix(Phi_Fac_Ann{},cmd_params.get<int>("Nmk",100000),
+    auto Ann_Matrix = sc.annihilation_matrix(Phi_Fac_Ann{},cmd_params.get<int>("Nmk",1000),
                              cmd_params.get<double>("Rcut",10));
 
 

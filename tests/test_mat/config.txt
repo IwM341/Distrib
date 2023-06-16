@@ -1,29 +1,46 @@
 {
-	"lh_in": "lh.matrix",
-	"hl_in": "hl.matrix",
+	"lh_in": "mats/lh.matrix",
+	"hl_in": "mats/hl.matrix",
 
-	"eh_in": "eh.matrix",
-	"el_in": "el.matrix",
+	"eh_in": "mats/eh.matrix",
+	"el_in": "mats/el.matrix",
 	
-	"dh_in": "ch.matrix",
-	"dl_in": "cl.matrix",
+	"ann_eh": "mats/ann_h.matrix",
+	"ann_el": "mats/ann_l.matrix",
+	"a_el" : 0.36,
+	"a_eh" : 0.16,
 
-	"DL_out": "DL_out.matrix",
-	"DH_out":  "DH_out.matrix",
+	"ann_ll": "mats/ann_ll.matrix",
+	"ann_hl": "mats/ann_hl.matrix",
+	"ann_hh": "mats/ann_hh.matrix",	
+	"ann_full" : true,
+	"a_hh" : 0.23,
+	"a_ll" : 0.42,
+	"a_hl" : 0.13,
+	
 
-	"CL_out": "CL_out.matrix",
-	"CH_out":  "CH_out.matrix",	
-
-	"NL_out": "NL__out.dat",
-	"NH_out":  "NH__out.dat",
-	"nl_out": "nl_out.dat",
-	"nh_out":  "nh_out.dat",
+	"ch_in": "mats/ch.matrix",
+	"cl_in": "mats/cl.matrix",
+	
+	"ch_out": "outputs/ch_final.matrix",
+	"cl_out": "outputs/cl_final.matrix",
+	"dh_out": "outputs/dh_final.matrix",
+	"dl_out": "outputs/dl_final.matrix",
+	"evolution_out" : "outputs/out.txt",
+	"no-load_matrix" : "rs_matrix_backup",
+	"ch_init": "inits/ch.matrix",
+	"cl_init": "inits/cl.matrix",
+	"dh_init": "inits/dh.matrix",
+	"dl_init": "inits/dl.matrix",
+ 
+	"l_nuf" : 0.36,
+	"h_nuf" : 0.64,
 
 
 	"tau": "0.1",
 	"skip_pow": 3,
-	"deg" :"1",
+	"deg" : 2,
 	"debug":true,
 	"format":"text",
-	"method":"euler2"
+	"method":"order2"
 }

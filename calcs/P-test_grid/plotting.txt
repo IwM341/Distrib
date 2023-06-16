@@ -1,0 +1,7 @@
+set palette grey
+set pm3d map
+splot
+set title "E-L"
+set ylabel "L_{nd}"
+set xlabel "E_{nd}"
+set ylabel "L/L_{max}(E)"

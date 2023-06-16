@@ -77,6 +77,7 @@ int main(int argc,char **argv){
         print("convertions -histo [path_to_histo] -LE [path_to_LE_grid_function] -o output");
         print("or instread of -histo: -grid [path to grid] -values [path_to_values.bmat]");
         print("add -func flag to calculate functions");
+        print("NE, NL - number of bins in NE, NL grid");
         return 0;
     }
     //std::cout << cmd_params.get<std::string>(0) << std::endl;

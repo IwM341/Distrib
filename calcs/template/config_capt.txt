@@ -1,0 +1,44 @@
+{
+	"lh_out" : "capt/lh.bmat",
+	"hl_out" : "capt/hl.bmat",
+	"o_hl" : "capt/o_hl.bmat",
+	"o_lh" : "capt/o_lh.bmat",
+
+	"el_out" : "capt/el.bmat",
+	"eh_out" : "capt/eh.bmat",
+
+	"cl_out" : "capt/cl.bmat",
+	"ch_out" : "capt/ch.bmat",
+
+	"l_grid" : "capt/l_grid.txt",
+	"h_grid" : "capt/h_grid.txt",
+
+	"LE" : "capt/LE_plot.dat",
+	"LE_json" : "capt/LE.txt",
+	"pout" : "capt/pout.txt",
+	"fractions": "capt/fractions.txt",
+
+	"Egrid":{
+		"ineq_a" : 0.3,
+		"ineq_b" : 0.1
+	},
+	"Lgrid.ineq" : 0.2,
+	"NE":100,
+	"NLmax":80,
+
+	"debug" : true,
+	"body" : "../../../DMFramework/celestial_models/solar_model.dat",
+	"Vesc" : 2.056e-3,
+	"Vbody" : 2e-3,
+	"Vdisp" : 0.52e-3,
+
+	"mk": 100,
+	"dmk" : 1e-4,
+
+	"elements" : ["H1","He4","Fe","O16","N14","Si"],
+
+	"Nmk_H" : 1000000,
+	"Nmk_L" : 1000000,
+	"Nmk_HL" : 100000,
+	"Nmk_LH" : 100000
+}

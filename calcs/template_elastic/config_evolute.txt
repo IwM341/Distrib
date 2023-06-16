@@ -1,0 +1,27 @@
+{
+	"sc_in" : "capt/sc.bmat",
+	"c_in" : "capt/c.bmat",
+
+	"e_in" : "capt/e.bmat",
+
+	"c_out" : "evolute/c_o.bmat",
+	"d_out" : "evolute/d_o.bmat",
+
+	"ann": "ann/ann.bmat",
+	"a_cc" : 1,
+
+	"evolution_out" : "evolute/out.dat",
+	
+	"no-load_matrix" : "rs_matrix_backup",
+	"no-c_init": "inits/c.bmat",
+	"no-d_init": "inits/d.bmat",
+
+	"T": 10,
+	"tau" : 0.1,
+	"-deg" : 1,
+	"skip_pow" : "auto",
+
+	"debug":true,
+	"format":"binary",
+	"method":"order2"
+}

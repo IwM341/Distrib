@@ -82,13 +82,14 @@ std::vector<double> annihilation_vector(Grid_t const& Grid,L_E_Functype const & 
 
                 AN[i] += fac;
             }
+            prog_lh++;
         }
     return AN;
 }
 
 int main(int argc, char ** argv){
     print("getting annihilation vector");
-    print("params: ",
+    printd('\n',"params: ",
           "grid [filename of L grid]",
           "body [filename of body model]",
           "Rcut [default is 10]",
@@ -97,7 +98,7 @@ int main(int argc, char ** argv){
           "Vdisp [disp velocity in halo]",
           "Nmk [default is 10000]");
     boost::property_tree::ptree cmd_params;
-    auto ret_key = parse_command_line(argc,argv,cmd_params);
+    auto ret_key = parse_command_line_v1(argc,argv,cmd_params);
     if(!ret_key.empty()){
         std::cout << "error : " << ret_key<<std::endl;
         return 0;

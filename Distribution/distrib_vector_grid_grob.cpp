@@ -320,13 +320,13 @@ int main(int argc,char **argv){
 
 
     std::map<std::string,std::string> hl_defaut_params =
-    {{"lh_out","lh.bmat"},{"hl_out","hl.bmat"}};
+    {{"lh_out","capt/lh.bmat"},{"hl_out","capt/hl.bmat"}};
 
     std::map<std::string,std::string> evap_defaut_params =
-    {{"eh_out","eh.bmat"},{"el_out","el.bmat"}};
+    {{"eh_out","capt/eh.bmat"},{"el_out","capt/el.bmat"}};
 
     std::map<std::string,std::string> distrib_defaut_params =
-    {{"dh_out","dh.bmat"},{"dl_out","dl.bmat"}};
+    {{"ch_out","capt/ch.bmat"},{"cl_out","capt/cl.bmat"}};
 
 
     for(const auto &[key,val]:hl_defaut_params){
@@ -335,7 +335,7 @@ int main(int argc,char **argv){
     }
 
     bool count_evap = false;
-    bool count_distrib= false;
+    bool count_distrib = !cmd_params.get<bool>("no_distrib",false);
     MatrixFormat MF = MatrixFormat::BINARY;
 
     if(ptree_gets(cmd_params,"format") == "text")
@@ -350,9 +350,8 @@ int main(int argc,char **argv){
            }
     }
 
-    if(ptree_contain(cmd_params,"distrib") or (ptree_contain(cmd_params,"dh_out") and
-                                            ptree_contain(cmd_params,"dl_out")) ){
-           count_distrib = true;
+    if(ptree_contain(cmd_params,"distrib") || (ptree_contain(cmd_params,"ch_out") &&
+                                            ptree_contain(cmd_params,"cl_out")) ){
            for(const auto &[key,val]:distrib_defaut_params){
                if(!ptree_contain(cmd_params,key))
                    cmd_params.put(key,val);
@@ -402,10 +401,10 @@ int main(int argc,char **argv){
 
     }
     if(count_distrib){
-        dh_out_path = config_path_from(cmd_params.pgets("dh_out"),out_path);
-        dl_out_path = config_path_from(cmd_params.pgets("dl_out"),out_path);
-        out_params.put("dh_out",config_path_to(dh_out_path,out_path));
-        out_params.put("dl_out",config_path_to(dl_out_path,out_path));
+        dh_out_path = config_path_from(cmd_params.pgets("ch_out"),out_path);
+        dl_out_path = config_path_from(cmd_params.pgets("cl_out"),out_path);
+        out_params.put("ch_out",config_path_to(dh_out_path,out_path));
+        out_params.put("cl_out",config_path_to(dl_out_path,out_path));
 
     }
 
@@ -635,9 +634,14 @@ int main(int argc,char **argv){
         PVAR(V_disp);
     }
 
+    double Therm_H_Cut = cmd_params.get<double>("TH_cut",5e-10);
+    double Rho_H_Cut = cmd_params.get<double>("RhoH_cut",1e10);
+    double R_H_Cut = cmd_params.get<double>("RH_cut",1);
+
     double FullCap_H = 0;
     double FullCap_L = 0;
     double VescMin = BM.VescMin();
+    decltype(Therm) Element_N(Therm.Grid,{});
     boost::property_tree::ptree elements_portions;
     for(const auto & element : ElementList){
         auto CalcCapture = [&](auto const & dF_Factor,
@@ -647,11 +651,11 @@ int main(int argc,char **argv){
             LE_histo_adapter Cap_L_old(Cap_L,LE_func);
             double numEl_H = 0;
             if(delta_mk != 0){
-                numEl_H = SupressFactor_v1(Cap_H_old,m_nuc,mk,-delta_mk,dF_Factor,N_el_conc,BM.VescMin(),Vesc,Therm,
+                numEl_H = SupressFactor_v1(Cap_H_old,m_nuc,mk,-delta_mk,dF_Factor,N_el_conc,VescMin,Vesc,Therm,
                                  mPhiFactor,G,Nmk_H,1.5,V_disp,V_body);
             }
             std::cout << "H fraction for " << element << " = " << numEl_H << std::endl;
-            double numEl_L = SupressFactor_v1(Cap_L_old,m_nuc,mk,delta_mk,dF_Factor,N_el_conc,BM.VescMin(),Vesc,Therm,
+            double numEl_L = SupressFactor_v1(Cap_L_old,m_nuc,mk,delta_mk,dF_Factor,N_el_conc,VescMin,Vesc,Therm,
                              mPhiFactor,G,Nmk_L,1.5,V_disp,V_body);
             std::cout << "L fraction for " << element << " = " << numEl_L << std::endl;
 
@@ -661,38 +665,38 @@ int main(int argc,char **argv){
             elements_portions.put("L."+element,numEl_L);
             elements_portions.put("H."+element,numEl_H);
         };
+        if(element[0] == 'H' && element[1] == '_' && element[3] == '_'){
+            Element_N.Values = Vector(Therm.size(),[&,&H_dens = BM["H"]](size_t i)->double{
+                return (RhoND[i] <= Rho_H_Cut && Therm[i] <= Therm_H_Cut &&
+                        Element_N.Grid[i] <= R_H_Cut) ? RhoND[i]*H_dens[i] : 0.0;
+            });
+        }
         if(element == "H_e_p"){
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
             dF_Nuc dF(1,1);
             Phi_Fac_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
         } else if (element == "H_e_e") {
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
             dF_H_Elastic_Electron dF;
             Phi_Fac_Electron_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
         } else if (element == "H_m_p") {
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
             dF_H_Migdal_Proton dF(G);
             Phi_Fac_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
         } else if (element == "H_m_e") {
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
             dF_H_Migdal_Electron dF(G);
             Phi_Fac_Electron_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
         } else if (element == "H_i_p") {
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
             dF_H_Ion_Proton dF(G);
             Phi_Fac_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
         } else if (element == "H_i_e") {
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM["H"]);
             dF_H_Ion_Electron dF(G);
             Phi_Fac_Electron_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
         } else {
-            decltype(Therm) Element_N(Therm.Grid,RhoND*BM[element]);
+            Element_N.Values = RhoND*BM[element];
 
             std::cout << "calculating for element " << element <<std::endl;
             size_t M = ME.at(element);
@@ -751,9 +755,11 @@ int main(int argc,char **argv){
     */
     boost::property_tree::ptree OutParams;
 
-    OutParams.put("cp",c_plus);
-    OutParams.put("nuh",FullCap_H/c_plus);
-    OutParams.put("nul",FullCap_L/c_plus);
+    OutParams.put("c_all",FullCap_H+FullCap_L);
+    OutParams.put("ch",FullCap_H);
+    OutParams.put("cl",FullCap_L);
+    OutParams.put("nuh",FullCap_H/(FullCap_H+FullCap_L));
+    OutParams.put("nul",FullCap_L/(FullCap_H+FullCap_L));
 
     OutParams.put("eh",max(Evap_H.Values));
     OutParams.put("el",max(Evap_L.Values));
@@ -802,14 +808,23 @@ void print_params(){
     printd('\n',
            "mk : [mass of WIMP, GeV]",
            "dmk : [optinal, (default 0) delta mass of WIMP, GeV]",
+           "if dmk = 0, calculate only c_l capture and hl scatter",
            "body : [filename of celestial bject]",
-           "Vesc : [first consmic velocity of body]",
+           "Vesc : [first cosmic velocity of celestial bject]",
            "fractions : [optional, filename to put fractions of elements in capture rate]",
            "Vbody : [optional, velocity of object, default is 0.73e-3]",
            "Vdisp : [optional, velocity in halo distribution, default is 0.52e-3]",
            "LE : [output path to save dat file of Lmax(E) function]",
            "LE_json : [output path to save json file of Lmax(E) function]",
            "pout : [output path to save full rates (capture, scatter)]",
+           "lh_out : [path to lh scatter matrix out]",
+           "hl_out : [path to hl scatter matrix out]",
+           "el_out : [optional, path to L evap vector out]",
+           "eh_out : [optional, path to H evap vector out]",
+           "cl_out : [path to L capture vector out]",
+           "ch_out : [path to H capture vector out]",
+           "o_hl : [optional, path to L scatter probability vector]",
+           "o_lh : [optional, path to H scatter probability vector]",
            "Egrid.ineq_a : [optional, default 0, makes grid more tight in E ~ Emin]",
            "Egrid.ineq_b : [optional, default 0, makes grid more tight in E ~ Emax]",
            "Lgrid.ineq : [optional, default 0, makes grid more tight in L ~ Lmax]",
@@ -817,5 +832,8 @@ void print_params(){
            "NLmax : [optional, default 31, max size of L grid",
            "elements : [array of elements to consider]",
            "Nmk_H, Nmk_L : [Monte-Carlo steps in capture rate in H and L resp.]",
-           "Nmk_HL, Nmk_LL : [Monte-Carlo steps in scatter HL and LH  resp.]");
+           "Nmk_HL, Nmk_LL : [Monte-Carlo steps in scatter HL and LH  resp.]",
+           "TH_cut : [optional, don't consider hydrogen if Therm > TH_cut]",
+           "RhoH_cut : [optional, don't consider hydrogen if Rho > RhoH_cut]",
+           "RH_cut : [optional, don't consider hydrogen if r > RH_cut]");
 }

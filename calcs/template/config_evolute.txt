@@ -1,0 +1,42 @@
+{
+	"lh_in" : "capt/lh.bmat",
+	"hl_in" : "capt/hl.bmat",
+
+	"cl_in" : "capt/cl.bmat",
+	"ch_in" : "capt/ch.bmat",
+
+	"l_nuf" : 0.5,
+	"h_nuf" : 0.5,
+
+	"eh_in" : "capt/eh.bmat",
+	"el_in" : "capt/el.bmat",
+
+	"cl_out" : "evolute/cl_o.bmat",
+	"ch_out" : "evolute/ch_o.bmat",
+	"dl_out" : "evolute/dl_o.bmat",
+	"dh_out" : "evolute/dh_o.bmat",
+
+	"-ann_eh": "ann/ann_h.bmat",
+	"-ann_el": "ann/ann_l.bmat",
+	"a_el" : 1,
+	"a_eh" : 1,
+
+	"ann_ll": "ann/ann_ll.bmat",
+	"-ann_hl": "ann/ann_hl.bmat",
+	"-ann_hh": "ann/ann_hh.bmat",	
+	"-ann_full" : true,
+	"a_hh" : 1,
+	"a_ll" : 1,
+	"a_hl" : 1,
+
+	"evolution_out" : "evolute/out.dat",
+	
+	"T": 10,
+	"tau" : 0.1,
+	"-deg" : 1,
+	"skip_pow" : "auto",
+
+	"debug":true,
+	"format":"binary",
+	"method":"order2"
+}

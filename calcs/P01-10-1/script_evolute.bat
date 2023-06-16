@@ -1,0 +1,1 @@
+..\..\release\matrix_mult.exe -config config_evolute.txt

@@ -35,4 +35,11 @@ form factors:
 celestial_models:
   -> files of celestial models are in the folder celestial_models
 
-
+scpecial elements:
+  -> have view H_[1]_[2], where [1] can be:
+    * e - elastic
+    * m - migdal
+    * i - ionization
+  and [2] can be
+    * p - scatter on proton
+    * e - scatter on electron

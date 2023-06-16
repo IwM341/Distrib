@@ -88,21 +88,22 @@ void make_work(const boost::property_tree::ptree& CP){
     const int factor = (AP == AnnCalcPolicy::FULL ? 1 : 0);
     std::vector<T> ANN;
     if(CP.find("ann") != CP.not_found()){
-        ANN = std::get<0>(loadMatrix<T>(FPath("ann"),MF));
+        ANN = std::get<0>(loadMatrix<T>(FPath("ann"),MF))*
+                CP.get<float>("a_cc",1.0);
     }
 
     auto & A_SC_T = std::get<0>(Mat0_SC);
     size_t ld_A_SC = NN;
 
     for(size_t i=0;i<NN;++i){
-        A_SC_T[i+NN*i] = -std::accumulate(&A_SC_T[i*NN],&A_SC_T[i*NN]+NN,0.0);
+        A_SC_T[i+NN*i] -= std::accumulate(&A_SC_T[i*NN],&A_SC_T[i*NN]+NN,0.0);
     }
     for(size_t i=0;i<Ev.size();++i){
         A_SC_T[i+NN*i] -= Ev[i];
     }
     T max_sc = 0.0;
     for(size_t i=0;i<NN;++i){
-        max_sc = std::max(A_SC_T[i+NN*i],max_sc);
+        max_sc = std::max(-A_SC_T[i+NN*i],max_sc);
     }
 
     T tau = CP.get<float>("tau",-1);
@@ -151,7 +152,7 @@ void make_work(const boost::property_tree::ptree& CP){
     }else{
         sp = CP.get<int>("skip_pow",0);
     }
-    T tau_eff = (1<<sp);
+    T tau_eff = tau/(1<<sp);
     if(tau_eff> approp_tau){
         print("WARNING: tau too big");
         print("tau_max = ",approp_tau);
@@ -178,7 +179,7 @@ void make_work(const boost::property_tree::ptree& CP){
     */
     std::vector<T> R;
     std::vector<T> SM;
-    if(ptree_contain(CP,"load_state")){
+    if(ptree_contain(CP,"load_matrix")){
         boost::filesystem::path backup_path = FPath("load_matrix");
         try{
             R = std::get<0>(loadMatrix<T>((backup_path / "R.bmat").string(),MF));
@@ -242,7 +243,7 @@ void make_work(const boost::property_tree::ptree& CP){
     saveMatrix(RD.D_F.data(),1,NN,FPath("d_out"),MF);
 
 
-    std::ofstream all_f(FPath("all_out"));
+    std::ofstream all_f(FPath("evolution_out"));
     print_values(all_f,"t[Ts]","C(t)","N(t)",
                  "E(t)","A(t)");
     print_vectors_tab(all_f,RD.T_grid,
@@ -264,6 +265,10 @@ int main(int argc, char ** argv){
                "sc_in : [path to scatter matrix]",
                "c_in : [path to capture vector]",
                "e_in : [optional, path to evaporation vector]",
+               "c_out : [normilized output captured distribution]",
+               "d_out : [normilized output full distribution]",
+               "norm : [optional, if true, result normalizet to 1]",
+               "evolution_out : [output dat file of evolution]",
                "load_matrix : [optional, path to folder, where R matrix stores",
                "save_matrix : [optional, path to folder, where I matrix stores",
                "c_init : [optional, path to H full initial distri]",
@@ -277,23 +282,7 @@ int main(int argc, char ** argv){
                "tau : [optional, step in equations]",
                "skip_pow : [optional, default is \"auto\" effective tau is tau/(2^sp)]");
     }
-    std::map<std::string,std::string> default_params{{"dl_out","dl_out.mat"},{"dh_out","dl_out.mat"},
-                                                    {"DL_out","DL_out.mat"},{"DH_out","DH_out.mat"}};
-    std::vector<std::string> required_params{"lh_in","hl_in"};
-    for(const auto & param : required_params){
-        if(CP.find(param)==CP.not_found()){
-            std::cout << "required param " << param << std::endl;
-            return 0;
-        }
-    }
-    for(const auto & [param,value] : default_params){
-        if(CP.find(param)==CP.not_found()){
-            CP.put(param,value);
-        }
-    }
-//    for(size_t i=0;i<CP.size();++i){
-//        std::cout << key_names[i] << " : " << CP[i] << std::endl;
-//    }
+
     if(CP.pgets("debug","false") == "true"){
         boost::property_tree::write_json(std::cout,CP);
     }
