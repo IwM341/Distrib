@@ -31,9 +31,9 @@
 
 	"evolution_out" : "evolute/out.dat",
 	
-	"T": 10,
-	"tau" : 0.1,
-	"-deg" : 1,
+	"T": 7541478,
+	"-tau" : 0.1,
+	"deg" : 10000,
 	"skip_pow" : "auto",
 
 	"debug":true,

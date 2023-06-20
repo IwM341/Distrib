@@ -164,7 +164,7 @@ int main(int argc, char ** argv){
           "h_grid [filename of H grid]",
           "body [filename of body model]",
           "Rcut [default is 10]",
-          "ann [out annihilation col major matrix A_HL]",
+          "o [out annihilation col major matrix A_HL]",
           "Nmk [default is 1000]");
     boost::property_tree::ptree cmd_params;
     auto ret_key = parse_command_line_v1(argc,argv,cmd_params);
@@ -231,7 +231,7 @@ int main(int argc, char ** argv){
 
 
     saveMatrix(Ann_Matrix.data(),L_Grid.size(),H_Grid.size(),
-               config_path_from(cmd_params.pgets("ann","ann_HL.bmat"),programm_path).string(),MatrixFormat::BINARY);
+               config_path_from(cmd_params.pgets("o","ann_HL.bmat"),programm_path).string(),MatrixFormat::BINARY);
 
 
 

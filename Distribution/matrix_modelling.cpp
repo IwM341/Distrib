@@ -191,7 +191,7 @@ void make_work(const boost::property_tree::ptree& CP){
                 fullT = tau*degree;
             }
             else{
-                degree = fullT/tau + 0.5;
+                tau = fullT/degree;
             }
         }
     }else{
@@ -210,20 +210,22 @@ void make_work(const boost::property_tree::ptree& CP){
     }
     size_t sp = 0;
     std::string method = CP.pgets("method","euler");
-    if(CP.get<std::string>("skip_pow","") == "auto"){
+
+    if(CP.get<std::string>("skip_pow","auto") == "auto"){
         //int pre_factor = (method == "euler" ? 10 : 1);
         sp = std::max(0,int(log2(10*tau/approp_tau)+1.5));
     }else{
-        sp = CP.get<int>("skip_pow",0);
+        sp = CP.get<int>("skip_pow");
     }
-    T tau_eff = tau/(1<<sp);
+    T tau_eff = tau/pow(2,sp);
     if(tau_eff> approp_tau){
         print("WARNING: tau too big");
         print("tau_max = ",approp_tau);
     }
     if(log_std){
         PVAR(tau);
-        PVAR(tau/(1<<sp));
+        PVAR(sp);
+        PVAR(tau/pow(2,sp));
         PVAR(degree);
         PVAR(fullT);
     }
@@ -346,7 +348,7 @@ void make_work(const boost::property_tree::ptree& CP){
 
     std::ofstream all_f(FPath("evolution_out"));
     print_values(all_f,"t[Ts]","C_l(t)","C_h(t)","N_l(t)","N_h(t)",
-                 "E_h(t)","E_l(t)","A_LL(t)","A_HL(t)","A_HH(t)","A_L(t)","A_H(t)","A(t)");
+                 "E_l(t)","E_h(t)","A_LL(t)","A_HL(t)","A_HH(t)","A_L(t)","A_H(t)","A(t)");
     print_vectors_tab(all_f,RD.T_grid,
                       RD.c_l_t,RD.c_h_t,
                       RD.n_l_t,RD.n_h_t,

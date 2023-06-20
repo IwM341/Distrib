@@ -93,7 +93,7 @@ int main(int argc, char ** argv){
           "grid [filename of L grid]",
           "body [filename of body model]",
           "Rcut [default is 10]",
-          "ann [out annihilation vector]",
+          "o [out annihilation vector]",
           "Vbody [velocity of celestial object]",
           "Vdisp [disp velocity in halo]",
           "Nmk [default is 10000]");
@@ -159,7 +159,7 @@ int main(int argc, char ** argv){
 
 
     saveMatrix(Ann_Vector.data(),1,Grid.size(),
-               config_path_from(cmd_params.pgets("ann","ann_vec.bmat"),programm_path).string(),MatrixFormat::BINARY);
+               config_path_from(cmd_params.pgets("o","ann_vec.bmat"),programm_path).string(),MatrixFormat::BINARY);
 
 
 

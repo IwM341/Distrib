@@ -226,7 +226,7 @@ BlockMatrix<T> PowMatrixSumm(size_t NL,size_t NH,std::vector<T> &A_LL,std::vecto
                             std::vector<T>(A_HH.size())};
 
     print("exponentiat into pow 2^" + std::to_string(log_2_pow) +
-          " = "+ std::to_string(1<<log_2_pow));
+          " = "+ std::to_string(pow(2,log_2_pow)));
     progress_bar PB(log_2_pow,100);
     while(log_2_pow){
 
@@ -266,7 +266,7 @@ void PowMatrix(size_t N,std::vector<T> &A,
 
 
     print("exponentiat into pow 2^" + std::to_string(log_2_pow) +
-          " = "+ std::to_string(1<<log_2_pow));
+          " = "+ std::to_string(pow(2,log_2_pow)));
     progress_bar PB(log_2_pow,100);
     while(log_2_pow){
 
@@ -302,7 +302,7 @@ std::vector<T> PowMatrixSumm(size_t N,std::vector<T> &A,
     std::vector<T> Summ_tmp(N*N);
 
     print("exponentiat into pow 2^" + std::to_string(log_2_pow) +
-          " = "+ std::to_string(1<<log_2_pow));
+          " = "+ std::to_string(pow(2,log_2_pow)));
     progress_bar PB(log_2_pow,100);
     while(log_2_pow){
 
@@ -619,7 +619,7 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
                            std::vector<T> &C_L_I,std::vector<T> & C_H_I,
                            std::vector<T> &D_L_I,std::vector<T> & D_H_I,
                         T tau,T T_full,size_t skip_pow =0){
-    T tau_eff = tau / (1 << skip_pow);
+    T tau_eff = tau / pow(2,skip_pow);
 //    BlockMatrix<T> R = (scheme == "order2" ? RMatrix2Order(NL,NH,A_LL,A_LH,A_HL,A_HH,tau_eff) :
 //                                   RMatrixEuler(NL,NH,A_LL,A_LH,A_HL,A_HH,tau_eff));
 //    BlockMatrix<T> SM = PowMatrixSumm(NL,NH,R.LL,R.LH,R.HL,R.HH,skip_pow,tau_eff);
@@ -649,8 +649,13 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
 
     auto get_ann_matrix = [NL,NH,&ANN_HL](std::vector<T> & _D_L, std::vector<T> & _D_H,
             std::vector<T> & __ANN_L, std::vector<T> & __ANN_H){
+
         if(ANN_HL.size() == 0)
+        {
+            __ANN_H*=0;
+            __ANN_L*=0;
             return;
+        }
         gemv<T>(CblasColMajor,CblasNoTrans,NH,NL,1.0,ANN_HL.data(),NH,_D_L.data(),1,0.0,__ANN_H.data(),1);
         gemv<T>(CblasColMajor,CblasTrans,NH,NL,1.0,ANN_HL.data(),NH,_D_H.data(),1,0.0,__ANN_L.data(),1);
     };
@@ -807,7 +812,7 @@ Result_F<T> Evolution_E(size_t N,std::vector<T> &R,std::vector<T> &SM,
                            std::vector<T> &D_I,
                         T tau,T T_full,size_t skip_pow =0){
 
-    T tau_eff = tau / (1 << skip_pow);
+    T tau_eff = tau / skip_pow;
     auto gemv_ = [N](std::vector<T> & _A,
                         std::vector<T> & _V,
                         std::vector<T> & _V1,
@@ -820,6 +825,9 @@ Result_F<T> Evolution_E(size_t N,std::vector<T> &R,std::vector<T> &SM,
             std::vector<T> & _ANN){
         if(_ANN.size())
             gemv<T>(CblasColMajor,CblasNoTrans,N,N,1.0,ANN.data(),N,_D.data(),1,0.0,_ANN.data(),1);
+        else{
+            _ANN*=0;
+        }
     };
 
     auto v_exp = [](std::vector<T> & _A,T _t,std::vector<T> & Result){

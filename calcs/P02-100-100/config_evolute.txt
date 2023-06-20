@@ -17,14 +17,14 @@
 	"dl_out" : "evolute/dl_o.bmat",
 	"dh_out" : "evolute/dh_o.bmat",
 
-	"-ann_eh": "ann/ann_h.bmat",
-	"-ann_el": "ann/ann_l.bmat",
+	"ann_eh": "ann/ann_h.bmat",
+	"ann_el": "ann/ann_l.bmat",
 	"a_el" : 1,
 	"a_eh" : 1,
 
 	"ann_ll": "ann/ann_ll.bmat",
-	"-ann_hl": "ann/ann_hl.bmat",
-	"-ann_hh": "ann/ann_hh.bmat",	
+	"ann_hl": "ann/ann_hl.bmat",
+	"ann_hh": "ann/ann_hh.bmat",	
 	"-ann_full" : true,
 	"a_hh" : 1,
 	"a_ll" : 1,

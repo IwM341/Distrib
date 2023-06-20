@@ -1,5 +1,5 @@
 {
-	"body" : "../../../DMFramework/celestial_models/solar_model.dat",
+	"body" : "D:/Important/work/Distrib/celestial_models/solar_model.dat",
 	"Vesc" : 2.056e-3,
 	"Vbody" : 2e-3,
 	"Vdisp" : 0.52e-3,

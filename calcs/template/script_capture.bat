@@ -1,1 +1,1 @@
-..\..\release\distrib_vector_grid_grob.exe -config config_capt.txt
+distrib_vector_grid_grob -config config_capt.txt

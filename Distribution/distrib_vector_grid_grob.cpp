@@ -14,6 +14,7 @@
 #include "func/move_to_go.hpp"
 #include "func/load_histo.hpp"
 #include "grob/grid_gen.hpp"
+#include "grob/grid_objects.hpp"
 #include "../factors/factors.hpp"
 int omp_thread_count() {
     int n = 0;
@@ -137,7 +138,7 @@ struct  LE_histo_adapter{
     inline bool putValue(double value,double E,double L){
         #ifndef _NDEBUG
         double Lmax = LE_func(E);
-        double l = L/Lmax;
+        double l = std::min(L/Lmax,1-1e-6);
         //auto [IsInHisto,Index] =  Histo.Grid.spos(_T(E,l));
         return Histo.put(value,E,l);
         #else
@@ -504,7 +505,7 @@ int main(int argc,char **argv){
     //auto E_grid = (ptree_condition<std::string>(cmd_params,"Egird","") != "Uniform"? CreateEGrid_sqrt(NE,Emin) :
     //                                     Function::VectorGrid<double>(Emin,0.0,NE));
 
-    auto N_L_func = [&NL_max,Lmax,&BM](double _E){return 2+(NL_max-2)*maxLnd(BM,_E)/Lmax;};
+
     auto Lgridrho = [](double _E,double _L_nd){return 1.0;};
     //auto HistoGrid = Create_EL_grid(E_grid,Lgridrho,N_L_func);
     //if(ptree_condition<std::string>(cmd_params,"Lgird","") == "Uniform"){
@@ -549,17 +550,32 @@ int main(int argc,char **argv){
 
     */
     double ineqE_a = cmd_params.get<double>("Egrid.ineq_a",
-                                    cmd_params.get<double>("Egrid.ineq",0.0));
+                                    cmd_params.get<double>("Egrid.ineq_a",0.0));
 
     double ineqE_b = cmd_params.get<double>("Egrid.ineq_b",
-                                    cmd_params.get<double>("Egrid.ineq",0.0));
+                                    cmd_params.get<double>("Egrid.ineq_b",0.0));
 
     double ineqL_b = cmd_params.get<double>("Lgrid.ineq",0.0);
-
+    if(cmd_params.get<bool>("debug",false)){
+        PVAR(ineqE_a);
+        PVAR(ineqE_b);
+        PVAR(ineqL_b);
+    }
     auto GridE = grob::make_histo_grid(CreateSqrtGrid(NE,Emin,0,
                                 1,
                                 ineqE_a,
                                 ineqE_b));
+    auto N_L_func = [Emin,ineqE_a,ineqE_b,&NL_max,Lmax,&BM](double _E)->size_t{
+        double t0 = std::abs((_E - Emin)/(-Emin));
+        double t1 = std::abs(1-t0);
+        double l = maxLnd(BM,_E)/Lmax;
+        if(l < 1e-3){
+            return 2;
+        }
+        return 2+(NL_max-2)*std::max(l,
+                (ineqE_a*(1-sqrt(t0))+ineqE_b*(1-sqrt(t1)))
+                             );
+    };
     auto GridH = grob::make_grid_f(GridE,[&](size_t i){
             double _E = GridE[i].left();
         return grob::make_histo_grid(

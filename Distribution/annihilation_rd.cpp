@@ -130,7 +130,7 @@ int main(int argc, char ** argv){
           "h_d.values [filename of H values]",
           "body [filename of body model]",
           "Rcut [default is 10]",
-          "out [output filename]",
+          "o [output filename]",
           "Nmk [default is 1000]");
 
     boost::property_tree::ptree cmd_params;
@@ -194,7 +194,7 @@ int main(int argc, char ** argv){
     size_t Nr = cmd_params.get<int>("Nr",1000);
     auto rd_func = annihilation_r_distrib(L_distrib,H_distrib,LE_func,phiR,G,Phi_Fac_Ann{},Nmk,Nr,Rcut);
 
-    grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("out")),6,std::defaultfloat);
+    grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("o")),6,std::defaultfloat);
 
     /*
     if(ptree_contain(cmd_params,"csv")){

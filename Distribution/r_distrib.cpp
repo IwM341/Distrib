@@ -158,7 +158,7 @@ int main(int argc, char ** argv){
     if(is_debug){
         PVAR(rd_func.Grid[1]*vector_sum(rd_func.Values));
     }
-    grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("out")),6,std::defaultfloat);
+    grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("o")),6,std::defaultfloat);
 
     /*
     if(ptree_contain(cmd_params,"csv")){

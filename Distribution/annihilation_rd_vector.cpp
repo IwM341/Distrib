@@ -105,7 +105,7 @@ int main(int argc, char ** argv){
           "Vbody [velocity of celestial object]",
           "Vdisp [disp velocity in halo]",
           "Rcut [default is 10]",
-          "out [output filename]",
+          "o [output filename]",
           "Nr [default is 1000]",
           "Nmk [default is 1000]");
 
@@ -158,7 +158,7 @@ int main(int argc, char ** argv){
                              cmd_params.get<int>("Nmk",10000),
                              cmd_params.get<double>("Rcut",10));
 
-    grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("out")),6,std::defaultfloat);
+    grob::as_csv(rd_func).save(std::ofstream(cmd_params.pgets("o")),6,std::defaultfloat);
 
     /*
     if(ptree_contain(cmd_params,"csv")){

@@ -111,6 +111,7 @@ void make_work(const boost::property_tree::ptree& CP){
     T fullT = CP.get<float>("T",-1);
 
 
+
     T approp_tau = 1/max_sc;
 
     if(tau < 0){
@@ -127,7 +128,7 @@ void make_work(const boost::property_tree::ptree& CP){
                 fullT = tau*degree;
             }
             else{
-                degree = fullT/tau + 0.5;
+                tau = fullT/degree;
             }
         }
     }else{
@@ -148,18 +149,18 @@ void make_work(const boost::property_tree::ptree& CP){
     std::string method = CP.pgets("method","euler");
     if(CP.get<std::string>("skip_pow","") == "auto"){
         //int pre_factor = (method == "euler" ? 10 : 1);
-        sp = std::max(0,int(log2(10*tau/approp_tau)+1.5));
+        sp = std::max(0,int(log2(2*tau/approp_tau)+1.5));
     }else{
         sp = CP.get<int>("skip_pow",0);
     }
-    T tau_eff = tau/(1<<sp);
+    T tau_eff = tau/(pow(2,sp));
     if(tau_eff> approp_tau){
         print("WARNING: tau too big");
         print("tau_max = ",approp_tau);
     }
     if(log_std){
         PVAR(tau);
-        PVAR(tau/(1<<sp));
+        PVAR(tau/(pow(2,sp)));
         PVAR(degree);
         PVAR(fullT);
     }

@@ -1,4 +1,5 @@
 build*/
+calcs*/
 *.bmat
 *.mat
 CMakeLists.txt.user
