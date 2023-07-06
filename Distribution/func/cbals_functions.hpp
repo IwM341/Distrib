@@ -385,6 +385,49 @@ BlockMatrix<T> RMatrixEuler(size_t NL,size_t NH,
 }
 
 template <typename T>
+BlockMatrix<T> RMatrix2Order2(size_t NL,size_t NH,
+                            std::vector<T> &A_LL,std::vector<T> & A_LH,
+                            std::vector<T> & A_HL,std::vector<T> & A_HH,
+                            T tau){
+
+    std::vector<T> R_LL = tau*A_LL;
+    std::vector<T> R_LH = A_LH*tau;
+    A_LH.clear();
+    std::vector<T> R_HL = A_HL*tau;
+    A_HL.clear();
+    std::vector<T> R_HH = tau*A_HH;
+    for(size_t i=0;i<NL;++i){
+        R_LL[NL*i+i] += 1;
+    }
+    for(size_t i=0;i<NH;++i){
+        R_HH[NH*i+i] += 1;
+    }
+    std::vector<T> R_LL_1(R_LL.size());
+    std::vector<T> R_LH_1(R_LH.size());
+    std::vector<T> R_HL_1(R_HL.size());
+    std::vector<T> R_HH_1(R_HH.size());
+    print("getting 2 order matricies");
+    MultRMatrix(NL,NH,R_LL,R_LH,R_HL,R_HH,
+                R_LL,R_LH,R_HL,R_HH,
+                R_LL_1,R_LH_1,R_HL_1,R_HH_1);
+    R_LL_1*=0.5;
+    R_LH_1*=0.5;
+    R_HL_1*=0.5;
+    R_HH_1*=0.5;
+
+    for(size_t i=0;i<NL;++i){
+        R_LL_1[NL*i+i] += 0.5;
+    }
+    for(size_t i=0;i<NH;++i){
+        R_HH_1[NH*i+i] += 0.5;
+    }
+
+    return BlockMatrix<T>{std::move(R_LL_1),std::move(R_LH_1),
+                        std::move(R_HL_1),std::move(R_HH_1)};
+
+}
+
+template <typename T>
 BlockMatrix<T> RMatrix2Order(size_t NL,size_t NH,
                             std::vector<T> &A_LL,std::vector<T> & A_LH,
                             std::vector<T> & A_HL,std::vector<T> & A_HH,
@@ -554,15 +597,16 @@ BlockMatrix<T> RMatrix2Order(size_t NL,size_t NH,
     }
     MatrixMult_XY(NL,NL,NH,XY_1_inv,A_LH,R_LH);
     MultMatrix_DX(NL,NH,A_inv_mat,R_LH,R_LH);
-    A_HH.clear();
-    A_LL.clear();
-    A_LH.clear();
-    A_HL.clear();
-    X.clear();
-    Y.clear();
-    XY_1_inv.clear();
-    YX_1_inv.clear();
-
+    print("clearing");
+    A_HH.resize(0);
+    A_LL.resize(0);
+    A_LH.resize(0);
+    A_HL.resize(0);
+    X.resize(0);
+    Y.resize(0);
+    XY_1_inv.resize(0);
+    YX_1_inv.resize(0);
+    print("returning");
     return BlockMatrix<T>{std::move(R_LL),std::move(R_LH),
                           std::move(R_HL),std::move(R_HH)};
 }
@@ -697,6 +741,7 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
 
     size_t N_steps = T_full/tau+0.5;
 
+    print("ANN allocatons");
     std::vector<T> ANN_L_HL(NL,0);
     std::vector<T> ANN_H_HL(NH,0);
 
@@ -706,6 +751,7 @@ ResultLH_F<T> Evolution_LH(size_t NL,size_t NH,BlockMatrix<T> &R,BlockMatrix<T> 
     std::vector<T> R_ANN_L(NL, 0);
     std::vector<T> R_ANN_H(NH, 0);
 
+    print("N t allocations, N_steps = ",N_steps);
     std::vector<T> n_l_t(N_steps+1);
     n_l_t[0] = vector_sum(D_L);
     std::vector<T> n_h_t(N_steps+1);

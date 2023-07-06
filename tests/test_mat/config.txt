@@ -1,15 +1,12 @@
 {
 	"lh_in": "mats/lh.matrix",
 	"hl_in": "mats/hl.matrix",
+	"ll_in": "mats/ll.matrix",
+	"hh_in": "mats/hh.matrix",
 
 	"eh_in": "mats/eh.matrix",
 	"el_in": "mats/el.matrix",
 	
-	"ann_eh": "mats/ann_h.matrix",
-	"ann_el": "mats/ann_l.matrix",
-	"a_el" : 0.36,
-	"a_eh" : 0.16,
-
 	"ann_ll": "mats/ann_ll.matrix",
 	"ann_hl": "mats/ann_hl.matrix",
 	"ann_hh": "mats/ann_hh.matrix",	

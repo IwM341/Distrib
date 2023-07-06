@@ -62,6 +62,24 @@ inline vec3 Gauss3(Generator && G, double Vdisp){
 }
 
 template <class Generator>
+inline MC::MCResult<vec3> Gauss3_Thermal(Generator && G, double Vdisp,double p = 0.8){
+    if(G() < p) {
+        double V1 = Vdisp*sqrt(-2*log(1-G()));
+        double V2 = Vdisp*sqrt(-2*log(1-G()));
+        double phi1 = RandomPhi(G);
+        double phi2 = RandomPhi(G);
+        return vec3(V1*cos(phi1),V1*sin(phi1),V2*cos(phi2));
+    } else {
+        constexpr double factor = 8;
+        double x = G()*factor;
+        double y = G()*factor;
+        double z = G()*factor;
+        double fac = exp(-(x*x+y*y+z*z)/2)/pow(2*M_PI,1.5);
+        return {Vdisp*vec3(x,y,z),fac};
+    }
+}
+
+template <class Generator>
 inline MC::MCResult<vec3> Gauss3_min(Generator && G, double Vdisp, double Vmin){
     Vmin = (Vmin >0 ? Vmin : 0.0 );
     double a0 = exp(-Vmin*Vmin/(2*Vdisp*Vdisp));

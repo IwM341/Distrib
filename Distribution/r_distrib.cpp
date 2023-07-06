@@ -37,6 +37,7 @@ auto r_distrib(grob::Histogramm<HistoArgs...> const&mHisto,
         auto Mi = mHisto.size();
         auto rd_func = grob::make_function_f(grob::GridUniform<double>(0,R_cut,N_r+1),
                               [](size_t i){return 0.0;});
+        PVAR(rd_func.Values);
 
         for(size_t i=0;i<Mi;++i)
         {
@@ -62,7 +63,14 @@ auto r_distrib(grob::Histogramm<HistoArgs...> const&mHisto,
                                                               L00_L,L01_L,L10_L,L11_L,
                                                               T_L.T);
             //TrajectoryInfo TI = CalculateTrajectory(phi,);
+            //PVAR(MI);
             double rho_L = mHisto[MI]/TdEdL2;
+            if(rho_L < 0){
+                rho_L = 0;
+                if(rho_L < -1e-6){
+                    PVAR(mHisto[MI]);
+                }
+            }
             //double rho_L = mHisto[MI]/(4*M_PI*M_PI*T_L.T*(EL_rect_L.first().volume()*(L11_L+L01_L-L10_L-L00_L)));
             //COMPARE(TdEdL2,0.5*T_L.T*(EL_rect_L.first().volume()*(L11_L+L11_L-L00_L-L10_L)));
             const size_t rd_sz = rd_func.Grid.size();
@@ -83,6 +91,17 @@ auto r_distrib(grob::Histogramm<HistoArgs...> const&mHisto,
                     //PVAR(L_E(_E));
                     //COMPARE(d3v_L_naive,d3v_L);
                     //msum += rge_dens*d3v_L*rho_L;
+                    if(rge_dens*d3v_L*rho_L < 0){
+                        PVAR(rge_dens);
+                        PVAR(d3v_L);
+                        PVAR(rho_L);
+                        PVAR(EL_rect_L.right());
+                        PVAR(mphi);
+                        PVAR(r);
+                        PVAR(T_L.T);
+                        PVAR(EL_rect_L);
+                        PVAR(mHisto[MI]);
+                    }
                     rd_func.Values[j]+=rge_dens*d3v_L*rho_L;
                 }
             }
@@ -90,6 +109,7 @@ auto r_distrib(grob::Histogramm<HistoArgs...> const&mHisto,
             progress++;
 
         }
+        PVAR(rd_func.Values);
         return rd_func;
 }
 

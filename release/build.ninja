@@ -76,6 +76,41 @@ build distrib_vector_grid_grob.exe: CXX_EXECUTABLE_LINKER__distrib_vector_grid_g
   TARGET_PDB = distrib_vector_grid_grob.exe.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target distrib_SD
+
+
+#############################################
+# Order-only phony target for distrib_SD
+
+build cmake_object_order_depends_target_distrib_SD: phony || CMakeFiles/distrib_SD.dir
+
+build CMakeFiles/distrib_SD.dir/distrib_vector_grid_grob_SD.cpp.obj: CXX_COMPILER__distrib_SD_Release D$:/Important/work/Distrib/Distribution/distrib_vector_grid_grob_SD.cpp || cmake_object_order_depends_target_distrib_SD
+  DEFINES = -DBOOST_ATOMIC_NO_LIB -DBOOST_FILESYSTEM_NO_LIB -DTEST_SF_HISTO
+  DEP_FILE = CMakeFiles\distrib_SD.dir\distrib_vector_grid_grob_SD.cpp.obj.d
+  FLAGS = -fopenmp -O2 -std=gnu++17
+  INCLUDES = -ID:/Important/work/Distrib/Distribution/DMFramework/utils -ID:/Tmp/GridObject/include -isystem D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/include/boost-1_81
+  OBJECT_DIR = CMakeFiles\distrib_SD.dir
+  OBJECT_FILE_DIR = CMakeFiles\distrib_SD.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target distrib_SD
+
+
+#############################################
+# Link the executable distrib_SD.exe
+
+build distrib_SD.exe: CXX_EXECUTABLE_LINKER__distrib_SD_Release CMakeFiles/distrib_SD.dir/distrib_vector_grid_grob_SD.cpp.obj | D$:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_filesystem-mgw8-mt-x64-1_81.a D$:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_atomic-mgw8-mt-x64-1_81.a
+  FLAGS = -fopenmp -O2
+  LINK_LIBRARIES = D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_filesystem-mgw8-mt-x64-1_81.a  -ladvapi32  -lsynchronization  -ladvapi32  -lsynchronization  D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_atomic-mgw8-mt-x64-1_81.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\distrib_SD.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = distrib_SD.exe
+  TARGET_IMPLIB = libdistrib_SD.dll.a
+  TARGET_PDB = distrib_SD.exe.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target annihilation
 
 
@@ -321,6 +356,41 @@ build matrix_mult_elastic.exe: CXX_EXECUTABLE_LINKER__matrix_mult_elastic_Releas
   TARGET_PDB = matrix_mult_elastic.exe.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target matrix_mult_2
+
+
+#############################################
+# Order-only phony target for matrix_mult_2
+
+build cmake_object_order_depends_target_matrix_mult_2: phony || CMakeFiles/matrix_mult_2.dir
+
+build CMakeFiles/matrix_mult_2.dir/matrix2.cpp.obj: CXX_COMPILER__matrix_mult_2_Release D$:/Important/work/Distrib/Distribution/matrix2.cpp || cmake_object_order_depends_target_matrix_mult_2
+  DEFINES = -DBOOST_ATOMIC_NO_LIB -DBOOST_FILESYSTEM_NO_LIB -DTEST_SF_HISTO
+  DEP_FILE = CMakeFiles\matrix_mult_2.dir\matrix2.cpp.obj.d
+  FLAGS = -fopenmp -O2 -std=gnu++17
+  INCLUDES = -ID:/Important/work/Distrib/Distribution/DMFramework/utils -ID:/Tmp/GridObject/include -isystem D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/include/boost-1_81 -isystem D:/Soft/cpp_packages/OpenBLAS/build/install/include/openblas
+  OBJECT_DIR = CMakeFiles\matrix_mult_2.dir
+  OBJECT_FILE_DIR = CMakeFiles\matrix_mult_2.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target matrix_mult_2
+
+
+#############################################
+# Link the executable matrix_mult_2.exe
+
+build matrix_mult_2.exe: CXX_EXECUTABLE_LINKER__matrix_mult_2_Release CMakeFiles/matrix_mult_2.dir/matrix2.cpp.obj | D$:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_filesystem-mgw8-mt-x64-1_81.a D$:/Soft/cpp_packages/OpenBLAS/build/install/lib/libopenblas.a D$:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_atomic-mgw8-mt-x64-1_81.a
+  FLAGS = -fopenmp -O2
+  LINK_LIBRARIES = D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_filesystem-mgw8-mt-x64-1_81.a  D:/Soft/cpp_packages/OpenBLAS/build/install/lib/libopenblas.a  -ladvapi32  -lsynchronization  -ladvapi32  -lsynchronization  D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_atomic-mgw8-mt-x64-1_81.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\matrix_mult_2.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = matrix_mult_2.exe
+  TARGET_IMPLIB = libmatrix_mult_2.dll.a
+  TARGET_PDB = matrix_mult_2.exe.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target conversions
 
 
@@ -392,9 +462,13 @@ build annihilation_vector: phony annihilation_vector.exe
 
 build conversions: phony conversions.exe
 
+build distrib_SD: phony distrib_SD.exe
+
 build distrib_vector_grid_grob: phony distrib_vector_grid_grob.exe
 
 build matrix_mult: phony matrix_mult.exe
+
+build matrix_mult_2: phony matrix_mult_2.exe
 
 build matrix_mult_elastic: phony matrix_mult_elastic.exe
 
@@ -408,7 +482,7 @@ build r_distrib: phony r_distrib.exe
 #############################################
 # Folder: D:/Important/work/Distrib/release
 
-build all: phony distrib_vector_grid_grob.exe annihilation.exe annihilation_vector.exe annihilation_rd.exe annihilation_rd_vector.exe r_distrib.exe matrix_mult.exe matrix_mult_elastic.exe conversions.exe
+build all: phony distrib_vector_grid_grob.exe distrib_SD.exe annihilation.exe annihilation_vector.exe annihilation_rd.exe annihilation_rd_vector.exe r_distrib.exe matrix_mult.exe matrix_mult_elastic.exe matrix_mult_2.exe conversions.exe
 
 # =============================================================================
 # Built-in targets

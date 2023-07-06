@@ -16,6 +16,7 @@
 #include "grob/grid_gen.hpp"
 #include "grob/grid_objects.hpp"
 #include "../factors/factors.hpp"
+#include "debug/debugdef.hpp"
 int omp_thread_count() {
     int n = 0;
     #pragma omp parallel reduction(+:n)
@@ -181,18 +182,23 @@ inline void FillScatterHistoFromElement(const N_type & N_el,Therm_type const & T
         return fc*(rand()+fc*rand());
     };
 
-    auto NH = S_LH.Grid.size();
-    auto NL = S_HL.Grid.size();
 
+
+
+    auto NLL = S_HL.Grid.size();
+    auto NHL = S_HL[0].Grid.size();
+
+    auto NLH = S_LH.Grid.size();
+    auto NHH = S_LH[0].Grid.size();
 
     std::cout << "calculating scatter hl" <<std::endl;
     show_prog prog_hl(100);
     prog_hl.show(0);
-    size_t total_progress_hl = NL;
+    size_t total_progress_hl = NLL;
     size_t curr_progress_hl = 0;
 
     #pragma omp parallel for
-    for(size_t i=0;i<NL;++i){
+    for(size_t i=0;i<NLL;++i){
         auto Index = S_HL.Grid.FromLinear(i);
         const auto & [e0e1,l0l1] = S_HL.Grid[Index];
 
@@ -264,7 +270,7 @@ inline void FillScatterHistoFromElement(const N_type & N_el,Therm_type const & T
         print("skip, dmk = 0");
     } else{
         #pragma omp parallel for
-        for(size_t i=0;i<NH;++i){
+        for(size_t i=0;i<NLH;++i){
 
             auto Index = S_LH.Grid.FromLinear(i);
             auto [e0e1,l0l1] = S_LH.Grid[Index];
@@ -565,7 +571,7 @@ int main(int argc,char **argv){
                                 1,
                                 ineqE_a,
                                 ineqE_b));
-    auto N_L_func = [Emin,ineqE_a,ineqE_b,&NL_max,Lmax,&BM](double _E)->size_t{
+    auto N_L_func = [Emin,ineqE_a,ineqE_b,&NL_max,Lmax,&BM](double _E)->double{
         double t0 = std::abs((_E - Emin)/(-Emin));
         double t1 = std::abs(1-t0);
         double l = maxLnd(BM,_E)/Lmax;
@@ -602,8 +608,6 @@ int main(int argc,char **argv){
     // Creating matrix layout for MatrixElements
     std::vector<double> HL_Mat(NH*NL,0);
     std::vector<double> LH_Mat(NH*NL,0);
-
-    // make histo of histos, which views
 
     auto S_LH = grob::make_histo_ref(GridH,grob::make_vector(NH,
                          [&](size_t i){
@@ -654,6 +658,10 @@ int main(int argc,char **argv){
     double Rho_H_Cut = cmd_params.get<double>("RhoH_cut",1e10);
     double R_H_Cut = cmd_params.get<double>("RH_cut",1);
 
+    //bool calculate_ll = cmd_params.pgets("ll_out","") == "";
+    //bool calculate_hh = cmd_params.pgets("hh_out","") == "";
+
+
     double FullCap_H = 0;
     double FullCap_L = 0;
     double VescMin = BM.VescMin();
@@ -691,26 +699,56 @@ int main(int argc,char **argv){
             dF_Nuc dF(1,1);
             Phi_Fac_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,_mp,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFac,Nmk_HL,Nmk_LH);
+            }
         } else if (element == "H_e_e") {
             dF_H_Elastic_Electron dF;
             Phi_Fac_Electron_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,_mp,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFac,Nmk_HL,Nmk_LH);
+            }
         } else if (element == "H_m_p") {
             dF_H_Migdal_Proton dF(G);
             Phi_Fac_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,_mp,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFac,Nmk_HL,Nmk_LH);
+            }
         } else if (element == "H_m_e") {
             dF_H_Migdal_Electron dF(G);
             Phi_Fac_Electron_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,_mp,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFac,Nmk_HL,Nmk_LH);
+            }
         } else if (element == "H_i_p") {
             dF_H_Ion_Proton dF(G);
             Phi_Fac_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,_mp,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFac,Nmk_HL,Nmk_LH);
+            }
         } else if (element == "H_i_e") {
             dF_H_Ion_Electron dF(G);
             Phi_Fac_Electron_S PhiFac(_mp,mk);
             CalcCapture(dF,PhiFac,Element_N,_mp);
+            if(!not_fill_ss){
+                FillScatterHistoFromElement(Element_N,Therm,PhiC,BM.VescMin(),Vesc,dF,
+                                       mk,delta_mk,_mp,
+                                       S_LH,S_HL,Evap_H,Evap_L,LE_func,PhiFac,Nmk_HL,Nmk_LH);
+            }
         } else {
             Element_N.Values = RhoND*BM[element];
 
@@ -835,6 +873,8 @@ void print_params(){
            "pout : [output path to save full rates (capture, scatter)]",
            "lh_out : [path to lh scatter matrix out]",
            "hl_out : [path to hl scatter matrix out]",
+           "ll_out : [optional,path to ll scatter matrix out]",
+           "hh_out : [optional,path to hh scatter matrix out]",
            "el_out : [optional, path to L evap vector out]",
            "eh_out : [optional, path to H evap vector out]",
            "cl_out : [path to L capture vector out]",
@@ -851,5 +891,6 @@ void print_params(){
            "Nmk_HL, Nmk_LL : [Monte-Carlo steps in scatter HL and LH  resp.]",
            "TH_cut : [optional, don't consider hydrogen if Therm > TH_cut]",
            "RhoH_cut : [optional, don't consider hydrogen if Rho > RhoH_cut]",
+           "not_fill : [if true, scatter histo doesn't counted]",
            "RH_cut : [optional, don't consider hydrogen if r > RH_cut]");
 }

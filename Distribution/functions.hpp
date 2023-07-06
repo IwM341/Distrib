@@ -343,7 +343,9 @@ inline MC::MCResult<std::tuple<vec3,double,double>> Vout1(double mp,double mk,do
 
     double n_nd = nR(r_nd);//TODO n_nd as a function of radius
     factor *=  n_nd;
-    vec3 V1 = Gauss3(G,sqrt(TempR(r_nd)/mp));//TODO: add thermal distribution of nuclei velocity
+    auto [V1, f_mlt] = Gauss3_Thermal(G,sqrt(TempR(r_nd)/mp));//TODO: add thermal distribution of nuclei velocity
+
+    factor *= f_mlt;
 
     //Vcm - is a vrlocity of momentum center
     vec3 Vcm = (V_wimp*mk + V1*mp)/(mp+mk);
@@ -737,8 +739,8 @@ inline MC::MCResult<vec3> VoutTherm1(double mk,double mp,double delta_mk,dF_Fact
     double factor = 1.0;
 
     factor *= n_r;
-    vec3 V1 = Gauss3(G,sqrt(Therm/mp));//TODO: add thermal distribution of nuclei velocity
-
+    auto [V1 ,factor_mult]= Gauss3_Thermal(G,sqrt(Therm/mp));//TODO: add thermal distribution of nuclei velocity
+    factor *= factor_mult;
     //PVAR(Therm);
 //    if(V1.norm()>2e-3){
 //        PVAR(V_wimp);

@@ -31,6 +31,21 @@ struct dF_Nuc_M_SI{
         return const_factor*bf*bf;
     }
 };
+struct dF_Nuc_M_SD{
+    double factor;
+    dF_Nuc_M_SD(size_t A,size_t Z,size_t const_factor = 1):factor(0){
+        if(A % 2 == 1){
+            factor = 1.0;
+        }
+
+    }
+    inline MC::MCResult<double> EnergyLoss(double Emax)const noexcept{
+        return MC::MCResult<double>(0,1);
+    }
+    inline double ScatterFactor(double q,double enLoss)const noexcept{
+        return 1;
+    }
+};
 
 
 struct Phi_Factor_Scatter_SI{

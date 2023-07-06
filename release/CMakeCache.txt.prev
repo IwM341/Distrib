@@ -20,14 +20,15 @@
 //No help, variable specified on the command line.
 BOOST_ROOT:PATH=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64
 
+//No help, variable specified on the command line.
+Boost_COMPILER:STRING=mgw8
+
 //The directory containing a CMake configuration file for Boost.
 Boost_DIR:PATH=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/cmake/Boost-1.81.0
 
-//Boost filesystem library (debug)
-Boost_FILESYSTEM_LIBRARY_DEBUG:FILEPATH=Boost_FILESYSTEM_LIBRARY_DEBUG-NOTFOUND
+Boost_FILESYSTEM_LIBRARY_DEBUG:STRING=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_filesystem-mgw8-mt-d-x64-1_81.a
 
-//Boost filesystem library (release)
-Boost_FILESYSTEM_LIBRARY_RELEASE:FILEPATH=Boost_FILESYSTEM_LIBRARY_RELEASE-NOTFOUND
+Boost_FILESYSTEM_LIBRARY_RELEASE:STRING=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/libboost_filesystem-mgw8-mt-x64-1_81.a
 
 //Path to a file.
 Boost_INCLUDE_DIR:PATH=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/include/boost-1_81
@@ -284,6 +285,9 @@ TEST_SAVE_LOAD:BOOL=OFF
 //use openmp
 USE_OPENMP:BOOL=ON
 
+//The directory containing a CMake configuration file for boost_atomic.
+boost_atomic_DIR:PATH=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/cmake/boost_atomic-1.81.0
+
 //The directory containing a CMake configuration file for boost_filesystem.
 boost_filesystem_DIR:PATH=D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/cmake/boost_filesystem-1.81.0
 
@@ -437,6 +441,8 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_STRIP-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding Boost
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[D:/Soft/cpp_packages/boost_1_81_0/build_mingw64/lib/cmake/Boost-1.81.0/BoostConfig.cmake][cfound components: filesystem ][v1.81.0()]
 //Details about finding OpenMP
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP:INTERNAL=[TRUE][c ][v4.5()]
 //Details about finding OpenMP_CXX
@@ -465,6 +471,8 @@ _Boost_NAMESPACE_LAST:INTERNAL=boost
 _Boost_USE_MULTITHREADED_LAST:INTERNAL=TRUE
 //linker supports push/pop state
 _CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
+//ADVANCED property for variable: boost_atomic_DIR
+boost_atomic_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_filesystem_DIR
 boost_filesystem_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_headers_DIR

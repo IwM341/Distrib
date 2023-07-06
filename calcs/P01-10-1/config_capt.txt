@@ -32,10 +32,11 @@
 	"Vbody" : 0.73e-3,
 	"Vdisp" : 0.52e-3,
 
-	"mk": 10,
-	"dmk" : 1e-5,
+	"mk": 100,
+	"dmk" : 0,
 
 	"elements" : ["H1","He4","Fe","O16","N14","Si"],
+	"not_fill" : true,
 
 	"Nmk_H" : 1000000,
 	"Nmk_L" : 1000000,

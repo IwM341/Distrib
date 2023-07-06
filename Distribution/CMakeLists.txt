@@ -28,7 +28,7 @@ include_directories(${GO_PATH})
 
 #add_executable(distrib_vector_grid distrib_vector_grid_v1.cpp)
 add_executable(distrib_vector_grid_grob distrib_vector_grid_grob.cpp)
-
+add_executable(distrib_SD distrib_vector_grid_grob_SD.cpp)
 #add_executable(intersec intersection.cpp)
 
 add_executable(annihilation annihilation.cpp)
@@ -39,6 +39,7 @@ add_executable(r_distrib r_distrib.cpp)
 
 add_executable(matrix_mult matrix_modelling.cpp)
 add_executable(matrix_mult_elastic matrix_modelling_elastic.cpp)
+add_executable(matrix_mult_2 matrix2.cpp)
 
 #add_executable(graphics graphs.cpp)
 add_executable(conversions conversions.cpp)
@@ -78,6 +79,7 @@ if(${Boost_FOUND})
 
  #   target_link_libraries(distrib_vector_grid PRIVATE Boost::filesystem)
     target_link_libraries(distrib_vector_grid_grob PRIVATE Boost::filesystem)
+    target_link_libraries(distrib_SD PRIVATE Boost::filesystem)
     target_link_libraries(matrix_mult PRIVATE Boost::filesystem)
     #target_link_libraries(graphics PRIVATE Boost::filesystem)
     #target_link_libraries(intersec PRIVATE Boost::filesystem)
@@ -89,6 +91,7 @@ if(${Boost_FOUND})
     target_link_libraries(annihilation_rd_vector PRIVATE Boost::filesystem)
     target_link_libraries(r_distrib PRIVATE Boost::filesystem)
     target_link_libraries(matrix_mult_elastic PRIVATE Boost::filesystem)
+    target_link_libraries(matrix_mult_2 PRIVATE Boost::filesystem)
 endif()
 
 
@@ -102,6 +105,7 @@ if(${OpenBLAS_FOUND})
     #include_directories(matrix_mult ${OpenBLAS_INCLUDE_DIRS})
     target_link_libraries(matrix_mult PRIVATE OpenBLAS::OpenBLAS)
     target_link_libraries(matrix_mult_elastic PRIVATE OpenBLAS::OpenBLAS)
+    target_link_libraries(matrix_mult_2 PRIVATE OpenBLAS::OpenBLAS)
 endif()
 
 

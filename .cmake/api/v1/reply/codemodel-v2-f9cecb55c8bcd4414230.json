@@ -1,0 +1,141 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Release-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Distribution",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "annihilation::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-annihilation-Release-a16c1b73080ba99335d1.json",
+					"name" : "annihilation",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "annihilation_rd::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-annihilation_rd-Release-98ad06d9bfd7d7e7a494.json",
+					"name" : "annihilation_rd",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "annihilation_rd_vector::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-annihilation_rd_vector-Release-42aff11a8635d398e4cc.json",
+					"name" : "annihilation_rd_vector",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "annihilation_vector::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-annihilation_vector-Release-3a689ac65b9ae956412e.json",
+					"name" : "annihilation_vector",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "conversions::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-conversions-Release-02aa1faa309fcba5b17b.json",
+					"name" : "conversions",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "distrib_vector_grid_grob::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-distrib_vector_grid_grob-Release-6b7d3e583dd5e264f008.json",
+					"name" : "distrib_vector_grid_grob",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "matrix_mult::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-matrix_mult-Release-c643a78a188ee9fd36dc.json",
+					"name" : "matrix_mult",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "matrix_mult_2::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-matrix_mult_2-Release-9aa50383d6fa515352f7.json",
+					"name" : "matrix_mult_2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "matrix_mult_elastic::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-matrix_mult_elastic-Release-dc7c5275f0cb960dbaa4.json",
+					"name" : "matrix_mult_elastic",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "r_distrib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-r_distrib-Release-d6b98a8eaa64c048bf96.json",
+					"name" : "r_distrib",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/Important/work/Distrib",
+		"source" : "D:/Important/work/Distrib/Distribution"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}

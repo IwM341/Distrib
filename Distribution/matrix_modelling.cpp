@@ -283,8 +283,9 @@ void make_work(const boost::property_tree::ptree& CP){
 
         R = (method == "order2" ? RMatrix2Order(NL,NH,A_LL,A_LH_T,A_HL_T,A_HH,tau_eff) :
                                    RMatrixEuler(NL,NH,A_LL,A_LH_T,A_HL_T,A_HH,tau_eff));
+        print("got R matrix successfully");
         SM = PowMatrixSumm(NL,NH,R.LL,R.LH,R.HL,R.HH,sp,tau_eff);
-
+        print("got S matrix successfully");
         try{
             boost::filesystem::path backup_path = config_path_from(
                         CP.pgets("save_matrix","rs_matrix_backup")
